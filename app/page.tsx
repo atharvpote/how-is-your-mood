@@ -1,12 +1,8 @@
 import { auth } from "@clerk/nextjs";
 import Link from "next/link";
 
-import type { JSX } from "react";
-
-type HRef = "/journal" | "/new-user";
-
-export default function Home(): JSX.Element {
-  const href: HRef = auth().userId ? "/journal" : "/new-user";
+export default function Home() {
+  const href = auth().userId ? "/journal" : "/new-user";
 
   return (
     <div className="h-screen bg-black grid place-content-center text-white">

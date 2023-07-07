@@ -2,14 +2,11 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs";
 import { prisma } from "@/utils/db";
 
-import type { User } from "@prisma/client";
-import type { User as ClerkUser } from "@clerk/nextjs/dist/types/server";
-
-export default async function CreateNewUser(): Promise<void> {
-  const user: ClerkUser | null = await currentUser();
+export default async function CreateNewUser() {
+  const user = await currentUser();
 
   if (user) {
-    const match: User | null = await prisma.user.findUnique({
+    const match = await prisma.user.findUnique({
       where: { clerkId: user.id },
     });
 

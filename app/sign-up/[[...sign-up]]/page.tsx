@@ -1,8 +1,6 @@
 import { SignUp } from "@clerk/nextjs";
 
-import type { JSX } from "react";
-
-export default function SignUpPage(): JSX.Element {
+export default function SignUpPage() {
   return (
     <div className="grid min-h-screen place-content-center dark:bg-black">
       <SignUp />

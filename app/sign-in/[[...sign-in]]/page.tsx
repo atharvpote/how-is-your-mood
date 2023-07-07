@@ -1,8 +1,6 @@
 import { SignIn } from "@clerk/nextjs";
 
-import type { JSX } from "react";
-
-export default function SignInPage(): JSX.Element {
+export default function SignInPage() {
   return (
     <div className="grid min-h-screen place-content-center dark:bg-black">
       <SignIn />

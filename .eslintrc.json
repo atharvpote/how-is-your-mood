@@ -3,17 +3,17 @@
   "overrides": [
     {
       "files": ["*.ts", "*.tsx"],
-      "parser": "@typescript-eslint/parser",
-      "parserOptions": {
-        "project": ["./tsconfig.json"]
-      },
       "extends": [
         "plugin:@typescript-eslint/recommended",
-        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:@typescript-eslint/strict"
       ],
-      "rules": {
-        "@typescript-eslint/explicit-function-return-type": "warn"
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "project": true,
+        "tsconfigRootDir": "./"
       }
     }
-  ]
+  ],
+  "root": true
 }
