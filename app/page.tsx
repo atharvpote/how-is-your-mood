@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs";
 import Link from "next/link";
+import { auth } from "@clerk/nextjs";
 
 export default function Home() {
   const href = auth().userId ? "/journal" : "/new-user";

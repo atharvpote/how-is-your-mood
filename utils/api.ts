@@ -1,4 +1,4 @@
-import type { JournalEntry } from "@prisma/client";
+import { JournalEntry } from "@prisma/client";
 
 export async function createNewEntry() {
   const response = await fetch(
@@ -8,13 +8,34 @@ export async function createNewEntry() {
   );
 
   if (response.ok) {
-    const data: unknown = await response.json();
+    const responseData: unknown = await response.json();
 
     try {
-      validateResponse(data);
+      validateResponse(responseData);
 
-      return data.data;
-    } catch (error: unknown) {
+      return responseData.data;
+    } catch (error) {
+      if (error instanceof Error) console.error(error.message);
+    }
+  }
+}
+
+export async function updateEntry(id: string, content: string) {
+  const response = await fetch(
+    new Request(createURL(`/api/journal/${id}`), {
+      method: "PATCH",
+      body: JSON.stringify({ content }),
+    }),
+  );
+
+  if (response.ok) {
+    const responseData: unknown = await response.json();
+
+    try {
+      validateResponse(responseData);
+
+      return responseData.data;
+    } catch (error) {
       if (error instanceof Error) console.error(error.message);
     }
   }
@@ -30,5 +51,5 @@ interface ResponseType {
 
 function validateResponse(res: unknown): asserts res is ResponseType {
   if (!(res && typeof res === "object" && "data" in res))
-    throw new Error("Response from '/api/journal' is not valid");
+    throw new Error("Invalid response");
 }

@@ -1,4 +1,4 @@
-import type { JournalEntry } from "@prisma/client";
+import { JournalEntry } from "@prisma/client";
 
 export default function EntryCard({ entry }: { entry: JournalEntry }) {
   const date = new Date(entry.createdAt).toDateString();

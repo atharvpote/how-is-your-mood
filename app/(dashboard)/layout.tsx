@@ -1,18 +1,17 @@
+import { PropsWithChildren } from "react";
 import { UserButton } from "@clerk/nextjs";
-
-import type { PropsWithChildren } from "react";
 
 export default function DashboardLayout({ children }: PropsWithChildren) {
   return (
     <div className="h-screen flex">
       <aside className="border-r border-black/10 basis-48">Mood</aside>
-      <div className="basis-full">
+      <div className="basis-full flex flex-col">
         <header className="h-14 border-b border-black/10">
           <div className="h-full px-6 flex items-center justify-end">
             <UserButton />
           </div>
         </header>
-        {children}
+        <div className="basis-full">{children}</div>
       </div>
     </div>
   );

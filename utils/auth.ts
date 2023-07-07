@@ -11,7 +11,7 @@ export async function getUserByClerkId() {
       });
 
       return user;
-    } catch (error: unknown) {
+    } catch (error) {
       if (error instanceof Error) console.error(error.message);
     }
 }
