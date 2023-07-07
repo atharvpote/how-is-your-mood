@@ -4,14 +4,18 @@ import { prisma } from "./db";
 export async function getUserByClerkId() {
   const { userId } = auth();
 
-  if (userId)
-    try {
-      const user = await prisma.user.findUniqueOrThrow({
-        where: { clerkId: userId },
-      });
+  try {
+    if (!userId)
+      throw new Error(
+        `Did not get the "Clerk User" from "auth" at "getUserByClerkId"`,
+      );
 
-      return user;
-    } catch (error) {
-      if (error instanceof Error) console.error(error.message);
-    }
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { clerkId: userId },
+    });
+
+    return user;
+  } catch (error) {
+    if (error instanceof Error) console.error(error.message);
+  }
 }

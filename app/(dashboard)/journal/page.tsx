@@ -25,12 +25,19 @@ export default async function Journal() {
 async function getEntries() {
   const user = await getUserByClerkId();
 
-  if (user) {
+  try {
+    if (!user)
+      throw new Error(
+        `Did not get "Clerk User Object" from "getUserByClerkId" at "/journal"`,
+      );
+
     const entries = await prisma.journalEntry.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
 
     return entries;
+  } catch (error) {
+    if (error instanceof Error) console.error(error.message);
   }
 }

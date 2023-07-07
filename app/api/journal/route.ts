@@ -5,14 +5,21 @@ import { prisma } from "@/utils/db";
 export async function POST() {
   const user = await getUserByClerkId();
 
-  if (user) {
+  try {
+    if (!user)
+      throw new Error(
+        `Did not get "Clerk User Object" from "getUserByClerkId" at "/api/journal"`,
+      );
+
     const entry = await prisma.journalEntry.create({
       data: {
         userId: user.id,
-        content: "Write about your day",
+        content: "",
       },
     });
 
     return NextResponse.json({ data: entry });
+  } catch (error) {
+    if (error instanceof Error) console.error(error.message);
   }
 }
