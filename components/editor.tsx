@@ -7,7 +7,7 @@ import { updateEntry } from "@/utils/api";
 
 interface PropTypes {
   entry: JournalEntry;
-  analysis: Analysis;
+  analysis?: Analysis;
 }
 
 export default function Editor(props: PropTypes) {
@@ -49,9 +49,8 @@ export default function Editor(props: PropTypes) {
       </div>
       <div className="border-l border-black/10">
         <div
-          className={`px-6 py-10 ${
-            analysis.color ? `bg-[${analysis.color}]` : ""
-          }`}
+          className="px-6 py-10"
+          style={{ backgroundColor: `${analysis.color ? analysis.color : ""}` }}
         >
           <h2 className="text-2xl">Analysis</h2>
         </div>

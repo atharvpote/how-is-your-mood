@@ -9,9 +9,15 @@ interface PropTypes {
 export default async function EntryPage({ params: { id } }: PropTypes) {
   const entry = await getEntry(id);
 
-  return (
-    <>{entry?.analysis && <Editor entry={entry} analysis={entry.analysis} />}</>
-  );
+  if (!entry)
+    throw new Error(`Did not get "entry" from "getEntry" at "/journal/${id}"`);
+
+  if (!entry.analysis)
+    throw new Error(
+      `Did not get "entry.analysis" from "getEntry" at "/journal/${id}"`,
+    );
+
+  return <Editor entry={entry} analysis={entry.analysis} />;
 }
 
 async function getEntry(id: string) {

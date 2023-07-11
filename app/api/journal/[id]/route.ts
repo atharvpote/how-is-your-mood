@@ -15,9 +15,7 @@ export async function PATCH(request: Request, { params }: ParamType) {
   const requestData: unknown = await request.json();
 
   try {
-    const validateRequestData = z.object({ content: z.string() });
-
-    const { content } = validateRequestData.parse(requestData);
+    const { content } = z.object({ content: z.string() }).parse(requestData);
 
     const user = await getUserByClerkId();
 
@@ -81,7 +79,7 @@ export async function PATCH(request: Request, { params }: ParamType) {
     }
 
     return NextResponse.json({
-      data: updateEntry,
+      entry: updateEntry,
       analysis: newAnalysis,
     });
   } catch (error) {

@@ -25,7 +25,7 @@ model User {
 model JournalEntry {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
-  updatedat DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   content String @db.Text
 

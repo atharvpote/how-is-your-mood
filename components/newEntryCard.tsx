@@ -11,9 +11,9 @@ export default function NewEntryCard() {
         className="px-4 py-5 sm:p-6"
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         onClick={async () => {
-          const entry = await createNewEntry();
+          const response = await createNewEntry();
 
-          if (entry) router.push(`/journal/${entry.id}`);
+          if (response) router.push(`/journal/${response.entry.id}`);
         }}
       >
         <span className="text-3xl">New Entry</span>

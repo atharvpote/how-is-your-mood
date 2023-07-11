@@ -18,7 +18,18 @@ export async function POST() {
       },
     });
 
-    return NextResponse.json({ data: entry });
+    const analysis = await prisma.analysis.create({
+      data: {
+        color: "",
+        mood: "",
+        negative: false,
+        subject: "",
+        summery: "",
+        entryId: entry.id,
+      },
+    });
+
+    return NextResponse.json({ entry, analysis });
   } catch (error) {
     if (error instanceof Error) console.error(error.message);
   }
