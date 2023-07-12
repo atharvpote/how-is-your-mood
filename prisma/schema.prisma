@@ -14,12 +14,13 @@ datasource db {
 model User {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
-  updatedat DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   clerkId String @unique
   email   String @unique
 
-  entries JournalEntry[]
+  entries  JournalEntry[]
+  analyses Analysis[]
 }
 
 model JournalEntry {
@@ -40,14 +41,20 @@ model JournalEntry {
 model Analysis {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
-  updatedat DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
-  mood     String
-  summery  String  @db.Text
-  color    String
-  negative Boolean
-  subject  String
+  mood           String
+  summery        String  @db.Text
+  color          String
+  negative       Boolean
+  subject        String
+  sentimentScore Float   @default(0)
 
   entryId String       @unique
   entry   JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

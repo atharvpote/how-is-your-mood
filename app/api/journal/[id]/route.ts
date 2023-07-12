@@ -35,11 +35,13 @@ export async function PATCH(request: Request, { params }: ParamType) {
       newAnalysis = await prisma.analysis.upsert({
         where: { entryId: updateEntry.id },
         create: {
+          userId: user.id,
           color: "",
           mood: "",
           negative: false,
           subject: "",
           summery: "",
+          sentimentScore: 0,
           entryId: updateEntry.id,
         },
         update: {
@@ -48,6 +50,7 @@ export async function PATCH(request: Request, { params }: ParamType) {
           negative: false,
           subject: "",
           summery: "",
+          sentimentScore: 0,
         },
       });
     else {
@@ -61,11 +64,13 @@ export async function PATCH(request: Request, { params }: ParamType) {
       newAnalysis = await prisma.analysis.upsert({
         where: { entryId: updateEntry.id },
         create: {
+          userId: user.id,
           color: analysis.color,
           mood: analysis.mood,
           negative: analysis.negative,
           subject: analysis.subject,
           summery: analysis.summery,
+          sentimentScore: analysis.sentimentScore,
           entryId: updateEntry.id,
         },
         update: {
@@ -74,6 +79,7 @@ export async function PATCH(request: Request, { params }: ParamType) {
           negative: analysis.negative,
           subject: analysis.subject,
           summery: analysis.summery,
+          sentimentScore: analysis.sentimentScore,
         },
       });
     }

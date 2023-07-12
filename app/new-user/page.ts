@@ -22,9 +22,9 @@ export default async function CreateNewUser() {
           email: user.emailAddresses[0].emailAddress,
         },
       });
-
-    redirect("/journal");
   } catch (error) {
     if (error instanceof Error) console.error(error.message);
+  } finally {
+    redirect("/journal");
   }
 }

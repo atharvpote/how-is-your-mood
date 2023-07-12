@@ -20,6 +20,7 @@ export async function POST() {
 
     const analysis = await prisma.analysis.create({
       data: {
+        userId: user.id,
         color: "",
         mood: "",
         negative: false,

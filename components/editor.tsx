@@ -7,7 +7,7 @@ import { updateEntry } from "@/utils/api";
 
 interface PropTypes {
   entry: JournalEntry;
-  analysis?: Analysis;
+  analysis: Analysis;
 }
 
 export default function Editor(props: PropTypes) {
@@ -59,10 +59,12 @@ export default function Editor(props: PropTypes) {
             {analysisData.map(({ name, value }) => (
               <li
                 key={name}
-                className="flex items-center justify-between px-2 py-4 border-y border-black/10 capitalize"
+                className="flex items-center justify-between gap-8 px-2 py-4 border-y border-black/10 capitalize"
               >
-                <span className="text-lg font-semibold">{name}</span>
-                <span>{value}</span>
+                <span className="text-lg font-semibold basis-1/2">{name}</span>
+                <div className="flex basis-1/2">
+                  <span>{value}</span>
+                </div>
               </li>
             ))}
           </ul>

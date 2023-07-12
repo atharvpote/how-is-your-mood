@@ -8,6 +8,33 @@ import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { z } from "zod";
 
+const parser = StructuredOutputParser.fromZodSchema(
+  z.object({
+    mood: z
+      .string()
+      .describe("the mood of the person who wrote the journal entry."),
+    subject: z.string().describe("the subject of the journal entry."),
+    summery: z
+      .string()
+      .describe("quick summary of the entire entry in less that 50 words."),
+    negative: z
+      .boolean()
+      .describe(
+        "is the journal entry negative? (i.e. does it contain negative emotions?).",
+      ),
+    color: z
+      .string()
+      .describe(
+        "a hexadecimal color code that represents the mood of the entry. Example #0101fe for blue representing happiness.",
+      ),
+    sentimentScore: z
+      .number()
+      .describe(
+        "sentiment of the text and rated on a scale from -10 to 10, where -10 is extremely negative, 0 is neutral, and 10 is extremely positive.",
+      ),
+  }),
+);
+
 export async function analyze(content: string) {
   const input = await getPrompt(content);
 
@@ -20,26 +47,6 @@ export async function analyze(content: string) {
     if (error instanceof Error) console.error(error);
   }
 }
-
-const parser = StructuredOutputParser.fromZodSchema(
-  z.object({
-    mood: z
-      .string()
-      .describe("the mood of the person who wrote the journal entry."),
-    subject: z.string().describe("the subject of the journal entry."),
-    summery: z.string().describe("quick summary of the entire entry."),
-    negative: z
-      .boolean()
-      .describe(
-        "is the journal entry negative? (i.e. does it contain negative emotions?).",
-      ),
-    color: z
-      .string()
-      .describe(
-        "a hexadecimal color code that represents the mood of the entry. Example #0101fe for blue representing happiness.",
-      ),
-  }),
-);
 
 async function getPrompt(content: string) {
   const format_instructions = parser.getFormatInstructions();

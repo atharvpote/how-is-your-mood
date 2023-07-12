@@ -6,6 +6,7 @@ export default function DashboardLayout({ children }: PropsWithChildren) {
   const links = [
     { href: "/", label: "home" },
     { href: "/journal", label: "journal" },
+    { href: "/history", label: "history" },
   ];
 
   return (
