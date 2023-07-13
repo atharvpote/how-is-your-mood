@@ -4,6 +4,8 @@ import { auth } from "@clerk/nextjs";
 export default function Home() {
   const href = auth().userId ? "/journal" : "/new-user";
 
+  console.log();
+
   return (
     <div className="h-screen bg-black grid place-content-center text-white">
       <div className="w-full max-w-[600px] px-6 my-6">
