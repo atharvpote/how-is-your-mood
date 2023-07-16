@@ -1,51 +1,60 @@
 "use client";
 
-import { JournalEntry } from "@prisma/client";
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import EntryCard from "./entryCard";
+import useSWR from "swr";
+import { JournalEntry } from "@prisma/client";
 import { createURL } from "@/utils/api";
 
 export default function Entries() {
-  const [entries, setEntries] = useState<JournalEntry[] | undefined>(undefined);
+  const { data, isLoading } = useEntries();
 
-  useEffect(() => {
-    void getEntries().then((entries) => {
-      setEntries(entries);
-    });
-  }, []);
-
-  return (
-    <>
-      {!entries ? (
-        <div className="ml-auto mr-auto max-w-fit"> Loading...</div>
-      ) : (
-        <div className="grid grid-cols-3 gap-4 basis-full items-start">
-          <Link
-            key="new"
-            href="/journal/new"
-            className="overflow-hidden h-full min-h-[12rem] rounded-lg bg-white shadow"
-          >
-            <span className="text-3xl"> New Entry</span>
-          </Link>
-          {...entries.map((entry) => (
-            <Link href={`/journal/${entry.id}`} key={entry.id}>
-              <EntryCard entry={entry} />
-            </Link>
-          ))}
+  return isLoading ? (
+    <span className="loading loading-infinity loading-lg mx-auto block"></span>
+  ) : (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+      <Link
+        key="new"
+        href="/journal/new"
+        className="card bg-base-200 shadow-lg"
+      >
+        <div className="card-body">
+          <h3 className="card-title">New Entry</h3>
         </div>
-      )}
-    </>
+      </Link>
+      {data?.map((entry) => (
+        <Link
+          href={`/journal/${entry.id}`}
+          key={entry.id}
+          className="card bg-base-200 shadow-lg"
+        >
+          <div className="card-body">
+            <div className="card-title">
+              <h3>{new Date(entry.createdAt).toDateString()}</h3>
+            </div>
+            <p>
+              {entry.content.substring(0, 120)}
+              {entry.content.length > 120 ? "..." : ""}
+            </p>
+          </div>
+        </Link>
+      ))}
+    </div>
   );
 }
 
-async function getEntries() {
-  const response = await fetch(new Request(createURL("/api/journal/entry")), {
-    method: "GET",
-  });
+function useEntries() {
+  return useSWR<JournalEntry[], Error>(
+    "/api/journal/entry",
+    async (url: string) => {
+      const response = await fetch(new Request(createURL(url)), {
+        method: "GET",
+      });
 
-  if (response.ok) {
-    const data = (await response.json()) as { entries: JournalEntry[] };
-    return data.entries;
-  }
+      if (!response.ok) throw new Error("Failed to fetch entries");
+
+      const data = (await response.json()) as { entries: JournalEntry[] };
+
+      return data.entries;
+    },
+  );
 }

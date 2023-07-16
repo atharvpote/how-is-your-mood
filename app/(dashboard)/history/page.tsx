@@ -36,6 +36,7 @@ async function getData() {
       (accumulator, current) => accumulator + current.sentimentScore,
       0,
     );
+
     const average = Math.round(sum / analyses.length);
 
     return { analyses, average };

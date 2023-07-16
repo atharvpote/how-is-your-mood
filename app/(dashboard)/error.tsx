@@ -2,11 +2,11 @@
 
 import { useEffect } from "react";
 
-export default function Error({
-  error,
-}: {
+interface ErrorPropType {
   error: Error & { digest?: string };
-}) {
+}
+
+export default function Error({ error }: ErrorPropType) {
   useEffect(() => {
     console.error(error);
   }, [error]);

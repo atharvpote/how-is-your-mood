@@ -12,34 +12,29 @@ export default function Question() {
   return (
     <>
       <form
-        className="my-8"
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        onSubmit={async (event) => {
+        onSubmit={(event) => {
           event.preventDefault();
 
           if (value.trim().length !== 0) {
             setLoading(true);
 
-            const answer = await askQuestion(value);
-
-            try {
-              setAnswer(z.string().parse(answer));
-            } catch (error) {
-              if (error instanceof Error) console.error(error.message);
-            }
+            void askQuestion(value)
+              .then((answer) => {
+                setAnswer(z.string().parse(answer));
+              })
+              .catch((error) => {
+                if (error instanceof Error) console.error(error.message);
+              });
 
             setLoading(false);
             setValue("");
           }
         }}
       >
-        <input
-          type="text"
-          name=""
-          id=""
+        <textarea
           placeholder="Ask a question"
           disabled={loading}
-          className="border border-black/20 px-4 py-2 text-lg rounded-lg"
+          className="textarea-bordered textarea inline-block h-48 w-full resize-none p-6 text-lg"
           value={value}
           onChange={(event) => {
             setValue(event.target.value);
@@ -48,12 +43,16 @@ export default function Question() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-400 px-4 py-2 rounded-lg text-lg"
+          className="btn-primary btn mx-auto my-4 block"
         >
           Ask
         </button>
       </form>
-      <>{loading && <div>Loading...</div>}</>
+      <>
+        {loading && (
+          <span className="loading loading-infinity loading-lg"></span>
+        )}
+      </>
       <>{answer && <div>{answer}</div>}</>
     </>
   );
