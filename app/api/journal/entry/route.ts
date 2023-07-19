@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUserByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { z } from "zod";
-import { analyze } from "@/utils/ai";
-import { Analysis } from "@prisma/client";
+import { Analysis, JournalEntry } from "@prisma/client";
 
 export async function GET() {
   const user = await getUserByClerkId();
@@ -18,13 +16,13 @@ export async function GET() {
 
   const entries = await prisma.journalEntry.findMany({
     where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
+    orderBy: { entryDate: "desc" },
   });
 
   return NextResponse.json({ entries }, { status: 200 });
 }
 
-export async function POST(request: Request) {
+export async function POST() {
   const user = await getUserByClerkId();
 
   if (!user)
@@ -35,21 +33,21 @@ export async function POST(request: Request) {
       { status: 401 },
     );
 
-  const data: unknown = await request.json();
-
-  const { content } = z.object({ content: z.string() }).parse(data);
-
-  const { analysis } = (await createEntry(content)) as { analysis: Analysis };
+  const { entry, analysis } = (await createEntry()) as {
+    entry: JournalEntry;
+    analysis: Analysis;
+  };
 
   return NextResponse.json(
     {
+      entry,
       analysis,
     },
     { status: 201 },
   );
 }
 
-export async function createEntry(content: string) {
+export async function createEntry() {
   const user = await getUserByClerkId();
 
   if (!user) throw new Error("Clerk user not found");
@@ -57,32 +55,20 @@ export async function createEntry(content: string) {
   const entry = await prisma.journalEntry.create({
     data: {
       userId: user.id,
-      content,
+      content: "",
     },
   });
 
-  const openAiResponse = await analyze(content);
-
-  if (!openAiResponse)
-    return NextResponse.json(
-      {
-        message: "Failed to generate analysis",
-      },
-      { status: 500 },
-    );
-
   const analysis = await prisma.analysis.create({
     data: {
-      color: openAiResponse.color,
-      mood: openAiResponse.mood,
-      negative: openAiResponse.negative,
-      subject: openAiResponse.subject,
-      summery: openAiResponse.summery,
-      sentimentScore: openAiResponse.sentimentScore,
+      color: "",
+      mood: "",
+      subject: "",
+      summery: "",
       entryId: entry.id,
       userId: user.id,
     },
   });
 
-  return { analysis };
+  return { entry, analysis };
 }

@@ -28,7 +28,8 @@ model JournalEntry {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  content String @db.Text
+  content   String   @db.Text
+  entryDate DateTime @default(now())
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -44,11 +45,10 @@ model Analysis {
   updatedAt DateTime @updatedAt
 
   mood           String
-  summery        String  @db.Text
+  summery        String @db.Text
   color          String
-  negative       Boolean
   subject        String
-  sentimentScore Float   @default(0)
+  sentimentScore Float  @default(0)
 
   entryId String       @unique
   entry   JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)

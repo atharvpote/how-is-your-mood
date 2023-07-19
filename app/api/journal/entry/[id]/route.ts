@@ -51,20 +51,35 @@ export async function PUT(request: Request, { params }: ParamType) {
 
   const response: unknown = await request.json();
 
-  const data = z.object({ content: z.string() }).safeParse(response);
+  console.log(response);
 
-  if (!data.success)
+  const validation = z
+    .union([
+      z.object({ type: z.literal("content"), content: z.string() }),
+      z.object({ type: z.literal("date"), date: z.string() }),
+    ])
+    .safeParse(response);
+
+  if (!validation.success)
     return NextResponse.json(
       {
         message: "Validation errors in your request",
-        errors: data.error,
+        errors: validation.error,
       },
       { status: 400 },
     );
 
-  const { content } = data.data;
+  if (validation.data.type === "date") {
+    const { date } = validation.data;
 
-  const analysis = await updateAnalysis(user.id, params.id, content);
+    await updateDate(user.id, params.id, new Date(date));
+
+    return NextResponse.json({ status: 200 });
+  }
+
+  const { content } = validation.data;
+
+  const analysis = await updateContent(user.id, params.id, content);
 
   return NextResponse.json(
     {
@@ -74,11 +89,7 @@ export async function PUT(request: Request, { params }: ParamType) {
   );
 }
 
-async function updateAnalysis(
-  userId: string,
-  entryId: string,
-  content: string,
-) {
+async function updateContent(userId: string, entryId: string, content: string) {
   const entry = await prisma.journalEntry.update({
     where: { userId_id: { userId, id: entryId } },
     data: { content },
@@ -92,7 +103,6 @@ async function updateAnalysis(
       data: {
         color: "",
         mood: "",
-        negative: false,
         subject: "",
         summery: "",
         sentimentScore: 0,
@@ -114,7 +124,6 @@ async function updateAnalysis(
       data: {
         color: openAiResponse.color,
         mood: openAiResponse.mood,
-        negative: openAiResponse.negative,
         subject: openAiResponse.subject,
         summery: openAiResponse.summery,
         sentimentScore: openAiResponse.sentimentScore,
@@ -123,4 +132,40 @@ async function updateAnalysis(
   }
 
   return analysis;
+}
+
+async function updateDate(userId: string, entryId: string, date: Date) {
+  const res = await prisma.journalEntry.update({
+    where: { userId_id: { userId, id: entryId } },
+    data: { entryDate: date },
+  });
+
+  console.log(res);
+}
+
+export async function DELETE(_: Request, { params }: ParamType) {
+  const user = await getUserByClerkId();
+
+  if (!user)
+    return NextResponse.json(
+      {
+        message: "Authentication credentials were missing or incorrect",
+      },
+      { status: 401 },
+    );
+  try {
+    await prisma.journalEntry.delete({
+      where: { userId_id: { userId: user.id, id: params.id } },
+    });
+
+    return NextResponse.json({ status: 200 });
+  } catch (error) {
+    if (error instanceof Error)
+      return NextResponse.json(
+        {
+          message: error.message,
+        },
+        { status: 500 },
+      );
+  }
 }

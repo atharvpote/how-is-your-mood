@@ -24,12 +24,12 @@ export default function Drawer({ children }: PropsWithChildren) {
       <div className="drawer-content">
         {/* Page content here */}
         <Navbar />
-        <div className="min-h-[calc(100vh-4rem)] h-0">{children}</div>
+        <div className="h-0 min-h-[calc(100vh-4rem)]">{children}</div>
       </div>
       <div className="drawer-side">
         {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
         <label htmlFor="my-drawer" className="drawer-overlay"></label>
-        <nav className="menu h-full w-80 bg-base-200 p-4 text-base-content">
+        <nav className="menu h-full w-52 bg-base-200 p-4 text-base-content">
           {/* Sidebar content here */}
           <ul className="mt-12">
             {links.map(({ href, label }) => (

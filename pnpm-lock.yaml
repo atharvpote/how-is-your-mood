@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@clerk/nextjs':
-    specifier: ^4.22.0
-    version: 4.22.0(next@13.4.8)(react-dom@18.2.0)(react@18.2.0)
+    specifier: ^4.22.1
+    version: 4.22.1(next@13.4.8)(react-dom@18.2.0)(react@18.2.0)
   '@prisma/client':
     specifier: ^5.0.0
     version: 5.0.0(prisma@5.0.0)
@@ -74,6 +74,9 @@ dependencies:
   react-dom:
     specifier: 18.2.0
     version: 18.2.0(react@18.2.0)
+  react-icons:
+    specifier: ^4.10.1
+    version: 4.10.1(react@18.2.0)
   recharts:
     specifier: ^2.7.2
     version: 2.7.2(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0)
@@ -118,11 +121,11 @@ packages:
       regenerator-runtime: 0.13.11
     dev: false
 
-  /@clerk/backend@0.25.0:
-    resolution: {integrity: sha512-Dq/fgHsgRVDtQlHNpB7kn0Kk571sotbngIH6P1M8BFfMVPXwJrrUP8/rsh9LqbXMfQq4K2dTiCpMMwFTmjHFnA==}
+  /@clerk/backend@0.25.1:
+    resolution: {integrity: sha512-941vKzgQ/XnY/YzUx6ZPpe8dEoHlVZ/mUDiXxdwYecwyZ3PHLTh8y+z6m5Imz6HbZ9qoQUOb/2S315dqt7kjFA==}
     engines: {node: '>=14'}
     dependencies:
-      '@clerk/types': 3.47.0
+      '@clerk/types': 3.48.0
       '@peculiar/webcrypto': 1.4.1
       '@types/node': 16.18.6
       cookie: 0.5.0
@@ -132,25 +135,25 @@ packages:
       tslib: 2.4.1
     dev: false
 
-  /@clerk/clerk-react@4.22.1(react@18.2.0):
-    resolution: {integrity: sha512-5aAkkyFDWTnEg/52mojD/5x2VSowfgwmDOsrmNfFxx/CBnVAjc2zlpCdx92MMIWeEwAaTtms3Shq/PF6i7YVfw==}
+  /@clerk/clerk-react@4.23.0(react@18.2.0):
+    resolution: {integrity: sha512-VxK9qD0iXxVeAwFJwwE2sPrfgrC8sBWbP/ywLm/5sTGPFmhr/PPf5ApnvFIWZ6fwNWBdA/LQ7IuQrVqRx1zCbA==}
     engines: {node: '>=14'}
     peerDependencies:
       react: '>=16'
     dependencies:
       '@clerk/shared': 0.20.0(react@18.2.0)
-      '@clerk/types': 3.47.0
+      '@clerk/types': 3.48.0
       react: 18.2.0
       swr: 1.3.0(react@18.2.0)
       tslib: 2.4.1
     dev: false
 
-  /@clerk/clerk-sdk-node@4.11.0:
-    resolution: {integrity: sha512-HvueZk2UWTNlBIJHq7m+0Jn84IPQzc1Mgj4NvmUBG9me46P78EmTuyGnNRMIUo0TnMnk3aHPIRLPn90Z0bpDTw==}
+  /@clerk/clerk-sdk-node@4.11.1:
+    resolution: {integrity: sha512-8p3sqoLVut+bo3ZVD/1qAovl1/nMBqsGVu5gGleTz3Cf+AlyxSskrKBvkNT3QBo/3nOZI+lS3CfIaHlF51EZsg==}
     engines: {node: '>=14'}
     dependencies:
-      '@clerk/backend': 0.25.0
-      '@clerk/types': 3.47.0
+      '@clerk/backend': 0.25.1
+      '@clerk/types': 3.48.0
       '@types/cookies': 0.7.7
       '@types/express': 4.17.14
       '@types/node-fetch': 2.6.2
@@ -159,18 +162,18 @@ packages:
       tslib: 2.4.1
     dev: false
 
-  /@clerk/nextjs@4.22.0(next@13.4.8)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-Y067LRnCEIhZuZ729IOJgPQwHAs7rTugCp9udv9oDJqzK6+NE95pqN2kPOHv0KbEjfweWW1Rmliiw6bZVKR6qg==}
+  /@clerk/nextjs@4.22.1(next@13.4.8)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-jaxa5JJH5gnJRoDI2MkQ3e0Tm+L8YlPBJpzCjvKGi3otosjr7tsbuJaO5bkJib3WnoYRuIJ2x40t4GfaF5o/iQ==}
     engines: {node: '>=14'}
     peerDependencies:
       next: '>=10'
       react: ^17.0.2 || ^18.0.0-0
       react-dom: ^17.0.2 || ^18.0.0-0
     dependencies:
-      '@clerk/backend': 0.25.0
-      '@clerk/clerk-react': 4.22.1(react@18.2.0)
-      '@clerk/clerk-sdk-node': 4.11.0
-      '@clerk/types': 3.47.0
+      '@clerk/backend': 0.25.1
+      '@clerk/clerk-react': 4.23.0(react@18.2.0)
+      '@clerk/clerk-sdk-node': 4.11.1
+      '@clerk/types': 3.48.0
       next: 13.4.8(react-dom@18.2.0)(react@18.2.0)
       path-to-regexp: 6.2.1
       react: 18.2.0
@@ -189,8 +192,8 @@ packages:
       swr: 1.3.0(react@18.2.0)
     dev: false
 
-  /@clerk/types@3.47.0:
-    resolution: {integrity: sha512-Cn9MxflUv+1LVzuk2j64DFGzoYXZjBjs5IVA2qwm+TqTButgZueUx95w6u7XvhCcnRS1Tb/apaVLXbX1m+mhhw==}
+  /@clerk/types@3.48.0:
+    resolution: {integrity: sha512-whs7s8E5PNBOCy14a80w723dAOStD0cnqY5u7AEq7gGuHuiIYyo1BfqIoIYRh3Oi3Z2cWnFmFNVDN+lHiJ1dFA==}
     engines: {node: '>=14'}
     dependencies:
       csstype: 3.1.1
@@ -956,7 +959,7 @@ packages:
       postcss: ^8.1.0
     dependencies:
       browserslist: 4.21.9
-      caniuse-lite: 1.0.30001516
+      caniuse-lite: 1.0.30001517
       fraction.js: 4.2.0
       normalize-range: 0.1.2
       picocolors: 1.0.0
@@ -1036,8 +1039,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001516
-      electron-to-chromium: 1.4.464
+      caniuse-lite: 1.0.30001517
+      electron-to-chromium: 1.4.466
       node-releases: 2.0.13
       update-browserslist-db: 1.0.11(browserslist@4.21.9)
     dev: false
@@ -1092,8 +1095,8 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
-  /caniuse-lite@1.0.30001516:
-    resolution: {integrity: sha512-Wmec9pCBY8CWbmI4HsjBeQLqDTqV91nFVR83DnZpYyRnPI1wePDsTg0bGLPC5VU/3OIZV1fmxEea1b+tFKe86g==}
+  /caniuse-lite@1.0.30001517:
+    resolution: {integrity: sha512-Vdhm5S11DaFVLlyiKu4hiUTkpZu+y1KA/rZZqVQfOD5YdDT/eQKlkt7NaE0WGOFgX32diqt9MiP9CAiFeRklaA==}
     dev: false
 
   /chalk@4.1.2:
@@ -1422,8 +1425,8 @@ packages:
       tslib: 2.4.1
     dev: false
 
-  /electron-to-chromium@1.4.464:
-    resolution: {integrity: sha512-guZ84yoou4+ILNdj0XEbmGs6DEWj6zpVOWYpY09GU66yEb0DSYvP/biBPzHn0GuW/3RC/pnaYNUWlQE1fJYtgA==}
+  /electron-to-chromium@1.4.466:
+    resolution: {integrity: sha512-TSkRvbXRXD8BwhcGlZXDsbI2lRoP8dvqR7LQnqQNk9KxXBc4tG8O+rTuXgTyIpEdiqSGKEBSqrxdqEntnjNncA==}
     dev: false
 
   /emoji-regex@9.2.2:
@@ -2857,7 +2860,7 @@ packages:
       '@next/env': 13.4.8
       '@swc/helpers': 0.5.1
       busboy: 1.6.0
-      caniuse-lite: 1.0.30001516
+      caniuse-lite: 1.0.30001517
       postcss: 8.4.14
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -3365,6 +3368,14 @@ packages:
       scheduler: 0.23.0
     dev: false
 
+  /react-icons@4.10.1(react@18.2.0):
+    resolution: {integrity: sha512-/ngzDP/77tlCfqthiiGNZeYFACw85fUjZtLbedmJ5DTlNDIwETxhwBzdOJ21zj4iJdvc0J3y7yOsX3PpxAJzrw==}
+    peerDependencies:
+      react: '*'
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
     dev: false
@@ -3724,8 +3735,8 @@ packages:
       react: 18.2.0
     dev: false
 
-  /sucrase@3.33.0:
-    resolution: {integrity: sha512-ARGC7vbufOHfpvyGcZZXFaXCMZ9A4fffOGC5ucOW7+WHDGlAe8LJdf3Jts1sWhDeiI1RSWrKy5Hodl+JWGdW2A==}
+  /sucrase@3.34.0:
+    resolution: {integrity: sha512-70/LQEZ07TEcxiU2dz51FKaE6hCTWC6vr7FOk3Gr0U60C3shtAN+H+BFr9XlYe5xqf3RA8nrc+VIwzCfnxuXJw==}
     engines: {node: '>=8'}
     hasBin: true
     dependencies:
@@ -3802,7 +3813,7 @@ packages:
       postcss-selector-parser: 6.0.13
       postcss-value-parser: 4.2.0
       resolve: 1.22.2
-      sucrase: 3.33.0
+      sucrase: 3.34.0
     transitivePeerDependencies:
       - ts-node
     dev: false

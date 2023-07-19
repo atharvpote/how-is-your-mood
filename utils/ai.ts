@@ -17,11 +17,6 @@ const parser = StructuredOutputParser.fromZodSchema(
     summery: z
       .string()
       .describe("quick summary of the entire entry in less that 50 words."),
-    negative: z
-      .boolean()
-      .describe(
-        "is the journal entry negative? (i.e. does it contain negative emotions?).",
-      ),
     color: z
       .string()
       .describe(

@@ -10,7 +10,7 @@
     "format": "prettier --write **/*.{css,js,json,ts,tsx}"
   },
   "dependencies": {
-    "@clerk/nextjs": "^4.22.0",
+    "@clerk/nextjs": "^4.22.1",
     "@prisma/client": "^5.0.0",
     "@types/node": "20.3.3",
     "@types/react": "18.2.14",
@@ -33,6 +33,7 @@
     "react": "18.2.0",
     "react-autosave": "^0.4.2",
     "react-dom": "18.2.0",
+    "react-icons": "^4.10.1",
     "recharts": "^2.7.2",
     "swr": "^2.2.0",
     "tailwindcss": "3.3.2",
