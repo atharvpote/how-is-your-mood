@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import useSWR from "swr";
-import { Analysis, JournalEntry } from "@prisma/client";
-import { createURL } from "@/utils/api";
+import { createEntry, useEntries } from "@/utils/api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AiOutlinePlusSquare } from "react-icons/ai";
@@ -24,24 +22,12 @@ export default function Entries() {
         onClick={() => {
           setCreatingNewEntry(true);
 
-          void fetch(new Request(createURL("/api/journal/entry")), {
-            method: "POST",
-          })
-            .then(async (response) => {
-              if (!response.ok) {
-                setCreatingNewEntry(false);
-
-                throw new Error("Failed to create entry");
-              }
-
-              return (await response.json()) as {
-                entry: JournalEntry;
-                analysis: Analysis;
-              };
+          void createEntry()
+            .then((id) => router.push(`/journal/${id}`))
+            .catch((error) => {
+              if (error instanceof Error) console.error(error.message);
             })
-            .then((data) => {
-              router.push(`/journal/${data.entry.id}`);
-            });
+            .finally(() => setCreatingNewEntry(false));
         }}
         className="card bg-base-200 shadow-lg active:bg-base-300"
       >
@@ -73,22 +59,5 @@ export default function Entries() {
         </Link>
       ))}
     </div>
-  );
-}
-
-function useEntries() {
-  return useSWR<JournalEntry[], Error>(
-    "/api/journal/entry",
-    async (url: string) => {
-      const response = await fetch(new Request(createURL(url)), {
-        method: "GET",
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch entries");
-
-      const data = (await response.json()) as { entries: JournalEntry[] };
-
-      return data.entries;
-    },
   );
 }

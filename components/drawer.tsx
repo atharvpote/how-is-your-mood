@@ -2,6 +2,7 @@
 
 import { PropsWithChildren, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Navbar from "./navbar";
 
 const links = [
@@ -12,6 +13,7 @@ const links = [
 
 export default function Drawer({ children }: PropsWithChildren) {
   const input = useRef<HTMLInputElement | null>(null);
+  const path = usePathname();
 
   return (
     <div className="drawer xl:drawer-open">
@@ -36,7 +38,11 @@ export default function Drawer({ children }: PropsWithChildren) {
               <li key={href} className="mb-4">
                 <Link
                   href={href}
-                  className="text-lg font-medium capitalize"
+                  className={`text-lg font-medium capitalize ${
+                    label === path.split("/")[1]
+                      ? "bg-[#dcdddf] dark:bg-[#272c33]"
+                      : ""
+                  }`}
                   onClick={() => {
                     input.current?.click();
                   }}

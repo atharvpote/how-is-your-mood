@@ -51,8 +51,6 @@ export async function PUT(request: Request, { params }: ParamType) {
 
   const response: unknown = await request.json();
 
-  console.log(response);
-
   const validation = z
     .union([
       z.object({ type: z.literal("content"), content: z.string() }),
@@ -87,6 +85,33 @@ export async function PUT(request: Request, { params }: ParamType) {
     },
     { status: 200 },
   );
+}
+
+export async function DELETE(_: Request, { params }: ParamType) {
+  const user = await getUserByClerkId();
+
+  if (!user)
+    return NextResponse.json(
+      {
+        message: "Authentication credentials were missing or incorrect",
+      },
+      { status: 401 },
+    );
+  try {
+    await prisma.journalEntry.delete({
+      where: { userId_id: { userId: user.id, id: params.id } },
+    });
+
+    return NextResponse.json({ status: 200 });
+  } catch (error) {
+    if (error instanceof Error)
+      return NextResponse.json(
+        {
+          message: error.message,
+        },
+        { status: 500 },
+      );
+  }
 }
 
 async function updateContent(userId: string, entryId: string, content: string) {
@@ -135,37 +160,8 @@ async function updateContent(userId: string, entryId: string, content: string) {
 }
 
 async function updateDate(userId: string, entryId: string, date: Date) {
-  const res = await prisma.journalEntry.update({
+  await prisma.journalEntry.update({
     where: { userId_id: { userId, id: entryId } },
     data: { entryDate: date },
   });
-
-  console.log(res);
-}
-
-export async function DELETE(_: Request, { params }: ParamType) {
-  const user = await getUserByClerkId();
-
-  if (!user)
-    return NextResponse.json(
-      {
-        message: "Authentication credentials were missing or incorrect",
-      },
-      { status: 401 },
-    );
-  try {
-    await prisma.journalEntry.delete({
-      where: { userId_id: { userId: user.id, id: params.id } },
-    });
-
-    return NextResponse.json({ status: 200 });
-  } catch (error) {
-    if (error instanceof Error)
-      return NextResponse.json(
-        {
-          message: error.message,
-        },
-        { status: 500 },
-      );
-  }
 }

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Analysis, JournalEntry } from "@prisma/client";
 import { useAutosave } from "react-autosave";
 import { AiOutlineDelete } from "react-icons/ai";
-import { createURL } from "@/utils/api";
+import { z } from "zod";
+import { deleteEntry, updateContent, updateDate } from "@/utils/api";
 import { TopLoadingSpinner } from "./loading";
 
 interface PropTypes {
@@ -51,14 +52,21 @@ export default function Editor({ entry, analysis }: PropTypes) {
               type="date"
               value={new Date(date).toISOString().split("T")[0]}
               ref={dateRef}
-              onKeyDown={(e) => e.preventDefault()}
+              onKeyDown={() => false}
               onFocus={() => dateRef.current?.showPicker()}
               onChange={(event) => {
-                const date = new Date(event.target.value);
+                const validation = z
+                  .string()
+                  .datetime()
+                  .safeParse(event.target.value + "T00:00:00Z");
 
-                setDate(date);
+                if (validation.success) {
+                  const date = new Date(event.target.value);
 
-                void updateDate(date, entry.id);
+                  setDate(date);
+
+                  void updateDate(date, entry.id);
+                }
               }}
               className="cursor-pointer rounded-lg bg-base-200 px-4 py-2 focus:bg-base-300"
             />
@@ -165,39 +173,4 @@ export default function Editor({ entry, analysis }: PropTypes) {
       </section>
     </div>
   );
-}
-
-async function updateContent(content: string, id: string) {
-  const response = await fetch(
-    new Request(createURL(`/api/journal/entry/${id}`), {
-      method: "PUT",
-      body: JSON.stringify({ type: "content", content }),
-    }),
-  );
-
-  if (!response.ok) throw new Error("Failed to update content");
-
-  const data = (await response.json()) as { analysis: Analysis };
-
-  return { analysis: data.analysis };
-}
-
-async function updateDate(date: Date, id: string) {
-  const response = await fetch(
-    new Request(createURL(`/api/journal/entry/${id}`), {
-      method: "PUT",
-      body: JSON.stringify({ type: "date", date }),
-    }),
-  );
-
-  if (!response.ok) throw new Error("Failed to update date");
-}
-
-async function deleteEntry(id: string) {
-  const response = await fetch(
-    new Request(createURL(`/api/journal/entry/${id}`)),
-    { method: "DELETE" },
-  );
-
-  if (!response.ok) throw new Error("Failed to delete entry");
 }
