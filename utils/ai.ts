@@ -17,10 +17,10 @@ const parser = StructuredOutputParser.fromZodSchema(
     summery: z
       .string()
       .describe("quick summary of the entire entry in less that 50 words."),
-    color: z
+    emoji: z
       .string()
       .describe(
-        "a hexadecimal color code that represents the mood of the entry. Example #0101fe for blue representing happiness.",
+        "a hexadecimal emoji code that represents the mood of the entry. Example 0x1F603 for smiling face representing happiness.",
       ),
     sentimentScore: z
       .number()

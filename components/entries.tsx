@@ -7,6 +7,7 @@ import { createURL } from "@/utils/api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AiOutlinePlusSquare } from "react-icons/ai";
+import { TopLoadingSpinner } from "./loading";
 
 export default function Entries() {
   const { data, isLoading } = useEntries();
@@ -14,7 +15,7 @@ export default function Entries() {
   const [creatingNewEntry, setCreatingNewEntry] = useState(false);
 
   return isLoading ? (
-    <span className="loading loading-infinity loading-lg mx-auto block"></span>
+    <TopLoadingSpinner />
   ) : (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
       <button
@@ -42,7 +43,7 @@ export default function Entries() {
               router.push(`/journal/${data.entry.id}`);
             });
         }}
-        className="card bg-base-200 shadow-lg"
+        className="card bg-base-200 shadow-lg active:bg-base-300"
       >
         <div className="grid h-full w-full place-content-center">
           {creatingNewEntry ? (
@@ -58,7 +59,7 @@ export default function Entries() {
         <Link
           href={`/journal/${entry.id}`}
           key={entry.id}
-          className="card bg-base-200 shadow-lg"
+          className="card bg-base-200 shadow-lg active:bg-base-300"
         >
           <div className="card-body">
             <div className="card-title">

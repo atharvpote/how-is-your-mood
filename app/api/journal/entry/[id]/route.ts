@@ -101,7 +101,7 @@ async function updateContent(userId: string, entryId: string, content: string) {
     analysis = await prisma.analysis.update({
       where: { entryId: entry.id },
       data: {
-        color: "",
+        emoji: "",
         mood: "",
         subject: "",
         summery: "",
@@ -122,7 +122,7 @@ async function updateContent(userId: string, entryId: string, content: string) {
     analysis = await prisma.analysis.update({
       where: { entryId: entry.id },
       data: {
-        color: openAiResponse.color,
+        emoji: openAiResponse.emoji,
         mood: openAiResponse.mood,
         subject: openAiResponse.subject,
         summery: openAiResponse.summery,

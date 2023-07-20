@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { z } from "zod";
 import { askQuestion } from "@/utils/api";
+import { TopLoadingSpinner } from "./loading";
 
 export default function Question() {
   const [value, setValue] = useState("");
@@ -48,11 +49,7 @@ export default function Question() {
           Ask
         </button>
       </form>
-      <>
-        {loading && (
-          <span className="loading loading-infinity loading-lg"></span>
-        )}
-      </>
+      <>{loading && <TopLoadingSpinner />}</>
       <>{answer && <div>{answer}</div>}</>
     </>
   );

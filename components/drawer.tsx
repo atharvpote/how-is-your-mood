@@ -14,7 +14,7 @@ export default function Drawer({ children }: PropsWithChildren) {
   const input = useRef<HTMLInputElement | null>(null);
 
   return (
-    <div className="drawer lg:drawer-open">
+    <div className="drawer xl:drawer-open">
       <input
         id="my-drawer"
         type="checkbox"

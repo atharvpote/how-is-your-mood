@@ -61,7 +61,7 @@ export async function createEntry() {
 
   const analysis = await prisma.analysis.create({
     data: {
-      color: "",
+      emoji: "",
       mood: "",
       subject: "",
       summery: "",

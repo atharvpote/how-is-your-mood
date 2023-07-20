@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Navbar() {
   return (
-    <div className="navbar bg-base-100 px-4">
+    <div className="navbar bg-base-100 px-4 shadow">
       <div className="flex-none">
         <label
           htmlFor="my-drawer"
@@ -26,7 +26,7 @@ export default function Navbar() {
       </div>
       <div className="flex-1">
         <Link href="/">
-          <h1 className="mx-4 text-xl font-bold capitalize">
+          <h1 className="mx-4 text-xl font-bold capitalize lg:mx-0">
             How is your mood?
           </h1>
         </Link>

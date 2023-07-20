@@ -46,7 +46,7 @@ model Analysis {
 
   mood           String
   summery        String @db.Text
-  color          String
+  emoji          String
   subject        String
   sentimentScore Float  @default(0)
 
