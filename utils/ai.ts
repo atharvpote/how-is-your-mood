@@ -1,4 +1,3 @@
-import { JournalEntry } from "@prisma/client";
 import { PromptTemplate } from "langchain/prompts";
 import { OpenAI } from "langchain/llms/openai";
 import { Document } from "langchain/document";
@@ -7,6 +6,7 @@ import { StructuredOutputParser } from "langchain/output_parsers";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { z } from "zod";
+import { JournalEntry } from "@prisma/client";
 
 const parser = StructuredOutputParser.fromZodSchema(
   z.object({
@@ -16,7 +16,9 @@ const parser = StructuredOutputParser.fromZodSchema(
     subject: z.string().describe("the subject of the journal entry."),
     summery: z
       .string()
-      .describe("quick summary of the entire entry in less that 50 words."),
+      .describe(
+        "quick summary of the entry in the least amount of words possible.",
+      ),
     emoji: z
       .string()
       .describe(
@@ -36,11 +38,7 @@ export async function analyze(content: string) {
   const model = new OpenAI({ temperature: 0, modelName: "gpt-3.5-turbo" });
   const result = await model.call(input);
 
-  try {
-    return await parser.parse(result);
-  } catch (error) {
-    if (error instanceof Error) console.error(error);
-  }
+  return await parser.parse(result);
 }
 
 async function getPrompt(content: string) {
@@ -58,9 +56,9 @@ async function getPrompt(content: string) {
   return input;
 }
 
-type Entries = Pick<JournalEntry, "id" | "createdAt" | "content">;
+type Entry = Pick<JournalEntry, "id" | "createdAt" | "content">;
 
-export async function qa(question: string, entries: Entries[]) {
+export async function qa(question: string, entries: Entry[]) {
   const docs = entries.map(
     ({ content, id, createdAt }) =>
       new Document({
@@ -80,13 +78,7 @@ export async function qa(question: string, entries: Entries[]) {
     question,
   });
 
-  try {
-    const { output_text } = z
-      .object({ output_text: z.string() })
-      .parse(response);
+  const { output_text } = z.object({ output_text: z.string() }).parse(response);
 
-    return output_text;
-  } catch (error) {
-    if (error instanceof Error) console.error(error.message);
-  }
+  return output_text;
 }

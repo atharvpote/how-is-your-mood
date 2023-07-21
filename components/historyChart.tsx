@@ -1,30 +1,58 @@
 "use client";
 
-import { Analysis } from "@prisma/client";
-import { ResponsiveContainer, Line, LineChart, XAxis, Tooltip } from "recharts";
+import {
+  ResponsiveContainer,
+  Line,
+  LineChart,
+  XAxis,
+  Tooltip,
+  TooltipProps,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
+import {
+  NameType,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
 
-export default function HistoryChart({ analyses }: { analyses: Analysis[] }) {
+interface ChartData {
+  Date: Date;
+  Sentiment: number;
+  Mood: string;
+  Emoji: string;
+}
+
+export default function HistoryChart({ analyses }: { analyses: ChartData[] }) {
   return (
     <ResponsiveContainer width={"100%"} height={"100%"}>
-      <LineChart width={300} height={100} data={analyses}>
+      <LineChart
+        width={300}
+        height={100}
+        data={analyses}
+        margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+      >
         <Line
-          dataKey="sentimentScore"
+          dataKey="Sentiment"
           type="monotone"
           stroke="#8884d8"
           strokeWidth={2}
           activeDot={{ r: 8 }}
         />
-        <XAxis dataKey="createdAt" />
+        <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+        <XAxis dataKey="Date" />
+        <YAxis dataKey="Sentiment" />
         <Tooltip content={<CustomTooltip />} />
       </LineChart>
     </ResponsiveContainer>
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function CustomTooltip({ payload, label, active }: any) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  const dateLabel = new Date(label).toLocaleDateString("en-us", {
+function CustomTooltip({
+  active,
+  payload,
+  label,
+}: TooltipProps<ValueType, NameType>) {
+  const dateLabel = new Date(label as string).toLocaleDateString("en-us", {
     weekday: "long",
     year: "numeric",
     month: "short",
@@ -33,20 +61,15 @@ function CustomTooltip({ payload, label, active }: any) {
     minute: "numeric",
   });
 
-  if (active) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const analysis = payload[0].payload;
+  if (active && payload?.length) {
+    const analysis = payload[0].payload as ChartData;
 
     return (
       <div className="relative rounded-lg border border-black/10 bg-white/5 p-8 shadow-md backdrop-blur-md">
-        <div
-          className="absolute left-2 top-2 h-2 w-2 rounded-full"
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-          style={{ background: analysis.color }}
-        ></div>
         <p className="label text-sm text-black/30">{dateLabel}</p>
-        {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access */}
-        <p className="text-xl uppercase">{analysis.mood}</p>
+        <p className="text-xl uppercase">
+          {analysis.Mood} {String.fromCodePoint(Number(analysis.Emoji))}
+        </p>
       </div>
     );
   }

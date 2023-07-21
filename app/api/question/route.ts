@@ -1,38 +1,45 @@
 import { qa } from "@/utils/ai";
 import { getUserByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
+import { errorResponse } from "@/utils/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 export async function POST(request: Request) {
-  const requestJson: unknown = await request.json();
+  const requestData: unknown = await request.json();
 
   try {
-    const { question } = z.object({ question: z.string() }).parse(requestJson);
+    const data = z.object({ question: z.string() }).parse(requestData);
 
-    const user = await getUserByClerkId();
+    try {
+      const user = await getUserByClerkId();
 
-    if (!user)
-      throw new Error(
-        `Did not get "Clerk User Object" from "getUserByClerkId" at "/api/question/"`,
-      );
+      const entries = await prisma.journalEntry.findMany({
+        where: { userId: user.id },
+        select: {
+          id: true,
+          createdAt: true,
+          content: true,
+        },
+      });
 
-    const entries = await prisma.journalEntry.findMany({
-      where: { userId: user.id },
-      select: {
-        id: true,
-        createdAt: true,
-        content: true,
-      },
-    });
+      if (!entries.length)
+        return NextResponse.json(
+          { message: "No matching records found" },
+          { status: 500 },
+        );
 
-    const answer = await qa(question, entries);
+      try {
+        const answer = await qa(data.question, entries);
 
-    if (!answer)
-      throw new Error(`Did not get "answer" from "qa" at "/api/question/"`);
-
-    return NextResponse.json({ data: answer });
+        return NextResponse.json({ data: answer }, { status: 200 });
+      } catch (error) {
+        return errorResponse(error, 500);
+      }
+    } catch (error) {
+      return errorResponse(error, 401);
+    }
   } catch (error) {
-    if (error instanceof Error) console.error(error.message);
+    return errorResponse(error, 400);
   }
 }

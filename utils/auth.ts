@@ -4,18 +4,12 @@ import { prisma } from "./db";
 export async function getUserByClerkId() {
   const { userId } = auth();
 
-  try {
-    if (!userId)
-      throw new Error(
-        `Did not get the "Clerk User" from "auth" at "getUserByClerkId"`,
-      );
+  if (!userId)
+    throw new Error("Authentication credentials were missing or incorrect");
 
-    const user = await prisma.user.findUniqueOrThrow({
-      where: { clerkId: userId },
-    });
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { clerkId: userId },
+  });
 
-    return user;
-  } catch (error) {
-    if (error instanceof Error) console.error(error.message);
-  }
+  return user;
 }

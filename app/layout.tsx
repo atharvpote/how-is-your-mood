@@ -15,7 +15,9 @@ export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={inter.className}>{children}</body>
+        <body className={`bg-slate-50 dark:bg-slate-950 ${inter.className}`}>
+          {children}
+        </body>
       </html>
     </ClerkProvider>
   );

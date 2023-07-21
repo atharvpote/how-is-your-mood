@@ -1,12 +1,13 @@
-import { Analysis, JournalEntry } from "@prisma/client";
 import useSWR from "swr";
 import { z } from "zod";
+import { Analysis, JournalEntry } from "@prisma/client";
 
 export async function createEntry() {
   const response = await fetch(new Request(createURL("/api/journal")), {
     method: "POST",
   });
-  if (!response.ok) throw new Error("Failed to create entry");
+
+  if (!response.ok) await handleError(response);
 
   const data = (await response.json()) as {
     entry: JournalEntry;
@@ -24,7 +25,7 @@ export async function updateContent(content: string, id: string) {
     }),
   );
 
-  if (!response.ok) throw new Error("Failed to update content");
+  if (!response.ok) await handleError(response);
 
   const data = (await response.json()) as { analysis: Analysis };
 
@@ -39,7 +40,7 @@ export async function updateDate(date: Date, id: string) {
     }),
   );
 
-  if (!response.ok) throw new Error("Failed to update date");
+  if (!response.ok) await handleError(response);
 }
 
 export async function deleteEntry(id: string) {
@@ -47,7 +48,7 @@ export async function deleteEntry(id: string) {
     method: "DELETE",
   });
 
-  if (!response.ok) throw new Error("Failed to delete entry");
+  if (!response.ok) await handleError(response);
 }
 
 export function useEntries() {
@@ -56,7 +57,7 @@ export function useEntries() {
       method: "GET",
     });
 
-    if (!response.ok) throw new Error("Failed to fetch entries");
+    if (!response.ok) await handleError(response);
 
     const data = (await response.json()) as { entries: JournalEntry[] };
 
@@ -72,20 +73,37 @@ export async function askQuestion(question: string) {
     }),
   );
 
-  try {
-    if (!response.ok)
-      throw new Error(`Bad response from "/api/question" at "askQuestion"`);
+  if (!response.ok) await handleError(response);
 
-    const responseData: unknown = await response.json();
+  const responseData: unknown = await response.json();
 
-    const { data } = z.object({ data: z.string() }).parse(responseData);
+  const { data } = z.object({ data: z.string() }).parse(responseData);
 
-    return data;
-  } catch (error) {
-    if (error instanceof Error) console.error(error.message);
+  return data;
+}
+
+export function errorAlert(error: unknown) {
+  if (error instanceof Error) {
+    console.error(error.message);
+
+    alert(error.message);
+  } else {
+    console.error("Unknown error", error);
+
+    alert("Unknown error");
   }
 }
 
-export function createURL(path: string) {
+function createURL(path: string) {
   return window.location.origin + "" + path;
+}
+
+async function handleError(response: Response) {
+  const data = (await response.json()) as {
+    message: string;
+    error?: unknown;
+  };
+
+  if (data.error) console.error(data.error);
+  throw new Error(data.message);
 }

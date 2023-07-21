@@ -1,18 +1,22 @@
 import HistoryChart from "@/components/historyChart";
-import { getUserByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
+import { getUserByClerkId } from "@/utils/auth";
 
 export default async function History() {
   const data = await getData();
 
-  if (!data)
-    throw new Error(`Did not get "data" from "getData" at "/history}"`);
+  const analyses = data.analyses.map((analysis) => ({
+    Date: analysis.entryDate,
+    Sentiment: analysis.sentimentScore,
+    Mood: analysis.mood,
+    Emoji: analysis.emoji,
+  }));
 
   return (
     <div className="h-full">
       <div className="h-10">Avg. Sentiment {data.average}</div>
       <div className="h-[calc(100vh-6rem)] px-4">
-        <HistoryChart analyses={data.analyses} />
+        <HistoryChart analyses={analyses} />
       </div>
     </div>
   );
@@ -21,26 +25,19 @@ export default async function History() {
 async function getData() {
   const user = await getUserByClerkId();
 
-  try {
-    if (!user)
-      throw new Error(
-        `Did not get "Clerk User Object" from "getUserByClerkId" at "/history"`,
-      );
+  const analyses = await prisma.analysis.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: "asc" },
+  });
 
-    const analyses = await prisma.analysis.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "asc" },
-    });
+  if (analyses.length === 0) throw new Error("No matching records found");
 
-    const sum = analyses.reduce(
-      (accumulator, current) => accumulator + current.sentimentScore,
-      0,
-    );
+  const sum = analyses.reduce(
+    (accumulator, current) => accumulator + current.sentimentScore,
+    0,
+  );
 
-    const average = Math.round(sum / analyses.length);
+  const average = Math.round(sum / analyses.length);
 
-    return { analyses, average };
-  } catch (error) {
-    if (error instanceof Error) console.error(error.message);
-  }
+  return { analyses, average };
 }

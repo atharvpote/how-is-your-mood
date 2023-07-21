@@ -14,7 +14,7 @@ export default function Home() {
             This the best app for tracking your mood through out your life, All
             you have to do is be honest.
           </p>
-          <Link href="/new-user" className="btn-primary btn">
+          <Link href="/sign-up" prefetch className="btn btn-primary">
             Get Started
           </Link>
         </div>

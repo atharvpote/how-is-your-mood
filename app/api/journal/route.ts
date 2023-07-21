@@ -1,75 +1,43 @@
 import { NextResponse } from "next/server";
 import { getUserByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { Analysis, JournalEntry } from "@prisma/client";
+import { createEntry, errorResponse } from "@/utils/server";
 
 export async function GET() {
-  const user = await getUserByClerkId();
+  try {
+    const user = await getUserByClerkId();
 
-  if (!user)
-    return NextResponse.json(
-      {
-        message: "Authentication credentials were missing or incorrect",
-      },
-      { status: 401 },
-    );
+    const entries = await prisma.journalEntry.findMany({
+      where: { userId: user.id },
+      orderBy: { entryDate: "desc" },
+    });
 
-  const entries = await prisma.journalEntry.findMany({
-    where: { userId: user.id },
-    orderBy: { entryDate: "desc" },
-  });
+    if (!entries.length)
+      return NextResponse.json(
+        { message: "No matching records found" },
+        { status: 500 },
+      );
 
-  return NextResponse.json({ entries }, { status: 200 });
+    return NextResponse.json({ entries }, { status: 200 });
+  } catch (error) {
+    return errorResponse(error, 401);
+  }
 }
 
 export async function POST() {
-  const user = await getUserByClerkId();
+  try {
+    const user = await getUserByClerkId();
 
-  if (!user)
+    const { entry, analysis } = await createEntry(user);
+
     return NextResponse.json(
       {
-        message: "Authentication credentials were missing or incorrect",
+        entry,
+        analysis,
       },
-      { status: 401 },
+      { status: 201 },
     );
-
-  const { entry, analysis } = (await createEntry()) as {
-    entry: JournalEntry;
-    analysis: Analysis;
-  };
-
-  return NextResponse.json(
-    {
-      entry,
-      analysis,
-    },
-    { status: 201 },
-  );
-}
-
-export async function createEntry() {
-  const user = await getUserByClerkId();
-
-  if (!user) throw new Error("Clerk user not found");
-
-  const entry = await prisma.journalEntry.create({
-    data: {
-      userId: user.id,
-      content: "",
-    },
-  });
-
-  const analysis = await prisma.analysis.create({
-    data: {
-      emoji: "",
-      mood: "",
-      subject: "",
-      summery: "",
-      entryId: entry.id,
-      entryDate: entry.entryDate,
-      userId: user.id,
-    },
-  });
-
-  return { entry, analysis };
+  } catch (error) {
+    return errorResponse(error, 401);
+  }
 }

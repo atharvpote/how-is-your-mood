@@ -7,7 +7,7 @@ export default function Navbar() {
       <div className="flex-none">
         <label
           htmlFor="my-drawer"
-          className="btn-ghost drawer-button btn-square btn lg:hidden"
+          className="btn btn-square btn-ghost drawer-button lg:hidden"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

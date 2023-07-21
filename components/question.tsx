@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { z } from "zod";
-import { askQuestion } from "@/utils/api";
+import { askQuestion, errorAlert } from "@/utils/client";
 import { TopLoadingSpinner } from "./loading";
 
 export default function Question() {
@@ -20,22 +19,19 @@ export default function Question() {
             setLoading(true);
 
             void askQuestion(value)
-              .then((answer) => {
-                setAnswer(z.string().parse(answer));
-              })
-              .catch((error) => {
-                if (error instanceof Error) console.error(error.message);
+              .then((answer) => setAnswer(answer))
+              .catch((error) => errorAlert(error))
+              .finally(() => {
+                setLoading(false);
+                setValue("");
               });
-
-            setLoading(false);
-            setValue("");
           }
         }}
       >
         <textarea
           placeholder="Ask a question"
           disabled={loading}
-          className="textarea-bordered textarea inline-block h-48 w-full resize-none p-6 text-lg"
+          className="textarea textarea-bordered inline-block h-48 w-full resize-none p-6 text-lg"
           value={value}
           onChange={(event) => {
             setValue(event.target.value);
@@ -44,7 +40,7 @@ export default function Question() {
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary btn mx-auto my-4 block"
+          className="btn btn-primary mx-auto my-4 block"
         >
           Ask
         </button>

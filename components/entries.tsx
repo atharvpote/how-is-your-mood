@@ -1,20 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { createEntry, useEntries } from "@/utils/api";
+import { createEntry, errorAlert, useEntries } from "@/utils/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AiOutlinePlusSquare } from "react-icons/ai";
 import { TopLoadingSpinner } from "./loading";
+import ErrorComponent from "./error";
 
 export default function Entries() {
-  const { data, isLoading } = useEntries();
+  const { data, error, isLoading } = useEntries();
   const router = useRouter();
   const [creatingNewEntry, setCreatingNewEntry] = useState(false);
 
-  return isLoading ? (
-    <TopLoadingSpinner />
-  ) : (
+  if (isLoading) return <TopLoadingSpinner />;
+  if (error) return <ErrorComponent error={error} />;
+
+  return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
       <button
         aria-label="new entry"
@@ -24,9 +26,7 @@ export default function Entries() {
 
           void createEntry()
             .then((id) => router.push(`/journal/${id}`))
-            .catch((error) => {
-              if (error instanceof Error) console.error(error.message);
-            })
+            .catch((error) => errorAlert(error))
             .finally(() => setCreatingNewEntry(false));
         }}
         className="card bg-base-200 shadow-lg active:bg-base-300"

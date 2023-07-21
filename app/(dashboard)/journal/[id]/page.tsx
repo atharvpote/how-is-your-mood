@@ -7,28 +7,20 @@ interface PropTypes {
 }
 
 export default async function EntryPage({ params: { id } }: PropTypes) {
-  const { entry, analysis } = await getEntry(id);
+  const entry = await getEntry(id);
 
-  return <Editor entry={entry} analysis={analysis} />;
+  if (!entry.analysis) throw new Error("Failed to fetch analysis");
+
+  return <Editor entry={entry} analysis={entry.analysis} />;
 }
 
 async function getEntry(id: string) {
   const user = await getUserByClerkId();
 
-  if (!user)
-    throw new Error("Authentication credentials were missing or incorrect");
-
-  const entry = await prisma.journalEntry.findUnique({
+  const entry = await prisma.journalEntry.findUniqueOrThrow({
     where: { userId_id: { userId: user.id, id } },
+    include: { analysis: true },
   });
 
-  if (!entry) throw new Error("Entry not found");
-
-  const analysis = await prisma.analysis.findUnique({
-    where: { entryId: entry.id },
-  });
-
-  if (!analysis) throw new Error("Analysis not found");
-
-  return { entry, analysis };
+  return entry;
 }

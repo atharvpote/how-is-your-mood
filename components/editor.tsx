@@ -1,12 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Analysis, JournalEntry } from "@prisma/client";
 import { useAutosave } from "react-autosave";
 import { AiOutlineDelete } from "react-icons/ai";
 import { z } from "zod";
-import { deleteEntry, updateContent, updateDate } from "@/utils/api";
+import {
+  deleteEntry,
+  errorAlert,
+  updateContent,
+  updateDate,
+} from "@/utils/client";
 import { TopLoadingSpinner } from "./loading";
 
 interface PropTypes {
@@ -16,16 +21,20 @@ interface PropTypes {
 
 export default function Editor({ entry, analysis }: PropTypes) {
   const [content, setContent] = useState(entry.content);
-  const [date, setDate] = useState<Date>(entry.entryDate);
-  const [localAnalysis, setLocalAnalysis] = useState<Analysis>(analysis);
+  const [date, setDate] = useState(entry.entryDate);
+  const [localAnalysis, setLocalAnalysis] = useState(analysis);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  const router = useRouter();
 
   const previous = useRef(content);
   const modal = useRef<HTMLDialogElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useAutosave({
     data: content,
@@ -33,12 +42,16 @@ export default function Editor({ entry, analysis }: PropTypes) {
       if (content.trim() !== previous.current.trim()) {
         setLoadingAnalysis(true);
 
-        const data = await updateContent(content, entry.id);
-        setLocalAnalysis(data.analysis);
+        try {
+          const data = await updateContent(content, entry.id);
 
-        setLoadingAnalysis(false);
-
-        previous.current = content;
+          setLocalAnalysis(data.analysis);
+          previous.current = content;
+        } catch (error) {
+          errorAlert(error);
+        } finally {
+          setLoadingAnalysis(false);
+        }
       }
     },
   });
@@ -55,17 +68,18 @@ export default function Editor({ entry, analysis }: PropTypes) {
               onKeyDown={() => false}
               onFocus={() => dateRef.current?.showPicker()}
               onChange={(event) => {
-                const validation = z
-                  .string()
-                  .datetime()
-                  .safeParse(event.target.value + "T00:00:00Z");
+                try {
+                  z.string()
+                    .datetime()
+                    .parse(event.target.value + "T00:00:00Z");
 
-                if (validation.success) {
                   const date = new Date(event.target.value);
 
                   setDate(date);
 
                   void updateDate(date, entry.id);
+                } catch (error) {
+                  errorAlert(error);
                 }
               }}
               className="cursor-pointer rounded-lg bg-base-200 px-4 py-2 focus:bg-base-300"
@@ -89,7 +103,7 @@ export default function Editor({ entry, analysis }: PropTypes) {
               ref={modal}
             >
               <form method="dialog" className="modal-box">
-                <button className="btn-ghost btn-sm btn-circle btn absolute right-2 top-2">
+                <button className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
                   ✕
                 </button>
                 <h3 className="text-lg font-bold">Are you sure</h3>
@@ -102,11 +116,9 @@ export default function Editor({ entry, analysis }: PropTypes) {
                     onClick={() => {
                       setDeleting(true);
 
-                      void deleteEntry(entry.id).then(() => {
-                        router.replace("/journal/");
-
-                        setDeleting(false);
-                      });
+                      void deleteEntry(entry.id)
+                        .then(() => router.replace("/journal/"))
+                        .catch((error) => errorAlert(error));
                     }}
                     className="btn bg-red-300 hover:bg-red-400 active:bg-red-500 dark:bg-red-800 dark:hover:bg-red-900 dark:active:bg-red-950"
                   >
@@ -136,7 +148,7 @@ export default function Editor({ entry, analysis }: PropTypes) {
         {loadingAnalysis ? (
           <TopLoadingSpinner />
         ) : (
-          <table className="mb-4 table">
+          <table className="table mb-4">
             <tbody>
               <tr>
                 <th>
@@ -165,7 +177,18 @@ export default function Editor({ entry, analysis }: PropTypes) {
                 <th className="flex items-start">
                   <span className="text-base">Summery</span>
                 </th>
-                <td className="text-base ">{localAnalysis.summery}</td>
+                <td className="text-base">
+                  {localAnalysis.subject.length
+                    ? localAnalysis.summery[0].toUpperCase() +
+                      localAnalysis.summery.slice(1)
+                    : ""}
+                </td>
+              </tr>
+              <tr>
+                <th className="flex items-start">
+                  <span className="text-base">Sentiment Score</span>
+                </th>
+                <td className="text-base ">{localAnalysis.sentimentScore}</td>
               </tr>
             </tbody>
           </table>
