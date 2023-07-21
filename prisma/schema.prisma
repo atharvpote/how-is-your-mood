@@ -37,6 +37,7 @@ model JournalEntry {
   analysis Analysis?
 
   @@unique([userId, id])
+  @@unique([id, entryDate])
 }
 
 model Analysis {
@@ -50,11 +51,13 @@ model Analysis {
   subject        String
   sentimentScore Float  @default(0)
 
-  entryId String       @unique
-  entry   JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  entryId   String       @unique
+  entryDate DateTime
+  entry     JournalEntry @relation(fields: [entryId, entryDate], references: [id, entryDate], onDelete: Cascade)
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([entryId, entryDate])
   @@index([userId])
 }

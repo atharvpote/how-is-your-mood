@@ -66,6 +66,7 @@ export async function createEntry() {
       subject: "",
       summery: "",
       entryId: entry.id,
+      entryDate: entry.entryDate,
       userId: user.id,
     },
   });
