@@ -60,31 +60,33 @@ export default function Editor({ entry, analysis }: PropTypes) {
     <div className="h-0 min-h-full lg:flex">
       <div className="lg:basis-full">
         <div className="flex justify-between p-4">
-          <h2 className="text-lg font-medium">
-            <input
-              type="date"
-              value={new Date(date).toISOString().split("T")[0]}
-              ref={dateRef}
-              onKeyDown={() => false}
-              onFocus={() => dateRef.current?.showPicker()}
-              onChange={(event) => {
-                try {
-                  z.string()
-                    .datetime()
-                    .parse(event.target.value + "T00:00:00Z");
+          <div className="tooltip tooltip-right" data-tip="Date of Entry">
+            <h2 className="text-lg font-medium text-accent">
+              <input
+                type="date"
+                value={new Date(date).toISOString().split("T")[0]}
+                ref={dateRef}
+                onKeyDown={() => false}
+                onFocus={() => dateRef.current?.showPicker()}
+                onChange={(event) => {
+                  try {
+                    z.string()
+                      .datetime()
+                      .parse(event.target.value + "T00:00:00Z");
 
-                  const date = new Date(event.target.value);
+                    const date = new Date(event.target.value);
 
-                  setDate(date);
+                    setDate(date);
 
-                  void updateDate(date, entry.id);
-                } catch (error) {
-                  errorAlert(error);
-                }
-              }}
-              className="cursor-pointer rounded-lg bg-base-200 px-4 py-2 focus:bg-base-300"
-            />
-          </h2>
+                    void updateDate(date, entry.id);
+                  } catch (error) {
+                    errorAlert(error);
+                  }
+                }}
+                className="cursor-pointer rounded-lg bg-base-200 px-4 py-2 focus:bg-base-300"
+              />
+            </h2>
+          </div>
           <div className="tooltip tooltip-left" data-tip="Delete">
             <button
               type="button"
@@ -120,11 +122,11 @@ export default function Editor({ entry, analysis }: PropTypes) {
                         .then(() => router.replace("/journal/"))
                         .catch((error) => errorAlert(error));
                     }}
-                    className="btn bg-red-300 hover:bg-red-400 active:bg-red-500 dark:bg-red-800 dark:hover:bg-red-900 dark:active:bg-red-950"
+                    className="btn btn-error btn-outline"
                   >
                     Yes
                   </button>
-                  <button className="btn">No</button>
+                  <button className="btn btn-outline">No</button>
                 </div>
               </form>
               <form method="dialog" className="modal-backdrop">

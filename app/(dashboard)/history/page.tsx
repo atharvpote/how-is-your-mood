@@ -6,16 +6,26 @@ export default async function History() {
   const data = await getData();
 
   const analyses = data.analyses.map((analysis) => ({
-    Date: analysis.entryDate,
-    Sentiment: analysis.sentimentScore,
-    Mood: analysis.mood,
-    Emoji: analysis.emoji,
+    date: new Date(analysis.entryDate.toDateString()).toLocaleDateString(
+      "en-us",
+      {
+        weekday: "long",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      },
+    ),
+    sentiment: analysis.sentimentScore,
+    mood: analysis.mood,
+    emoji: analysis.emoji,
   }));
 
   return (
     <div className="h-full">
-      <div className="h-10">Avg. Sentiment {data.average}</div>
-      <div className="h-[calc(100vh-6rem)] px-4">
+      <div className="mx-4 mb-4 h-10 text-xl font-semibold">
+        Average Sentiment - {data.average}
+      </div>
+      <div className="h-[calc(100vh-7rem)] px-4">
         <HistoryChart analyses={analyses} />
       </div>
     </div>

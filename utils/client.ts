@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import useSWR from "swr";
 import { z } from "zod";
 import { Analysis, JournalEntry } from "@prisma/client";
@@ -92,6 +95,18 @@ export function errorAlert(error: unknown) {
 
     alert("Unknown error");
   }
+}
+
+export function useTheme() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", (event) => {
+      event.matches ? setTheme("dark") : setTheme("light");
+    });
+
+  return theme;
 }
 
 function createURL(path: string) {

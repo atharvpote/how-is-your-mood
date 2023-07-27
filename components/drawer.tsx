@@ -16,7 +16,7 @@ export default function Drawer({ children }: PropsWithChildren) {
   const path = usePathname();
 
   return (
-    <div className="drawer xl:drawer-open">
+    <div className="drawer bg-base-100 xl:drawer-open">
       <input
         id="my-drawer"
         type="checkbox"
@@ -31,7 +31,7 @@ export default function Drawer({ children }: PropsWithChildren) {
       <div className="drawer-side">
         {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
         <label htmlFor="my-drawer" className="drawer-overlay"></label>
-        <nav className="menu h-full w-52 bg-base-200 p-4 text-base-content">
+        <nav className="menu h-full w-52 bg-base-100 p-4 text-base-content">
           {/* Sidebar content here */}
           <ul className="mt-12">
             {links.map(({ href, label }) => (
@@ -39,9 +39,7 @@ export default function Drawer({ children }: PropsWithChildren) {
                 <Link
                   href={href}
                   className={`text-lg font-medium capitalize ${
-                    label === path.split("/")[1]
-                      ? "bg-[#dcdddf] dark:bg-[#272c33]"
-                      : ""
+                    label === path.split("/")[1] ? "active" : ""
                   }`}
                   onClick={() => {
                     input.current?.click();

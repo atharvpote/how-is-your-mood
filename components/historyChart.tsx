@@ -16,10 +16,10 @@ import {
 } from "recharts/types/component/DefaultTooltipContent";
 
 interface ChartData {
-  Date: Date;
-  Sentiment: number;
-  Mood: string;
-  Emoji: string;
+  date: string;
+  sentiment: number;
+  mood: string;
+  emoji: string;
 }
 
 export default function HistoryChart({ analyses }: { analyses: ChartData[] }) {
@@ -32,15 +32,23 @@ export default function HistoryChart({ analyses }: { analyses: ChartData[] }) {
         margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
       >
         <Line
-          dataKey="Sentiment"
+          dataKey="sentiment"
           type="monotone"
-          stroke="#8884d8"
+          stroke="#1fb2a6"
           strokeWidth={2}
           activeDot={{ r: 8 }}
         />
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-        <XAxis dataKey="Date" />
-        <YAxis dataKey="Sentiment" />
+        <XAxis
+          dataKey="date"
+          tickFormatter={(label: string) =>
+            `${new Date(label).toLocaleDateString("en-us", {
+              month: "short",
+              day: "numeric",
+            })}`
+          }
+        />
+        <YAxis dataKey="sentiment" />
         <Tooltip content={<CustomTooltip />} />
       </LineChart>
     </ResponsiveContainer>
@@ -57,18 +65,16 @@ function CustomTooltip({
     year: "numeric",
     month: "short",
     day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
   });
 
   if (active && payload?.length) {
     const analysis = payload[0].payload as ChartData;
 
     return (
-      <div className="relative rounded-lg border border-black/10 bg-white/5 p-8 shadow-md backdrop-blur-md">
-        <p className="label text-sm text-black/30">{dateLabel}</p>
-        <p className="text-xl uppercase">
-          {analysis.Mood} {String.fromCodePoint(Number(analysis.Emoji))}
+      <div className="rounded-lg border border-white/25 bg-base-200/25 px-6 py-3 shadow-md backdrop-blur dark:border-black/25">
+        <p className="label text-sm text-accent">{dateLabel}</p>
+        <p className="text-xl capitalize">
+          {analysis.mood} {String.fromCodePoint(Number(analysis.emoji))}
         </p>
       </div>
     );

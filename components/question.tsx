@@ -40,7 +40,7 @@ export default function Question() {
         <button
           type="submit"
           disabled={loading}
-          className="btn btn-primary mx-auto my-4 block"
+          className="btn btn-accent mx-auto my-4 block"
         >
           Ask
         </button>

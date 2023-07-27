@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Navbar() {
   return (
-    <div className="navbar bg-base-100 px-4 shadow">
+    <div className="navbar px-4">
       <div className="flex-none">
         <label
           htmlFor="my-drawer"
@@ -27,12 +27,23 @@ export default function Navbar() {
       <div className="flex-1">
         <Link href="/">
           <h1 className="mx-4 text-xl font-bold capitalize lg:mx-0">
-            How is your mood?
+            How is your <span className="text-accent">mood</span>?
           </h1>
         </Link>
       </div>
       <div className="flex-none">
-        <UserButton />
+        <UserButton
+          appearance={{
+            elements: {
+              userButtonPopoverCard: "bg-base-200 text-base-content",
+              userButtonPopoverActionButtonIcon: "text-base-content",
+              userButtonPopoverActionButtonText: "text-base-content",
+              userButtonPopoverFooter: "hidden",
+            },
+          }}
+          userProfileMode="navigation"
+          userProfileUrl="/profile"
+        />
       </div>
     </div>
   );

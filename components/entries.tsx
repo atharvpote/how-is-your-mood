@@ -17,47 +17,54 @@ export default function Entries() {
   if (error) return <ErrorComponent error={error} />;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-      <button
-        aria-label="new entry"
-        key="new"
-        onClick={() => {
-          setCreatingNewEntry(true);
+    <div>
+      <div className="mb-8 flex items-center justify-between">
+        <h2 className="text-3xl font-medium text-accent">Journal</h2>
+        <div className="tooltip tooltip-left" data-tip="New">
+          <button
+            aria-label="new entry"
+            key="new"
+            onClick={() => {
+              setCreatingNewEntry(true);
 
-          void createEntry()
-            .then((id) => router.push(`/journal/${id}`))
-            .catch((error) => errorAlert(error))
-            .finally(() => setCreatingNewEntry(false));
-        }}
-        className="card bg-base-200 shadow-lg active:bg-base-300"
-      >
-        <div className="grid h-full w-full place-content-center">
-          {creatingNewEntry ? (
-            <span className="loading loading-infinity loading-lg"></span>
-          ) : (
-            <div className="card-body">
-              <AiOutlinePlusSquare className="text-3xl md:text-4xl" />
-            </div>
-          )}
+              void createEntry()
+                .then((id) => router.push(`/journal/${id}`))
+                .catch((error) => errorAlert(error))
+                .finally(() => setCreatingNewEntry(false));
+            }}
+            className="btn btn-square"
+          >
+            {creatingNewEntry ? (
+              <span className="loading loading-infinity"></span>
+            ) : (
+              <div className="">
+                <AiOutlinePlusSquare className="text-3xl" />
+              </div>
+            )}
+          </button>
         </div>
-      </button>
-      {data?.map((entry) => (
-        <Link
-          href={`/journal/${entry.id}`}
-          key={entry.id}
-          className="card bg-base-200 shadow-lg active:bg-base-300"
-        >
-          <div className="card-body">
-            <div className="card-title">
-              <h3>{new Date(entry.entryDate).toDateString()}</h3>
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+        {data?.map((entry) => (
+          <Link
+            href={`/journal/${entry.id}`}
+            key={entry.id}
+            className="card bg-base-200 shadow-md transition-all hover:bg-base-300 active:bg-neutral-focus active:text-neutral-content"
+          >
+            <div className="card-body">
+              <div className="card-title">
+                <h3 className="text-accent">
+                  {new Date(entry.entryDate).toDateString()}
+                </h3>
+              </div>
+              <p>
+                {entry.content.substring(0, 120)}
+                {entry.content.length > 120 ? "..." : ""}
+              </p>
             </div>
-            <p>
-              {entry.content.substring(0, 120)}
-              {entry.content.length > 120 ? "..." : ""}
-            </p>
-          </div>
-        </Link>
-      ))}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
