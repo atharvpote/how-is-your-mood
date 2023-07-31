@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Analysis, JournalEntry } from "@prisma/client";
+import { Analysis, Journal } from "@prisma/client";
 import { useAutosave } from "react-autosave";
 import { AiOutlineDelete } from "react-icons/ai";
 import { z } from "zod";
@@ -15,13 +15,13 @@ import {
 import { TopLoadingSpinner } from "./loading";
 
 interface PropTypes {
-  entry: JournalEntry;
+  entry: Journal;
   analysis: Analysis;
 }
 
 export default function Editor({ entry, analysis }: PropTypes) {
   const [content, setContent] = useState(entry.content);
-  const [date, setDate] = useState(entry.entryDate);
+  const [date, setDate] = useState(entry.date);
   const [localAnalysis, setLocalAnalysis] = useState(analysis);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -190,7 +190,7 @@ export default function Editor({ entry, analysis }: PropTypes) {
                 <th className="flex items-start">
                   <span className="text-base">Sentiment Score</span>
                 </th>
-                <td className="text-base ">{localAnalysis.sentimentScore}</td>
+                <td className="text-base ">{localAnalysis.sentiment}</td>
               </tr>
             </tbody>
           </table>

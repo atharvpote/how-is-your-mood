@@ -17,7 +17,7 @@ export default async function EntryPage({ params: { id } }: PropTypes) {
 async function getEntry(id: string) {
   const user = await getUserByClerkId();
 
-  const entry = await prisma.journalEntry.findUniqueOrThrow({
+  const entry = await prisma.journal.findUniqueOrThrow({
     where: { userId_id: { userId: user.id, id } },
     include: { analysis: true },
   });

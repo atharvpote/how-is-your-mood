@@ -19,17 +19,17 @@ model User {
   clerkId String @unique
   email   String @unique
 
-  entries  JournalEntry[]
+  entries  Journal[]
   analyses Analysis[]
 }
 
-model JournalEntry {
+model Journal {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  content   String   @db.Text
-  entryDate DateTime @default(now())
+  content String   @db.Text
+  date    DateTime @default(now())
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -37,7 +37,7 @@ model JournalEntry {
   analysis Analysis?
 
   @@unique([userId, id])
-  @@unique([id, entryDate])
+  @@unique([id, date])
 }
 
 model Analysis {
@@ -45,19 +45,19 @@ model Analysis {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  mood           String
-  summery        String @db.Text
-  emoji          String
-  subject        String
-  sentimentScore Float  @default(0)
+  mood      String
+  summery   String @db.Text
+  emoji     String
+  subject   String
+  sentiment Float  @default(0)
 
-  entryId   String       @unique
-  entryDate DateTime
-  entry     JournalEntry @relation(fields: [entryId, entryDate], references: [id, entryDate], onDelete: Cascade)
+  entryId String   @unique
+  date    DateTime
+  entry   Journal  @relation(fields: [entryId, date], references: [id, date], onDelete: Cascade)
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([entryId, entryDate])
+  @@unique([entryId, date])
   @@index([userId])
 }

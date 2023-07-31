@@ -1,5 +1,9 @@
 "use client";
 
+import { useAnalysis } from "@/utils/client";
+import { Analysis } from "@prisma/client";
+import { getWeek } from "date-fns";
+import { useRef, useState } from "react";
 import {
   ResponsiveContainer,
   Line,
@@ -15,43 +19,58 @@ import {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 
-interface ChartData {
-  date: string;
-  sentiment: number;
-  mood: string;
-  emoji: string;
-}
+export default function HistoryChart() {
+  const today = new Date();
 
-export default function HistoryChart({ analyses }: { analyses: ChartData[] }) {
+  const [month, setMonth] = useState(today);
+  const { data, error, isLoading } = useAnalysis(month);
+  const dateRef = useRef<HTMLInputElement>(null);
+
+  const analyses = data?.map((analysis) => ({
+    date: new Date(analysis.date).toLocaleDateString("en-in", {
+      weekday: "long",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }),
+    sentiment: analysis.sentiment,
+    mood: analysis.mood,
+    emoji: analysis.emoji,
+  }));
+
   return (
-    <ResponsiveContainer width={"100%"} height={"100%"}>
-      <LineChart
-        width={300}
-        height={100}
-        data={analyses}
-        margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
-      >
-        <Line
-          dataKey="sentiment"
-          type="monotone"
-          stroke="#1fb2a6"
-          strokeWidth={2}
-          activeDot={{ r: 8 }}
-        />
-        <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-        <XAxis
-          dataKey="date"
-          tickFormatter={(label: string) =>
-            `${new Date(label).toLocaleDateString("en-us", {
-              month: "short",
-              day: "numeric",
-            })}`
-          }
-        />
-        <YAxis dataKey="sentiment" />
-        <Tooltip content={<CustomTooltip />} />
-      </LineChart>
-    </ResponsiveContainer>
+    <>
+      <div className="flex h-[calc(100vh-7.5rem)] min-h-[25rem] justify-center">
+        <ResponsiveContainer width={"90%"} height={"100%"}>
+          <LineChart
+            width={300}
+            height={100}
+            data={analyses}
+            margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+          >
+            <Line
+              dataKey="sentiment"
+              type="monotone"
+              stroke="#1fb2a6"
+              strokeWidth={2}
+              activeDot={{ r: 8 }}
+            />
+            <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+            <XAxis
+              dataKey="date"
+              tickFormatter={(label: string) =>
+                `${new Date(label).toLocaleDateString("en-us", {
+                  month: "short",
+                  day: "numeric",
+                })}`
+              }
+            />
+            <YAxis dataKey="sentiment" />
+            <Tooltip content={<CustomTooltip />} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </>
   );
 }
 
@@ -68,7 +87,7 @@ function CustomTooltip({
   });
 
   if (active && payload?.length) {
-    const analysis = payload[0].payload as ChartData;
+    const analysis = payload[0].payload as Analysis;
 
     return (
       <div className="rounded-lg border border-white/25 bg-base-200/25 px-6 py-3 shadow-md backdrop-blur dark:border-black/25">

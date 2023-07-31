@@ -3,7 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { z } from "zod";
-import { Analysis, JournalEntry } from "@prisma/client";
+import { Analysis, Journal } from "@prisma/client";
 
 export async function createEntry() {
   const response = await fetch(new Request(createURL("/api/journal")), {
@@ -13,7 +13,7 @@ export async function createEntry() {
   if (!response.ok) await handleError(response);
 
   const data = (await response.json()) as {
-    entry: JournalEntry;
+    entry: Journal;
     analysis: Analysis;
   };
 
@@ -55,16 +55,33 @@ export async function deleteEntry(id: string) {
 }
 
 export function useEntries() {
-  return useSWR<JournalEntry[], Error>("/api/journal", async (url: string) => {
+  return useSWR<Journal[], Error>("/api/journal", async (url: string) => {
     const response = await fetch(new Request(createURL(url)), {
       method: "GET",
     });
 
     if (!response.ok) await handleError(response);
 
-    const data = (await response.json()) as { entries: JournalEntry[] };
+    const { entries } = (await response.json()) as { entries: Journal[] };
 
-    return data.entries;
+    return entries;
+  });
+}
+
+export function useAnalysis(date: Date) {
+  return useSWR<Analysis[], Error>(date.toDateString(), async () => {
+    const response = await fetch(
+      new Request(createURL("/api/analysis/"), {
+        method: "POST",
+        body: JSON.stringify({ date }),
+      }),
+    );
+
+    if (!response.ok) await handleError(response);
+
+    const { analyses } = (await response.json()) as { analyses: Analysis[] };
+
+    return analyses;
   });
 }
 

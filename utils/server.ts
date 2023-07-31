@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "./db";
 import { analyze } from "./ai";
+import { getMonth, getWeek, getYear } from "date-fns";
 
 interface ClerkUser {
   id: string;
@@ -11,7 +12,7 @@ interface ClerkUser {
 }
 
 export async function createEntry(user: ClerkUser) {
-  const entry = await prisma.journalEntry.create({
+  const entry = await prisma.journal.create({
     data: {
       userId: user.id,
       content: "",
@@ -25,7 +26,10 @@ export async function createEntry(user: ClerkUser) {
       subject: "",
       summery: "",
       entryId: entry.id,
-      entryDate: entry.entryDate,
+      date: entry.date,
+      week: getWeek(entry.date),
+      month: getMonth(entry.date),
+      year: getYear(entry.date),
       userId: user.id,
     },
   });
@@ -39,7 +43,7 @@ export async function updateContent(
   content: string,
 ) {
   try {
-    const entry = await prisma.journalEntry.update({
+    const entry = await prisma.journal.update({
       where: { userId_id: { userId, id: entryId } },
       data: { content },
     });
@@ -52,7 +56,7 @@ export async function updateContent(
           mood: "",
           subject: "",
           summery: "",
-          sentimentScore: 0,
+          sentiment: 0,
         },
       });
 
@@ -72,7 +76,7 @@ export async function updateContent(
           mood: openAiResponse.mood,
           subject: openAiResponse.subject,
           summery: openAiResponse.summery,
-          sentimentScore: openAiResponse.sentimentScore,
+          sentiment: openAiResponse.sentimentScore,
         },
       });
 
@@ -90,9 +94,9 @@ export async function updateContent(
 
 export async function updateDate(userId: string, entryId: string, date: Date) {
   try {
-    await prisma.journalEntry.update({
+    await prisma.journal.update({
       where: { userId_id: { userId, id: entryId } },
-      data: { entryDate: date },
+      data: { date },
     });
 
     return NextResponse.json({ status: 200 });

@@ -54,7 +54,7 @@ export default function Entries() {
             <div className="card-body">
               <div className="card-title">
                 <h3 className="text-accent">
-                  {new Date(entry.entryDate).toDateString()}
+                  {new Date(entry.date).toDateString()}
                 </h3>
               </div>
               <p>

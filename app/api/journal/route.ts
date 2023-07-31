@@ -7,9 +7,9 @@ export async function GET() {
   try {
     const user = await getUserByClerkId();
 
-    const entries = await prisma.journalEntry.findMany({
+    const entries = await prisma.journal.findMany({
       where: { userId: user.id },
-      orderBy: { entryDate: "desc" },
+      orderBy: { date: "desc" },
     });
 
     if (!entries.length)

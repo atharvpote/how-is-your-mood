@@ -6,7 +6,7 @@ import { StructuredOutputParser } from "langchain/output_parsers";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { z } from "zod";
-import { JournalEntry } from "@prisma/client";
+import { Journal } from "@prisma/client";
 
 const parser = StructuredOutputParser.fromZodSchema(
   z.object({
@@ -56,7 +56,7 @@ async function getPrompt(content: string) {
   return input;
 }
 
-type Entry = Pick<JournalEntry, "id" | "createdAt" | "content">;
+type Entry = Pick<Journal, "id" | "createdAt" | "content">;
 
 export async function qa(question: string, entries: Entry[]) {
   const docs = entries.map(

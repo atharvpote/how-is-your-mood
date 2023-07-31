@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     try {
       const user = await getUserByClerkId();
 
-      const entries = await prisma.journalEntry.findMany({
+      const entries = await prisma.journal.findMany({
         where: { userId: user.id },
         select: {
           id: true,

@@ -11,15 +11,13 @@ interface ParamType {
 }
 
 export async function PUT(request: Request, { params }: ParamType) {
-  const response: unknown = await request.json();
-
   try {
     const data = z
       .union([
         z.object({ type: z.literal("content"), content: z.string() }),
         z.object({ type: z.literal("date"), date: z.string() }),
       ])
-      .parse(response);
+      .parse(await request.json());
 
     try {
       const user = await getUserByClerkId();
@@ -46,7 +44,7 @@ export async function DELETE(_: Request, { params }: ParamType) {
     const user = await getUserByClerkId();
 
     try {
-      await prisma.journalEntry.delete({
+      await prisma.journal.delete({
         where: { userId_id: { userId: user.id, id: params.id } },
       });
 
