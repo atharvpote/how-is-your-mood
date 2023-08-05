@@ -38,7 +38,7 @@ export default function HistoryChart({ entry }: { entry: Journal }) {
 
   return (
     <>
-      <div className="flex h-[calc(100vh-7.5rem)] min-h-[25rem] flex-col">
+      <div className="flex h-[calc(100%-4rem)] min-h-[25rem] flex-col">
         {data?.length ? (
           <>
             <div className="my-4 flex flex-auto justify-center">
