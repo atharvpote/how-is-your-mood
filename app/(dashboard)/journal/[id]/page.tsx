@@ -10,5 +10,9 @@ export default async function EntryPage({ params: { id } }: PropTypes) {
 
   if (!entry.analysis) throw new Error("Failed to fetch analysis");
 
-  return <Editor entry={entry} analysis={entry.analysis} />;
+  return (
+    <div className="h-0 min-h-[calc(100vh-4rem)]">
+      <Editor entry={entry} analysis={entry.analysis} />
+    </div>
+  );
 }

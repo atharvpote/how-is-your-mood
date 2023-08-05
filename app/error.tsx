@@ -7,5 +7,9 @@ interface ErrorPropType {
 }
 
 export default function Error({ error }: ErrorPropType) {
-  return <ErrorComponent error={error} />;
+  return (
+    <div className="grid h-screen place-content-center">
+      <ErrorComponent error={error} />
+    </div>
+  );
 }

@@ -1,14 +1,14 @@
 "use client";
 
-import { UserProfile } from "@clerk/nextjs";
+import { SignUp } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { useTheme } from "@/utils/hooks";
 
-export default function ProfileComponent() {
-  const elements = { card: "shadow-none bg-base-100" };
+export default function SignUpComponent() {
+  const elements = { card: "bg-base-100" };
 
   return (
-    <UserProfile
+    <SignUp
       appearance={
         useTheme() === "dark"
           ? {

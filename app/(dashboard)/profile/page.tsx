@@ -2,7 +2,7 @@ import ProfileComponent from "@/components/userProfile";
 
 export default function Profile() {
   return (
-    <div className="min-h-screen pb-4 sm:pb-0 sm:pl-4">
+    <div className="pb-4 sm:pb-0 sm:pl-4">
       <ProfileComponent />
     </div>
   );

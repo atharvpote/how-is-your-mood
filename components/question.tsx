@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { askQuestion, errorAlert } from "@/utils/client";
-import { TopLoadingSpinner } from "./loading";
+import { LoadingSpinner } from "./loading";
 
 export default function Question() {
   const [value, setValue] = useState("");
@@ -18,13 +18,10 @@ export default function Question() {
           if (value.trim().length !== 0) {
             setLoading(true);
 
-            void askQuestion(value)
+            askQuestion(value)
               .then((answer) => setAnswer(answer))
               .catch((error) => errorAlert(error))
-              .finally(() => {
-                setLoading(false);
-                setValue("");
-              });
+              .finally(() => setLoading(false));
           }
         }}
       >
@@ -33,9 +30,7 @@ export default function Question() {
           disabled={loading}
           className="textarea textarea-bordered inline-block h-48 w-full resize-none p-6 text-lg"
           value={value}
-          onChange={(event) => {
-            setValue(event.target.value);
-          }}
+          onChange={(event) => setValue(event.target.value)}
         />
         <button
           type="submit"
@@ -45,7 +40,7 @@ export default function Question() {
           Ask
         </button>
       </form>
-      <>{loading && <TopLoadingSpinner />}</>
+      <>{loading && <LoadingSpinner />}</>
       <>{answer && <div>{answer}</div>}</>
     </>
   );

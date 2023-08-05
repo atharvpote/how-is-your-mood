@@ -2,6 +2,8 @@ import { z } from "zod";
 import { addDays } from "date-fns";
 import { Analysis, Journal } from "@prisma/client";
 
+const idValidation = z.string().uuid();
+
 export async function createEntry() {
   const response = await fetch(new Request(createURL("/api/journal")), {
     method: "POST",
@@ -18,6 +20,8 @@ export async function createEntry() {
 }
 
 export async function updateContent(content: string, id: string) {
+  idValidation.parse(id);
+
   const response = await fetch(
     new Request(createURL(`/api/journal/${id}`), {
       method: "PUT",
@@ -33,6 +37,9 @@ export async function updateContent(content: string, id: string) {
 }
 
 export async function updateDate(date: Date, id: string) {
+  z.date().parse(date);
+  idValidation.parse(id);
+
   const response = await fetch(
     new Request(createURL(`/api/journal/${id}`), {
       method: "PUT",
@@ -44,6 +51,8 @@ export async function updateDate(date: Date, id: string) {
 }
 
 export async function deleteEntry(id: string) {
+  idValidation.parse(id);
+
   const response = await fetch(new Request(createURL(`/api/journal/${id}`)), {
     method: "DELETE",
   });

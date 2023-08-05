@@ -1,9 +1,9 @@
 "use client";
 
-import { errorAlert, createEntry } from "@/utils/client";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AiOutlinePlusSquare } from "react-icons/ai";
+import { errorAlert, createEntry } from "@/utils/client";
 
 export default function NewEntry() {
   const [creatingNewEntry, setCreatingNewEntry] = useState(false);
@@ -17,7 +17,7 @@ export default function NewEntry() {
         onClick={() => {
           setCreatingNewEntry(true);
 
-          void createEntry()
+          createEntry()
             .then((id) => router.push(`/journal/${id}`))
             .catch((error) => errorAlert(error))
             .finally(() => setCreatingNewEntry(false));

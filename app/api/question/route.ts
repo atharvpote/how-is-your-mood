@@ -1,9 +1,9 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
 import { qa } from "@/utils/ai";
 import { getUserByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 import { errorResponse } from "@/utils/server";
-import { NextResponse } from "next/server";
-import { z } from "zod";
 
 export async function POST(request: Request) {
   const requestData: unknown = await request.json();

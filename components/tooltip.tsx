@@ -1,9 +1,9 @@
-import { Analysis } from "@prisma/client";
 import { TooltipProps } from "recharts";
 import {
   ValueType,
   NameType,
 } from "recharts/types/component/DefaultTooltipContent";
+import { Analysis } from "@prisma/client";
 
 export default function CustomTooltip({
   active,

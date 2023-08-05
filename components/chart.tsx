@@ -1,9 +1,7 @@
 "use client";
 
-import { mapAnalyses } from "@/utils/client";
-import { Journal } from "@prisma/client";
-import { endOfWeek, startOfWeek } from "date-fns";
 import { useState } from "react";
+import { endOfWeek, startOfWeek } from "date-fns";
 import {
   ResponsiveContainer,
   Line,
@@ -13,18 +11,25 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
-import { TopLoadingSpinner } from "./loading";
-import ErrorComponent from "./error";
-import { useAnalyses } from "@/utils/hooks";
-import CustomTooltip from "./tooltip";
 import Datepicker, { DateValueType } from "react-tailwindcss-datepicker";
+import { Journal } from "@prisma/client";
+import { mapAnalyses } from "@/utils/client";
+import { useAnalyses } from "@/utils/hooks";
+import { LoadingSpinner } from "./loading";
+import ErrorComponent from "./error";
+import CustomTooltip from "./tooltip";
 
-export default function HistoryChart({ entry }: { entry: Journal }) {
-  const weekStartDayOfLatestEntry = startOfWeek(entry.date);
-  const weekEndOfLatestEntry = endOfWeek(entry.date);
+interface PropTypes {
+  latestEntry: Journal;
+}
+
+export default function HistoryChart({ latestEntry }: PropTypes) {
+  const weekStartDayOfLatestEntry = startOfWeek(latestEntry.date);
+  const weekEndOfLatestEntry = endOfWeek(latestEntry.date);
 
   const [start, setStart] = useState(weekStartDayOfLatestEntry);
   const [end, setEnd] = useState(weekEndOfLatestEntry);
+  const [allDays, setAllDays] = useState(false);
 
   const [date, setDate] = useState<DateValueType>({
     startDate: start,
@@ -33,16 +38,27 @@ export default function HistoryChart({ entry }: { entry: Journal }) {
 
   const { data, error, isLoading } = useAnalyses(start, end);
 
-  if (isLoading) return <TopLoadingSpinner />;
-  if (error) return <ErrorComponent error={error} />;
+  if (isLoading)
+    return (
+      <div className="grid h-[calc(100%-4rem)] place-content-center">
+        <LoadingSpinner />
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="grid h-[calc(100%-4rem)] place-content-center">
+        <ErrorComponent error={error} />
+      </div>
+    );
 
   return (
     <>
       <div className="flex h-[calc(100%-4rem)] min-h-[25rem] flex-col">
         {data?.length ? (
           <>
-            <div className="my-4 flex flex-auto justify-center">
-              <div className="basis-72">
+            <div className="my-4 flex justify-center">
+              <div className="flex flex-col gap-2">
                 <Datepicker
                   showShortcuts={true}
                   displayFormat={"DD/MM/YYYY"}
@@ -58,13 +74,26 @@ export default function HistoryChart({ entry }: { entry: Journal }) {
                     const start = value?.startDate;
                     const end = value?.endDate;
 
-                    if (start && end) {
+                    if (start && end && start !== end) {
                       setStart(new Date(start));
                       setEnd(new Date(end));
                       setDate({ startDate: start, endDate: end });
                     }
                   }}
                 />
+                <div className="form-control">
+                  <label className="label cursor-pointer">
+                    <span className="label-text">
+                      Include all days in between
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={allDays}
+                      onClick={() => setAllDays(!allDays)}
+                      className="checkbox-accent checkbox"
+                    />
+                  </label>
+                </div>
               </div>
             </div>
             <div className="flex basis-full justify-center">
@@ -72,7 +101,7 @@ export default function HistoryChart({ entry }: { entry: Journal }) {
                 <LineChart
                   width={300}
                   height={100}
-                  data={mapAnalyses(start, end, data)}
+                  data={allDays ? mapAnalyses(start, end, data) : data}
                   margin={{ top: 0, right: 50, bottom: 0, left: 0 }}
                 >
                   <Line
@@ -81,6 +110,7 @@ export default function HistoryChart({ entry }: { entry: Journal }) {
                     stroke="#1fb2a6"
                     strokeWidth={2}
                     activeDot={{ r: 8 }}
+                    dot={{ r: 4 }}
                   />
                   <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
                   <XAxis
