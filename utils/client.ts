@@ -1,8 +1,5 @@
-"use client";
-
-import { useState } from "react";
-import useSWR from "swr";
 import { z } from "zod";
+import { addDays } from "date-fns";
 import { Analysis, Journal } from "@prisma/client";
 
 export async function createEntry() {
@@ -54,37 +51,6 @@ export async function deleteEntry(id: string) {
   if (!response.ok) await handleError(response);
 }
 
-export function useEntries() {
-  return useSWR<Journal[], Error>("/api/journal", async (url: string) => {
-    const response = await fetch(new Request(createURL(url)), {
-      method: "GET",
-    });
-
-    if (!response.ok) await handleError(response);
-
-    const { entries } = (await response.json()) as { entries: Journal[] };
-
-    return entries;
-  });
-}
-
-export function useAnalysis(date: Date) {
-  return useSWR<Analysis[], Error>(date.toDateString(), async () => {
-    const response = await fetch(
-      new Request(createURL("/api/analysis/"), {
-        method: "POST",
-        body: JSON.stringify({ date }),
-      }),
-    );
-
-    if (!response.ok) await handleError(response);
-
-    const { analyses } = (await response.json()) as { analyses: Analysis[] };
-
-    return analyses;
-  });
-}
-
 export async function askQuestion(question: string) {
   const response = await fetch(
     new Request(createURL("/api/question"), {
@@ -102,6 +68,29 @@ export async function askQuestion(question: string) {
   return data;
 }
 
+export function mapAnalyses(start: Date, end: Date, analyses: Analysis[]) {
+  const range: Date[] = [];
+  let current = start;
+
+  while (current <= end) {
+    range.push(current);
+
+    current = addDays(current, 1);
+  }
+
+  return range.map((date) => {
+    const analysis = analyses.find(
+      (analysis) =>
+        new Date(analysis.date).toDateString() === date.toDateString(),
+    );
+
+    if (analysis) return analysis;
+
+    return {
+      date,
+    };
+  });
+}
 export function errorAlert(error: unknown) {
   if (error instanceof Error) {
     console.error(error.message);
@@ -114,23 +103,7 @@ export function errorAlert(error: unknown) {
   }
 }
 
-export function useTheme() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-
-  window
-    .matchMedia("(prefers-color-scheme: dark)")
-    .addEventListener("change", (event) => {
-      event.matches ? setTheme("dark") : setTheme("light");
-    });
-
-  return theme;
-}
-
-function createURL(path: string) {
-  return window.location.origin + "" + path;
-}
-
-async function handleError(response: Response) {
+export async function handleError(response: Response) {
   const data = (await response.json()) as {
     message: string;
     error?: unknown;
@@ -138,4 +111,8 @@ async function handleError(response: Response) {
 
   if (data.error) console.error(data.error);
   throw new Error(data.message);
+}
+
+export function createURL(path: string) {
+  return window.location.origin + "" + path;
 }

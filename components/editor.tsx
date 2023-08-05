@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Analysis, Journal } from "@prisma/client";
 import { useAutosave } from "react-autosave";
+import Datepicker, { DateValueType } from "react-tailwindcss-datepicker";
 import { AiOutlineDelete } from "react-icons/ai";
 import { z } from "zod";
 import {
@@ -21,14 +22,16 @@ interface PropTypes {
 
 export default function Editor({ entry, analysis }: PropTypes) {
   const [content, setContent] = useState(entry.content);
-  const [date, setDate] = useState(entry.date);
+  const [date, setDate] = useState<DateValueType>({
+    startDate: entry.date,
+    endDate: entry.date,
+  });
   const [localAnalysis, setLocalAnalysis] = useState(analysis);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const previous = useRef(content);
   const modal = useRef<HTMLDialogElement>(null);
-  const dateRef = useRef<HTMLInputElement>(null);
 
   const router = useRouter();
 
@@ -59,31 +62,36 @@ export default function Editor({ entry, analysis }: PropTypes) {
   return (
     <div className="h-0 min-h-full lg:flex">
       <div className="lg:basis-full">
-        <div className="flex justify-between p-4">
+        <div className="flex items-center justify-between p-4">
           <div className="tooltip tooltip-right" data-tip="Date of Entry">
             <h2 className="text-lg font-medium text-accent">
-              <input
-                type="date"
-                value={new Date(date).toISOString().split("T")[0]}
-                ref={dateRef}
-                onKeyDown={() => false}
-                onFocus={() => dateRef.current?.showPicker()}
-                onChange={(event) => {
-                  try {
-                    z.string()
-                      .datetime()
-                      .parse(event.target.value + "T00:00:00Z");
+              <Datepicker
+                useRange={false}
+                asSingle={true}
+                displayFormat={"DD/MM/YYYY"}
+                primaryColor={"teal"}
+                inputClassName="cursor-pointer w-48 rounded-lg bg-base-200 text-base-content px-4 py-3 focus:bg-base-300"
+                showShortcuts={true}
+                configs={{
+                  shortcuts: {
+                    today: "Today",
+                    yesterday: "Yesterday",
+                  },
+                }}
+                value={date}
+                onChange={(value: DateValueType) => {
+                  setDate(value);
 
-                    const date = new Date(event.target.value);
+                  if (value?.startDate) {
+                    const date = new Date(value.startDate.toString());
 
-                    setDate(date);
-
-                    void updateDate(date, entry.id);
-                  } catch (error) {
-                    errorAlert(error);
+                    try {
+                      void updateDate(z.date().parse(date), entry.id);
+                    } catch (error) {
+                      errorAlert(error);
+                    }
                   }
                 }}
-                className="cursor-pointer rounded-lg bg-base-200 px-4 py-2 focus:bg-base-300"
               />
             </h2>
           </div>

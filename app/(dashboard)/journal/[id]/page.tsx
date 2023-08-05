@@ -1,6 +1,5 @@
 import Editor from "@/components/editor";
-import { getUserByClerkId } from "@/utils/auth";
-import { prisma } from "@/utils/db";
+import { getEntry } from "@/utils/server";
 
 interface PropTypes {
   params: { id: string };
@@ -12,15 +11,4 @@ export default async function EntryPage({ params: { id } }: PropTypes) {
   if (!entry.analysis) throw new Error("Failed to fetch analysis");
 
   return <Editor entry={entry} analysis={entry.analysis} />;
-}
-
-async function getEntry(id: string) {
-  const user = await getUserByClerkId();
-
-  const entry = await prisma.journal.findUniqueOrThrow({
-    where: { userId_id: { userId: user.id, id } },
-    include: { analysis: true },
-  });
-
-  return entry;
 }

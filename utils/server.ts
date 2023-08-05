@@ -1,7 +1,28 @@
 import { NextResponse } from "next/server";
+import { Analysis } from "@prisma/client";
 import { prisma } from "./db";
 import { analyze } from "./ai";
-import { getMonth, getWeek, getYear } from "date-fns";
+import { getUserByClerkId } from "./auth";
+
+export async function getEntry(id: string) {
+  const user = await getUserByClerkId();
+
+  const entry = await prisma.journal.findUniqueOrThrow({
+    where: { userId_id: { userId: user.id, id } },
+    include: { analysis: true },
+  });
+
+  return entry;
+}
+
+export async function getLatestEntry() {
+  const user = await getUserByClerkId();
+
+  return await prisma.journal.findFirst({
+    where: { userId: user.id },
+    orderBy: { date: "desc" },
+  });
+}
 
 interface ClerkUser {
   id: string;
@@ -27,9 +48,6 @@ export async function createEntry(user: ClerkUser) {
       summery: "",
       entryId: entry.id,
       date: entry.date,
-      week: getWeek(entry.date),
-      month: getMonth(entry.date),
-      year: getYear(entry.date),
       userId: user.id,
     },
   });
@@ -48,8 +66,10 @@ export async function updateContent(
       data: { content },
     });
 
-    if (content.trim().length === 0) {
-      const analysis = await prisma.analysis.update({
+    let analysis: Analysis;
+
+    if (content.trim().length === 0)
+      analysis = await prisma.analysis.update({
         where: { entryId: entry.id },
         data: {
           emoji: "",
@@ -59,34 +79,29 @@ export async function updateContent(
           sentiment: 0,
         },
       });
-
-      return NextResponse.json(
-        {
-          analysis,
-        },
-        { status: 200 },
+    else {
+      const { mood, emoji, sentiment, subject, summery } = await analyze(
+        content,
       );
-    } else {
-      const openAiResponse = await analyze(content);
 
-      const analysis = await prisma.analysis.update({
+      analysis = await prisma.analysis.update({
         where: { entryId: entry.id },
         data: {
-          emoji: openAiResponse.emoji,
-          mood: openAiResponse.mood,
-          subject: openAiResponse.subject,
-          summery: openAiResponse.summery,
-          sentiment: openAiResponse.sentimentScore,
+          emoji,
+          mood,
+          subject,
+          summery,
+          sentiment,
         },
       });
-
-      return NextResponse.json(
-        {
-          analysis,
-        },
-        { status: 200 },
-      );
     }
+
+    return NextResponse.json(
+      {
+        analysis,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     return errorResponse(error, 500);
   }

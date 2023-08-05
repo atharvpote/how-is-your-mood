@@ -12,12 +12,6 @@ export async function GET() {
       orderBy: { date: "desc" },
     });
 
-    if (!entries.length)
-      return NextResponse.json(
-        { message: "No matching records found" },
-        { status: 500 },
-      );
-
     return NextResponse.json({ entries }, { status: 200 });
   } catch (error) {
     return errorResponse(error, 401);

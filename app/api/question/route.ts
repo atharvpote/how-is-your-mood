@@ -23,12 +23,6 @@ export async function POST(request: Request) {
         },
       });
 
-      if (!entries.length)
-        return NextResponse.json(
-          { message: "No matching records found" },
-          { status: 500 },
-        );
-
       try {
         const answer = await qa(data.question, entries);
 

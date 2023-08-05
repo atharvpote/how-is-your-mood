@@ -1,18 +1,15 @@
-import HistoryChart from "@/components/historyChart";
-import { getUserByClerkId } from "@/utils/auth";
-import { prisma } from "@/utils/db";
+import HistoryChart from "@/components/chart";
+import { getLatestEntry } from "@/utils/server";
 
-export default function History() {
+export default async function History() {
+  const entry = await getLatestEntry();
+
   return (
-    <div className="">
-      <div className="mx-4 mb-4 h-10 text-xl font-semibold">History</div>
-      <HistoryChart />
-    </div>
+    <>
+      <div className="mx-8 my-4">
+        <h2 className="text-3xl font-medium text-accent">History</h2>
+      </div>
+      {entry ? <HistoryChart entry={entry} /> : <div></div>}
+    </>
   );
 }
-
-// async function test() {
-//   const data = await prisma.analysis.findMany({
-//     where: { userId: (await getUserByClerkId()).id, week: 31 },
-//   });
-// }

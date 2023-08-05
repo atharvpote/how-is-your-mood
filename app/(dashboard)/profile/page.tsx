@@ -1,8 +1,8 @@
 "use client";
 
-import { useTheme } from "@/utils/client";
 import { UserProfile } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
+import { useTheme } from "@/utils/hooks";
 
 export default function Profile() {
   const elements = { card: "shadow-none bg-base-100" };

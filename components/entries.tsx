@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { createEntry, errorAlert, useEntries } from "@/utils/client";
+import { createEntry, errorAlert } from "@/utils/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AiOutlinePlusSquare } from "react-icons/ai";
 import { TopLoadingSpinner } from "./loading";
 import ErrorComponent from "./error";
+import { useEntries } from "@/utils/hooks";
 
 export default function Entries() {
   const { data, error, isLoading } = useEntries();

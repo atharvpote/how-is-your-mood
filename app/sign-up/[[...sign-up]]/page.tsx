@@ -1,8 +1,8 @@
 "use client";
 
-import { useTheme } from "@/utils/client";
 import { SignUp } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
+import { useTheme } from "@/utils/hooks";
 
 export default function SignUpPage() {
   const elements = { card: "bg-base-100" };
