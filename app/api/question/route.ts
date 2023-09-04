@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       try {
         const answer = await qa(data.question, entries);
 
-        return NextResponse.json({ data: answer }, { status: 200 });
+        return NextResponse.json({ answer }, { status: 200 });
       } catch (error) {
         return errorResponse(error, 500);
       }

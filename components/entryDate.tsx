@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Datepicker, { DateValueType } from "react-tailwindcss-datepicker";
-import { errorAlert, updateDate } from "@/utils/client";
+import { displayError, updateDate } from "@/utils/client";
 
 interface PropTypes {
   entryDate: Date;
@@ -37,7 +37,7 @@ export default function EntryDate({ entryDate, entryId }: PropTypes) {
 
             if (value?.startDate)
               updateDate(new Date(value.startDate.toString()), entryId).catch(
-                (error) => errorAlert(error),
+                (error) => displayError(error),
               );
           }}
         />

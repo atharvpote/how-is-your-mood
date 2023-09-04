@@ -38,8 +38,6 @@ model Journal {
 
   @@unique([userId, id])
   @@unique([id, date])
-  @@index([date])
-  @@index([userId])
 }
 
 model Analysis {
@@ -61,6 +59,5 @@ model Analysis {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([entryId, date])
-  @@index([userId])
-  @@index([entryId])
+  @@unique([userId, entryId])
 }

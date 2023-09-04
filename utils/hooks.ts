@@ -2,18 +2,14 @@
 
 import { useState } from "react";
 import useSWR from "swr";
+import axios from "axios";
 import { Journal, Analysis } from "@prisma/client";
-import { createURL, handleError } from "./client";
 
 export function useEntries() {
   return useSWR<Journal[], Error>("/api/journal", async (url: string) => {
-    const response = await fetch(new Request(createURL(url)), {
-      method: "GET",
-    });
-
-    if (!response.ok) await handleError(response);
-
-    const { entries } = (await response.json()) as { entries: Journal[] };
+    const {
+      data: { entries },
+    } = await axios.get<{ entries: Journal[] }>(url);
 
     return entries;
   });
@@ -21,16 +17,12 @@ export function useEntries() {
 
 export function useAnalyses(start: Date, end: Date) {
   return useSWR<Analysis[], Error>({ start, end }, async () => {
-    const response = await fetch(
-      new Request(createURL("/api/analysis/"), {
-        method: "POST",
-        body: JSON.stringify({ start, end }),
-      }),
-    );
-
-    if (!response.ok) await handleError(response);
-
-    const { analyses } = (await response.json()) as { analyses: Analysis[] };
+    const {
+      data: { analyses },
+    } = await axios.post<{ analyses: Analysis[] }>("/api/analysis/", {
+      start,
+      end,
+    });
 
     return analyses;
   });

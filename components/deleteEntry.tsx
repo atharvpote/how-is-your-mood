@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AiOutlineDelete } from "react-icons/ai";
-import { deleteEntry, errorAlert } from "@/utils/client";
+import { deleteEntry, displayError } from "@/utils/client";
 
 export default function DeleteEntry({ entryId }: { entryId: string }) {
   const [deleting, setDeleting] = useState(false);
@@ -46,7 +46,7 @@ export default function DeleteEntry({ entryId }: { entryId: string }) {
 
                 deleteEntry(entryId)
                   .then(() => router.replace("/journal/"))
-                  .catch((error) => errorAlert(error));
+                  .catch((error) => displayError(error));
               }}
               className="btn btn-error btn-outline"
             >

@@ -20,12 +20,12 @@ import ErrorComponent from "./error";
 import CustomTooltip from "./tooltip";
 
 interface PropTypes {
-  latestEntry: Journal;
+  mostRecentEntry: Journal;
 }
 
-export default function HistoryChart({ latestEntry }: PropTypes) {
-  const weekStartDayOfLatestEntry = startOfWeek(latestEntry.date);
-  const weekEndOfLatestEntry = endOfWeek(latestEntry.date);
+export default function HistoryChart({ mostRecentEntry }: PropTypes) {
+  const weekStartDayOfLatestEntry = startOfWeek(mostRecentEntry.date);
+  const weekEndOfLatestEntry = endOfWeek(mostRecentEntry.date);
 
   const [start, setStart] = useState(weekStartDayOfLatestEntry);
   const [end, setEnd] = useState(weekEndOfLatestEntry);

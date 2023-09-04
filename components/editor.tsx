@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAutosave } from "react-autosave";
 import { Analysis, Journal } from "@prisma/client";
-import { errorAlert, updateContent } from "@/utils/client";
+import { displayError, updateContent } from "@/utils/client";
 import { LoadingSpinner } from "./loading";
 import DeleteEntry from "./deleteEntry";
 import EntryDate from "./entryDate";
@@ -32,11 +32,11 @@ export default function Editor({ entry, analysis }: PropTypes) {
         setLoadingAnalysis(true);
 
         updateContent(content, entry.id)
-          .then((data) => {
-            setLocalAnalysis(data.analysis);
+          .then((analysis) => {
+            setLocalAnalysis(analysis);
             previous.current = content;
           })
-          .catch((error) => errorAlert(error))
+          .catch((error) => displayError(error))
           .finally(() => setLoadingAnalysis(false));
       }
     },

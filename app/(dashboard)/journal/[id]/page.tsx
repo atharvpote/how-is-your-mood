@@ -6,13 +6,11 @@ interface PropTypes {
 }
 
 export default async function EntryPage({ params: { id } }: PropTypes) {
-  const entry = await getEntry(id);
-
-  if (!entry.analysis) throw new Error("Failed to fetch analysis");
+  const { entry, analysis } = await getEntry(id);
 
   return (
     <div className="h-0 min-h-[calc(100vh-4rem)]">
-      <Editor entry={entry} analysis={entry.analysis} />
+      <Editor entry={entry} analysis={analysis} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { askQuestion, errorAlert } from "@/utils/client";
+import { askQuestion, displayError } from "@/utils/client";
 import { LoadingSpinner } from "./loading";
 
 export default function Question() {
@@ -20,7 +20,7 @@ export default function Question() {
 
             askQuestion(value)
               .then((answer) => setAnswer(answer))
-              .catch((error) => errorAlert(error))
+              .catch((error) => displayError(error))
               .finally(() => setLoading(false));
           }
         }}

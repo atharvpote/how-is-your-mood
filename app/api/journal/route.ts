@@ -22,15 +22,9 @@ export async function POST() {
   try {
     const user = await getUserByClerkId();
 
-    const { entry, analysis } = await createEntry(user);
+    const id = await createEntry(user);
 
-    return NextResponse.json(
-      {
-        entry,
-        analysis,
-      },
-      { status: 201 },
-    );
+    return NextResponse.json({ id }, { status: 201 });
   } catch (error) {
     return errorResponse(error, 401);
   }

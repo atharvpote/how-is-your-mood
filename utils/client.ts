@@ -1,80 +1,55 @@
 import { z } from "zod";
+import axios, { isAxiosError } from "axios";
 import { addDays } from "date-fns";
-import { Analysis, Journal } from "@prisma/client";
+import { Analysis } from "@prisma/client";
 
 const idValidation = z.string().uuid();
 
 export async function createEntry() {
-  const response = await fetch(new Request(createURL("/api/journal")), {
-    method: "POST",
-  });
+  const {
+    data: { id },
+  } = await axios.post<{ id: string }>("/api/journal");
 
-  if (!response.ok) await handleError(response);
-
-  const data = (await response.json()) as {
-    entry: Journal;
-    analysis: Analysis;
-  };
-
-  return data.entry.id;
+  return id;
 }
 
 export async function updateContent(content: string, id: string) {
   idValidation.parse(id);
 
-  const response = await fetch(
-    new Request(createURL(`/api/journal/${id}`), {
-      method: "PUT",
-      body: JSON.stringify({ type: "content", content }),
-    }),
-  );
+  const {
+    data: { analysis },
+  } = await axios.put<{ analysis: Analysis }>(`/api/journal/${id}`, {
+    type: "content",
+    content,
+  });
 
-  if (!response.ok) await handleError(response);
-
-  const data = (await response.json()) as { analysis: Analysis };
-
-  return { analysis: data.analysis };
+  return analysis;
 }
 
 export async function updateDate(date: Date, id: string) {
   z.date().parse(date);
   idValidation.parse(id);
 
-  const response = await fetch(
-    new Request(createURL(`/api/journal/${id}`), {
-      method: "PUT",
-      body: JSON.stringify({ type: "date", date }),
-    }),
-  );
-
-  if (!response.ok) await handleError(response);
+  await axios.put(`/api/journal/${id}`, {
+    type: "date",
+    date,
+  });
 }
 
 export async function deleteEntry(id: string) {
   idValidation.parse(id);
 
-  const response = await fetch(new Request(createURL(`/api/journal/${id}`)), {
-    method: "DELETE",
-  });
-
-  if (!response.ok) await handleError(response);
+  await axios.delete(`/api/journal/${id}`);
 }
 
 export async function askQuestion(question: string) {
-  const response = await fetch(
-    new Request(createURL("/api/question"), {
-      method: "POST",
-      body: JSON.stringify({ question }),
-    }),
-  );
+  const {
+    data: { answer },
+  } = await axios.post<{ answer: string }>("/api/question", {
+    question,
+  });
 
-  if (!response.ok) await handleError(response);
-
-  const responseData: unknown = await response.json();
-
-  const { data } = z.object({ data: z.string() }).parse(responseData);
-
-  return data;
+  return answer;
 }
 
 export function mapAnalyses(start: Date, end: Date, analyses: Analysis[]) {
@@ -95,13 +70,12 @@ export function mapAnalyses(start: Date, end: Date, analyses: Analysis[]) {
 
     if (analysis) return analysis;
 
-    return {
-      date,
-    };
+    return { date };
   });
 }
-export function errorAlert(error: unknown) {
-  if (error instanceof Error) {
+
+export function displayError(error: unknown) {
+  if (isAxiosError(error)) {
     console.error(error.message);
 
     alert(error.message);
@@ -110,18 +84,4 @@ export function errorAlert(error: unknown) {
 
     alert("Unknown error");
   }
-}
-
-export async function handleError(response: Response) {
-  const data = (await response.json()) as {
-    message: string;
-    error?: unknown;
-  };
-
-  if (data.error) console.error(data.error);
-  throw new Error(data.message);
-}
-
-export function createURL(path: string) {
-  return window.location.origin + "" + path;
 }

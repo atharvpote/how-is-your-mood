@@ -9,13 +9,16 @@ export async function getEntry(id: string) {
 
   const entry = await prisma.journal.findUniqueOrThrow({
     where: { userId_id: { userId: user.id, id } },
-    include: { analysis: true },
   });
 
-  return entry;
+  const analysis = await prisma.analysis.findUniqueOrThrow({
+    where: { userId_entryId: { userId: user.id, entryId: id } },
+  });
+
+  return { entry, analysis };
 }
 
-export async function getLatestEntry() {
+export async function getMostRecentEntry() {
   const user = await getUserByClerkId();
 
   return await prisma.journal.findFirst({
@@ -52,7 +55,7 @@ export async function createEntry(user: ClerkUser) {
     },
   });
 
-  return { entry, analysis };
+  return analysis.entryId;
 }
 
 export async function updateContent(
@@ -80,9 +83,8 @@ export async function updateContent(
         },
       });
     else {
-      const { mood, emoji, sentiment, subject, summery } = await analyze(
-        content,
-      );
+      const { mood, emoji, sentiment, subject, summery } =
+        await analyze(content);
 
       analysis = await prisma.analysis.update({
         where: { entryId: entry.id },
@@ -96,12 +98,7 @@ export async function updateContent(
       });
     }
 
-    return NextResponse.json(
-      {
-        analysis,
-      },
-      { status: 200 },
-    );
+    return NextResponse.json({ analysis }, { status: 200 });
   } catch (error) {
     return errorResponse(error, 500);
   }
