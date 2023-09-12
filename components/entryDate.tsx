@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Datepicker, { DateValueType } from "react-tailwindcss-datepicker";
 import { displayError, updateDate } from "@/utils/client";
+import useEntryDate from "@/utils/hooks";
 
 interface PropTypes {
   entryDate: Date;
@@ -14,6 +15,15 @@ export default function EntryDate({ entryDate, entryId }: PropTypes) {
     startDate: entryDate,
     endDate: entryDate,
   });
+  const { data: upstreamDate } = useEntryDate(entryId);
+
+  useEffect(() => {
+    if (upstreamDate)
+      setDate({
+        startDate: upstreamDate,
+        endDate: upstreamDate,
+      });
+  }, [upstreamDate]);
 
   return (
     <div className="tooltip tooltip-right" data-tip="Date of Entry">

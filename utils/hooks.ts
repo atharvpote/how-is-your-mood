@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import useSWR from "swr";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Journal, Analysis } from "@prisma/client";
 
 export function useEntries() {
-  return useSWR<Journal[], Error>("/api/journal", async (url: string) => {
+  return useSWR<Journal[], AxiosError>("/api/journal", async (url: string) => {
     const {
       data: { entries },
     } = await axios.get<{ entries: Journal[] }>(url);
@@ -16,7 +16,7 @@ export function useEntries() {
 }
 
 export function useAnalyses(start: Date, end: Date) {
-  return useSWR<Analysis[], Error>({ start, end }, async () => {
+  return useSWR<Analysis[], AxiosError>({ start, end }, async () => {
     const {
       data: { analyses },
     } = await axios.post<{ analyses: Analysis[] }>("/api/analysis/", {
@@ -25,6 +25,16 @@ export function useAnalyses(start: Date, end: Date) {
     });
 
     return analyses;
+  });
+}
+
+export default function useEntryDate(id: string) {
+  return useSWR<Date, AxiosError>(`/api/journal/${id}`, async (url: string) => {
+    const {
+      data: { date },
+    } = await axios.get<{ date: Date }>(url);
+
+    return date;
   });
 }
 

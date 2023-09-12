@@ -16,7 +16,7 @@ interface PropTypes {
 
 export default function Editor({ entry, analysis }: PropTypes) {
   const [content, setContent] = useState(entry.content);
-  const [localAnalysis, setLocalAnalysis] = useState(analysis);
+  const [analysisState, setAnalysisState] = useState(analysis);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
 
   const previous = useRef(content);
@@ -33,7 +33,7 @@ export default function Editor({ entry, analysis }: PropTypes) {
 
         updateContent(content, entry.id)
           .then((analysis) => {
-            setLocalAnalysis(analysis);
+            setAnalysisState(analysis);
             previous.current = content;
           })
           .catch((error) => displayError(error))
@@ -68,7 +68,7 @@ export default function Editor({ entry, analysis }: PropTypes) {
         ) : (
           <>
             {content.trim().length !== 0 ? (
-              <AnalysisTable analysis={localAnalysis} />
+              <AnalysisTable analysis={analysisState} />
             ) : (
               <div></div>
             )}

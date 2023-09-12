@@ -46,7 +46,8 @@ export default function DeleteEntry({ entryId }: { entryId: string }) {
 
                 deleteEntry(entryId)
                   .then(() => router.replace("/journal/"))
-                  .catch((error) => displayError(error));
+                  .catch((error) => displayError(error))
+                  .finally(() => setDeleting(false));
               }}
               className="btn btn-error btn-outline"
             >
