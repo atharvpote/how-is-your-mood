@@ -1,7 +1,8 @@
 import { z } from "zod";
 import axios, { isAxiosError } from "axios";
 import { addDays } from "date-fns";
-import { Analysis } from "@prisma/client";
+import { EntryAnalysis } from "./server";
+import { ChartAnalysis } from "./hooks";
 
 const idValidation = z.string().uuid();
 
@@ -18,7 +19,7 @@ export async function updateContent(content: string, id: string) {
 
   const {
     data: { analysis },
-  } = await axios.put<{ analysis: Analysis }>(`/api/journal/${id}`, {
+  } = await axios.put<{ analysis: EntryAnalysis }>(`/api/journal/${id}`, {
     type: "content",
     content,
   });
@@ -52,7 +53,7 @@ export async function askQuestion(question: string) {
   return answer;
 }
 
-export function mapAnalyses(start: Date, end: Date, analyses: Analysis[]) {
+export function mapAnalyses(start: Date, end: Date, analyses: ChartAnalysis[]) {
   const range: Date[] = [];
   let current = start;
 

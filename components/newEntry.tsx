@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AiOutlinePlusSquare } from "react-icons/ai";
+import { AiOutlinePlus } from "react-icons/ai";
 import { displayError, createEntry } from "@/utils/client";
 
 export default function NewEntry() {
@@ -10,28 +10,28 @@ export default function NewEntry() {
   const router = useRouter();
 
   return (
-    <div className="tooltip tooltip-left" data-tip="New">
-      <button
-        aria-label="new entry"
-        key="new"
-        onClick={() => {
-          setCreatingNewEntry(true);
+    <button
+      aria-label="new entry"
+      onClick={() => {
+        setCreatingNewEntry(true);
 
-          createEntry()
-            .then((id) => router.push(`/journal/${id}`))
-            .catch((error) => displayError(error))
-            .finally(() => setCreatingNewEntry(false));
-        }}
-        className="btn btn-square"
-      >
-        {creatingNewEntry ? (
+        createEntry()
+          .then((id) => router.push(`/journal/${id}`))
+          .catch((error) => displayError(error))
+          .finally(() => setCreatingNewEntry(false));
+      }}
+      className="btn bg-neutral text-neutral-content hover:bg-neutral-focus"
+    >
+      {creatingNewEntry ? (
+        <div className="grid w-16 place-content-center text-neutral-content/50">
           <span className="loading loading-infinity"></span>
-        ) : (
-          <div className="">
-            <AiOutlinePlusSquare className="text-3xl" />
-          </div>
-        )}
-      </button>
-    </div>
+        </div>
+      ) : (
+        <div className="flex w-16 items-center justify-between">
+          <AiOutlinePlus className="text-lg" />
+          <span className="text-lg capitalize">New</span>
+        </div>
+      )}
+    </button>
   );
 }

@@ -1,9 +1,9 @@
+import { ChartAnalysis } from "@/utils/hooks";
 import { TooltipProps } from "recharts";
 import {
   ValueType,
   NameType,
 } from "recharts/types/component/DefaultTooltipContent";
-import { Analysis } from "@prisma/client";
 
 export default function CustomTooltip({
   active,
@@ -18,11 +18,11 @@ export default function CustomTooltip({
   });
 
   if (active && payload?.length) {
-    const analysis = payload[0].payload as Analysis;
+    const analysis = payload[0].payload as ChartAnalysis;
 
     return (
-      <div className="rounded-lg border border-white/25 bg-base-200/25 px-6 py-3 shadow-md backdrop-blur dark:border-black/25">
-        <p className="label text-sm text-accent">{dateLabel}</p>
+      <div className="rounded-lg border border-white/25 bg-neutral px-6 py-3 text-neutral-content shadow-md backdrop-blur dark:border-black/25">
+        <p className="label text-sm">{dateLabel}</p>
         <p className="text-xl capitalize">
           {analysis.mood} {String.fromCodePoint(Number(analysis.emoji))}
         </p>

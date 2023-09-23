@@ -2,16 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAutosave } from "react-autosave";
-import { Analysis, Journal } from "@prisma/client";
 import { displayError, updateContent } from "@/utils/client";
 import { LoadingSpinner } from "./loading";
 import DeleteEntry from "./deleteEntry";
 import EntryDate from "./entryDate";
 import AnalysisTable from "./analysisTable";
+import { EntryAnalysis } from "@/utils/server";
+import { Entry } from "@/utils/hooks";
 
 interface PropTypes {
-  entry: Journal;
-  analysis: Analysis;
+  entry: Entry;
+  analysis: EntryAnalysis;
 }
 
 export default function Editor({ entry, analysis }: PropTypes) {
@@ -54,13 +55,13 @@ export default function Editor({ entry, analysis }: PropTypes) {
             value={content}
             spellCheck={true}
             onChange={(event) => setContent(event.target.value)}
-            className="textarea h-full w-full resize-none rounded-lg bg-base-200 px-6 py-4 text-base"
+            className="textarea h-full w-full resize-none rounded-lg bg-neutral px-6 py-4 text-base text-neutral-content"
           />
         </div>
       </div>
       <div className="divider lg:divider-horizontal lg:basis-auto"></div>
       <section className="mx-4 overflow-x-auto lg:mx-0 lg:basis-2/5">
-        <h2 className="my-6 text-2xl font-medium">Analysis</h2>
+        <h2 className="my-6 text-2xl font-bold">Analysis</h2>
         {loadingAnalysis ? (
           <div className="lg:grid lg:h-[calc(100%-5.4rem)] lg:place-content-center">
             <LoadingSpinner />

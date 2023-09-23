@@ -1,22 +1,13 @@
 "use client";
 
-import { SignUp } from "@clerk/nextjs";
+import { SignUp as ClerkSignUp } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
-import { useTheme } from "@/utils/hooks";
+import { useGlobalTheme } from "@/utils/hooks";
 
-export default function SignUpComponent() {
-  const elements = { card: "bg-base-100" };
-
+export default function SignUp() {
   return (
-    <SignUp
-      appearance={
-        useTheme() === "dark"
-          ? {
-              baseTheme: dark,
-              elements,
-            }
-          : { elements }
-      }
+    <ClerkSignUp
+      appearance={useGlobalTheme() === "dark" ? { baseTheme: dark } : {}}
     />
   );
 }

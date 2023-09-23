@@ -2,20 +2,17 @@
 
 import { UserProfile } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
-import { useTheme } from "@/utils/hooks";
+import { useGlobalTheme } from "@/utils/hooks";
 
-export default function ProfileComponent() {
-  const elements = { card: "shadow-none bg-base-100" };
-
+export default function Profile() {
   return (
     <UserProfile
       appearance={
-        useTheme() === "dark"
+        useGlobalTheme() === "dark"
           ? {
               baseTheme: dark,
-              elements,
             }
-          : { elements }
+          : {}
       }
     />
   );

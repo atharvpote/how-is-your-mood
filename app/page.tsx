@@ -8,16 +8,18 @@ export default function Home() {
   return (
     <div className="hero min-h-screen bg-base-200">
       <div className="hero-content text-center">
-        <div className="max-w-md">
-          <h1 className="text-5xl font-bold">The best Journal app, period.</h1>
+        <header className="max-w-md">
+          <h1 className="text-5xl font-bold capitalize">
+            The best Journal app, period.
+          </h1>
           <p className="py-6">
             This the best app for tracking your mood through out your life, All
             you have to do is be honest.
           </p>
-          <Link href="/sign-up" prefetch className="btn btn-accent">
+          <Link href="/sign-up" prefetch className="btn btn-primary">
             Get Started
           </Link>
-        </div>
+        </header>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getUserByClerkId } from "@/utils/auth";
+import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 import { errorResponse, updateContent, updateDate } from "@/utils/server";
 
@@ -12,11 +12,11 @@ interface ParamType {
 
 export async function GET(_: Request, { params: { id } }: ParamType) {
   try {
-    const user = await getUserByClerkId();
+    const userId = await getUserIdByClerkId();
 
     try {
       const { date } = await prisma.journal.findUniqueOrThrow({
-        where: { userId_id: { userId: user.id, id } },
+        where: { userId_id: { userId, id } },
         select: { date: true },
       });
 
@@ -39,17 +39,17 @@ export async function PUT(request: Request, { params: { id } }: ParamType) {
       .parse(await request.json());
 
     try {
-      const user = await getUserByClerkId();
+      const userId = await getUserIdByClerkId();
 
       if (data.type === "date") {
         const { date } = data;
 
-        return await updateDate(user.id, id, new Date(date));
+        return await updateDate(userId, id, new Date(date));
       }
 
       const { content } = data;
 
-      return await updateContent(user.id, id, content);
+      return await updateContent(userId, id, content);
     } catch (error) {
       return errorResponse(error, 401);
     }
@@ -60,11 +60,12 @@ export async function PUT(request: Request, { params: { id } }: ParamType) {
 
 export async function DELETE(_: Request, { params: { id } }: ParamType) {
   try {
-    const user = await getUserByClerkId();
+    const userId = await getUserIdByClerkId();
 
     try {
       await prisma.journal.delete({
-        where: { userId_id: { userId: user.id, id } },
+        where: { userId_id: { userId, id } },
+        select: {},
       });
 
       return NextResponse.json({ status: 200 });

@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
-import { getUserByClerkId } from "@/utils/auth";
+import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 import { createEntry, errorResponse } from "@/utils/server";
 
 export async function GET() {
   try {
-    const user = await getUserByClerkId();
+    const userId = await getUserIdByClerkId();
 
     const entries = await prisma.journal.findMany({
-      where: { userId: user.id },
+      where: { userId },
       orderBy: { date: "desc" },
+      select: { id: true, date: true, content: true },
     });
 
     return NextResponse.json({ entries }, { status: 200 });
@@ -20,9 +21,9 @@ export async function GET() {
 
 export async function POST() {
   try {
-    const user = await getUserByClerkId();
+    const userId = await getUserIdByClerkId();
 
-    const id = await createEntry(user);
+    const id = await createEntry(userId);
 
     return NextResponse.json({ id }, { status: 201 });
   } catch (error) {

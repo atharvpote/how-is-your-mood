@@ -6,5 +6,8 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./node_modules/react-tailwindcss-datepicker/dist/index.esm.js",
   ],
-  plugins: [require("daisyui")],
+  plugins: [require("@tailwindcss/typography"), require("daisyui")],
+  daisyui: {
+    themes: false,
+  },
 };

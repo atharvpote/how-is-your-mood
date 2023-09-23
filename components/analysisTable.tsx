@@ -1,7 +1,11 @@
+import { EntryAnalysis } from "@/utils/server";
 import { JSX, ReactElement } from "react";
-import { Analysis } from "@prisma/client";
 
-export default function AnalysisTable({ analysis }: { analysis: Analysis }) {
+export default function AnalysisTable({
+  analysis,
+}: {
+  analysis: EntryAnalysis;
+}) {
   const table = [
     {
       name: "Mood",

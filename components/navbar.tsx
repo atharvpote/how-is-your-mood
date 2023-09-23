@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { UserButton } from "@clerk/nextjs";
+import UserButton from "./userButton";
 
 export default function Navbar() {
   return (
@@ -25,25 +25,14 @@ export default function Navbar() {
         </label>
       </div>
       <div className="flex-1">
-        <Link href="/">
-          <h1 className="mx-4 text-xl font-bold capitalize lg:mx-0">
-            How is your <span className="text-accent">mood</span>?
-          </h1>
+        <Link href="/" className="btn btn-ghost">
+          <span className="text-xl font-bold capitalize lg:mx-0 lg:text-2xl">
+            How is your <span className="text-primary">mood</span>?
+          </span>
         </Link>
       </div>
       <div className="flex-none">
-        <UserButton
-          appearance={{
-            elements: {
-              userButtonPopoverCard: "bg-base-200 text-base-content",
-              userButtonPopoverActionButtonIcon: "text-base-content",
-              userButtonPopoverActionButtonText: "text-base-content",
-              userButtonPopoverFooter: "hidden",
-            },
-          }}
-          userProfileMode="navigation"
-          userProfileUrl="/profile"
-        />
+        <UserButton />
       </div>
     </div>
   );

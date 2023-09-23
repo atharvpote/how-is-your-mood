@@ -19,6 +19,7 @@ export default async function CreateNewUser() {
         clerkId: user.id,
         email: user.emailAddresses[0].emailAddress,
       },
+      select: {},
     });
 
   redirect("/journal");

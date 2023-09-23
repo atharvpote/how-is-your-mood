@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { qa } from "@/utils/ai";
-import { getUserByClerkId } from "@/utils/auth";
+import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 import { errorResponse } from "@/utils/server";
 
@@ -12,10 +12,10 @@ export async function POST(request: Request) {
     const data = z.object({ question: z.string() }).parse(requestData);
 
     try {
-      const user = await getUserByClerkId();
+      const userId = await getUserIdByClerkId();
 
       const entries = await prisma.journal.findMany({
-        where: { userId: user.id },
+        where: { userId },
         select: {
           id: true,
           createdAt: true,

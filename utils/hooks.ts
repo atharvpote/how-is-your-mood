@@ -5,8 +5,10 @@ import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { Journal, Analysis } from "@prisma/client";
 
+export type Entry = Pick<Journal, "id" | "date" | "content">;
+
 export function useEntries() {
-  return useSWR<Journal[], AxiosError>("/api/journal", async (url: string) => {
+  return useSWR<Entry[], AxiosError>("/api/journal", async (url: string) => {
     const {
       data: { entries },
     } = await axios.get<{ entries: Journal[] }>(url);
@@ -15,8 +17,13 @@ export function useEntries() {
   });
 }
 
+export type ChartAnalysis = Pick<
+  Analysis,
+  "sentiment" | "date" | "mood" | "emoji"
+>;
+
 export function useAnalyses(start: Date, end: Date) {
-  return useSWR<Analysis[], AxiosError>({ start, end }, async () => {
+  return useSWR<ChartAnalysis[], AxiosError>({ start, end }, async () => {
     const {
       data: { analyses },
     } = await axios.post<{ analyses: Analysis[] }>("/api/analysis/", {
@@ -38,7 +45,7 @@ export default function useEntryDate(id: string) {
   });
 }
 
-export function useTheme() {
+export function useGlobalTheme() {
   const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   const [theme, setTheme] = useState<"light" | "dark">(
     isDark ? "dark" : "light",

@@ -13,11 +13,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
-    <ClerkProvider appearance={{ variables: { colorPrimary: "#1dcdbc" } }}>
+    <ClerkProvider appearance={{ variables: { colorPrimary: "#6419e6" } }}>
       <html lang="en">
-        <body className={`bg-slate-50 dark:bg-slate-950 ${inter.className}`}>
-          {children}
-        </body>
+        <body className={`bg-base-100 ${inter.className}`}>{children}</body>
       </html>
     </ClerkProvider>
   );

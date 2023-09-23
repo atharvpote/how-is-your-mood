@@ -13,16 +13,19 @@ export default function DeleteEntry({ entryId }: { entryId: string }) {
   const router = useRouter();
 
   return (
-    <div className="tooltip tooltip-left" data-tip="Delete">
+    <>
       <button
         type="button"
         onClick={() => modal.current?.showModal()}
-        className="btn to-base-200 active:bg-base-300"
+        className="btn btn-error btn-outline"
       >
         {deleting ? (
           <span className="loading loading-infinity loading-md " />
         ) : (
-          <AiOutlineDelete className="text-xl" />
+          <div className="flex w-20 items-center justify-between">
+            <AiOutlineDelete className="text-xl" />
+            <span>Delete</span>
+          </div>
         )}
       </button>
       <dialog
@@ -60,6 +63,6 @@ export default function DeleteEntry({ entryId }: { entryId: string }) {
           <button>close</button>
         </form>
       </dialog>
-    </div>
+    </>
   );
 }

@@ -1,5 +1,5 @@
-import TopLevelLoading from "@/components/topLevelLoading";
+import PageLoading from "@/components/pageLoading";
 
 export default function Loading() {
-  return <TopLevelLoading />;
+  return <PageLoading />;
 }

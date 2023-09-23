@@ -1,15 +1,16 @@
 import { auth } from "@clerk/nextjs";
 import { prisma } from "./db";
 
-export async function getUserByClerkId() {
+export async function getUserIdByClerkId() {
   const { userId } = auth();
 
   if (!userId)
     throw new Error("Authentication credentials were missing or incorrect");
 
-  const user = await prisma.user.findUniqueOrThrow({
+  const { id } = await prisma.user.findUniqueOrThrow({
     where: { clerkId: userId },
+    select: { id: true },
   });
 
-  return user;
+  return id;
 }

@@ -1,9 +1,9 @@
-import SignUpComponent from "@/components/signUp";
+import SignUp from "@/components/signUp";
 
 export default function SignUpPage() {
   return (
     <div className="grid min-h-screen place-content-center">
-      <SignUpComponent />
+      <SignUp />
     </div>
   );
 }

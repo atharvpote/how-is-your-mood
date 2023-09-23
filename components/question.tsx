@@ -11,6 +11,9 @@ export default function Question() {
 
   return (
     <>
+      <div className="prose prose-sm mx-8 my-4 md:prose-base">
+        <h1>Question</h1>
+      </div>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -28,14 +31,14 @@ export default function Question() {
         <textarea
           placeholder="Ask a question"
           disabled={loading}
-          className="textarea textarea-bordered mx-auto block h-48 w-11/12 resize-none p-6 text-lg"
+          className="textarea textarea-bordered mx-auto block h-48 w-11/12 resize-none bg-neutral p-6 text-lg text-neutral-content"
           value={value}
           onChange={(event) => setValue(event.target.value)}
         />
         <button
           type="submit"
           disabled={loading}
-          className="btn btn-accent mx-auto my-4 block"
+          className="btn btn-neutral mx-auto my-4 block"
         >
           Ask
         </button>

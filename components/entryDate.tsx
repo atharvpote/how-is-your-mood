@@ -23,7 +23,7 @@ export default function EntryDate({ entryDate, entryId }: PropTypes) {
 
   return (
     <div className="tooltip tooltip-right" data-tip="Date of Entry">
-      <h2 className="text-lg font-medium text-accent">
+      <span className="text-lg font-medium text-neutral-content">
         <DatePicker
           selected={date}
           onChange={(date) => {
@@ -34,9 +34,9 @@ export default function EntryDate({ entryDate, entryId }: PropTypes) {
             }
           }}
           dateFormat="dd/MM/yyyy"
-          className="w-32 cursor-pointer rounded-lg bg-base-200 p-3"
+          className="w-32 cursor-pointer rounded-lg bg-neutral p-3 focus:bg-neutral-focus"
         />
-      </h2>
+      </span>
     </div>
   );
 }
