@@ -17,6 +17,7 @@ export async function GET(_: Request, { params: { id } }: ParamType) {
     try {
       const { date } = await prisma.journal.findUniqueOrThrow({
         where: { userId_id: { userId: user.id, id } },
+        select: { date: true },
       });
 
       return NextResponse.json({ date }, { status: 200 });

@@ -9,13 +9,12 @@ export async function getEntry(id: string) {
 
   const entry = await prisma.journal.findUniqueOrThrow({
     where: { userId_id: { userId: user.id, id } },
+    include: { analysis: true },
   });
 
-  const analysis = await prisma.analysis.findUniqueOrThrow({
-    where: { userId_entryId: { userId: user.id, entryId: id } },
-  });
+  if (!entry.analysis) throw new Error("NotFoundError: No Analysis found.");
 
-  return { entry, analysis };
+  return { entry, analysis: entry.analysis };
 }
 
 export async function getMostRecentEntry() {
@@ -35,27 +34,28 @@ interface ClerkUser {
   email: string;
 }
 
-export async function createEntry(user: ClerkUser) {
-  const entry = await prisma.journal.create({
+export async function createEntry({ id: userId }: ClerkUser) {
+  const { id: entryId, date } = await prisma.journal.create({
     data: {
-      userId: user.id,
+      userId,
       content: "",
     },
   });
 
-  const analysis = await prisma.analysis.create({
+  const { entryId: analysisEntryId } = await prisma.analysis.create({
     data: {
       emoji: "",
       mood: "",
       subject: "",
       summery: "",
-      entryId: entry.id,
-      date: entry.date,
-      userId: user.id,
+      entryId,
+      date,
+      userId,
     },
+    select: { entryId: true },
   });
 
-  return analysis.entryId;
+  return analysisEntryId;
 }
 
 export async function updateContent(
@@ -64,16 +64,17 @@ export async function updateContent(
   content: string,
 ) {
   try {
-    const entry = await prisma.journal.update({
+    const { id: journalEntryId } = await prisma.journal.update({
       where: { userId_id: { userId, id: entryId } },
       data: { content },
+      select: { id: true },
     });
 
     let analysis: Analysis;
 
     if (content.trim().length === 0)
       analysis = await prisma.analysis.update({
-        where: { entryId: entry.id },
+        where: { entryId: journalEntryId },
         data: {
           emoji: "",
           mood: "",
@@ -87,7 +88,7 @@ export async function updateContent(
         await analyze(content);
 
       analysis = await prisma.analysis.update({
-        where: { entryId: entry.id },
+        where: { entryId: journalEntryId },
         data: {
           emoji,
           mood,

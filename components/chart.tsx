@@ -11,13 +11,16 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
-import Datepicker, { DateValueType } from "react-tailwindcss-datepicker";
+import DatePicker from "react-datepicker";
 import { Journal } from "@prisma/client";
 import { mapAnalyses } from "@/utils/client";
 import { useAnalyses } from "@/utils/hooks";
 import { LoadingSpinner } from "./loading";
 import ErrorComponent from "./error";
 import CustomTooltip from "./tooltip";
+
+import "react-datepicker/dist/react-datepicker.css";
+import "@/style/datePicker.css";
 
 interface PropTypes {
   mostRecentEntry: Journal;
@@ -30,11 +33,6 @@ export default function HistoryChart({ mostRecentEntry }: PropTypes) {
   const [start, setStart] = useState(weekStartDayOfLatestEntry);
   const [end, setEnd] = useState(weekEndOfLatestEntry);
   const [allDays, setAllDays] = useState(false);
-
-  const [date, setDate] = useState<DateValueType>({
-    startDate: start,
-    endDate: end,
-  });
 
   const { data, error, isLoading } = useAnalyses(start, end);
 
@@ -59,29 +57,34 @@ export default function HistoryChart({ mostRecentEntry }: PropTypes) {
           <>
             <div className="my-4 flex justify-center">
               <div className="flex flex-col gap-2">
-                <Datepicker
-                  showShortcuts={true}
-                  displayFormat={"DD/MM/YYYY"}
-                  primaryColor={"teal"}
-                  inputClassName="cursor-pointer w-full rounded-lg bg-base-200 text-base-content px-4 py-3 focus:bg-base-300"
-                  configs={{
-                    shortcuts: {
-                      past: (period) => `Last ${period} days`,
-                    },
-                  }}
-                  value={date}
-                  onChange={(value: DateValueType) => {
-                    const start = value?.startDate;
-                    const end = value?.endDate;
-
-                    if (start && end && start !== end) {
-                      setStart(new Date(start));
-                      setEnd(new Date(end));
-                      setDate({ startDate: start, endDate: end });
-                    }
-                  }}
-                />
                 <div className="form-control">
+                  <div className="flex items-center gap-4">
+                    <span>From</span>
+                    <DatePicker
+                      selected={start}
+                      onChange={(date) => {
+                        if (date) setStart(date);
+                      }}
+                      selectsStart
+                      startDate={start}
+                      endDate={end}
+                      dateFormat="dd/MM/yyyy"
+                      className="w-32 cursor-pointer rounded-lg bg-base-200 p-3"
+                    />
+                    <span>To</span>
+                    <DatePicker
+                      selected={end}
+                      onChange={(date) => {
+                        if (date) setEnd(date);
+                      }}
+                      selectsEnd
+                      startDate={start}
+                      endDate={end}
+                      minDate={start}
+                      dateFormat="dd/MM/yyyy"
+                      className="w-32 cursor-pointer rounded-lg bg-base-200 p-3"
+                    />
+                  </div>
                   <label className="label cursor-pointer">
                     <span className="label-text">
                       Include all days in between
@@ -89,7 +92,7 @@ export default function HistoryChart({ mostRecentEntry }: PropTypes) {
                     <input
                       type="checkbox"
                       checked={allDays}
-                      onClick={() => setAllDays(!allDays)}
+                      onChange={() => setAllDays(!allDays)}
                       className="checkbox-accent checkbox"
                     />
                   </label>

@@ -67,10 +67,10 @@ export default function Editor({ entry, analysis }: PropTypes) {
           </div>
         ) : (
           <>
-            {content.trim().length !== 0 ? (
-              <AnalysisTable analysis={analysisState} />
-            ) : (
-              <div></div>
+            {content.trim().length !== 0 && (
+              <div className="pb-8">
+                <AnalysisTable analysis={analysisState} />
+              </div>
             )}
           </>
         )}

@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Datepicker, { DateValueType } from "react-tailwindcss-datepicker";
+import DatePicker from "react-datepicker";
 import { displayError, updateDate } from "@/utils/client";
 import useEntryDate from "@/utils/hooks";
+
+import "react-datepicker/dist/react-datepicker.css";
+import "@/style/datePicker.css";
 
 interface PropTypes {
   entryDate: Date;
@@ -11,45 +14,27 @@ interface PropTypes {
 }
 
 export default function EntryDate({ entryDate, entryId }: PropTypes) {
-  const [date, setDate] = useState<DateValueType>({
-    startDate: entryDate,
-    endDate: entryDate,
-  });
+  const [date, setDate] = useState(new Date(entryDate.toUTCString()));
   const { data: upstreamDate } = useEntryDate(entryId);
 
   useEffect(() => {
-    if (upstreamDate)
-      setDate({
-        startDate: upstreamDate,
-        endDate: upstreamDate,
-      });
+    if (upstreamDate) setDate(new Date(upstreamDate));
   }, [upstreamDate]);
 
   return (
     <div className="tooltip tooltip-right" data-tip="Date of Entry">
       <h2 className="text-lg font-medium text-accent">
-        <Datepicker
-          useRange={false}
-          asSingle={true}
-          displayFormat={"DD/MM/YYYY"}
-          primaryColor={"teal"}
-          inputClassName="cursor-pointer w-48 rounded-lg bg-base-200 text-base-content px-4 py-3 focus:bg-base-300"
-          showShortcuts={true}
-          configs={{
-            shortcuts: {
-              today: "Today",
-              yesterday: "Yesterday",
-            },
-          }}
-          value={date}
-          onChange={(value: DateValueType) => {
-            setDate(value);
+        <DatePicker
+          selected={date}
+          onChange={(date) => {
+            if (date) {
+              setDate(date);
 
-            if (value?.startDate)
-              updateDate(new Date(value.startDate.toString()), entryId).catch(
-                (error) => displayError(error),
-              );
+              updateDate(date, entryId).catch((error) => displayError(error));
+            }
           }}
+          dateFormat="dd/MM/yyyy"
+          className="w-32 cursor-pointer rounded-lg bg-base-200 p-3"
         />
       </h2>
     </div>

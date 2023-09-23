@@ -1,0 +1,35 @@
+:root {
+  --bg-base-300: #e5e6e6;
+  --bg-accent: #1fb2a6;
+
+  --dark-bg-base-300: #15191e;
+}
+
+.react-datepicker {
+  border: none;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.react-datepicker__month-container,
+.react-datepicker__header {
+  background-color: var(--bg-base-300);
+}
+
+.react-datepicker__day--selected {
+  background-color: var(--bg-accent);
+  color: var(--dark-bg-base-300);
+}
+
+@media (prefers-color-scheme: dark) {
+  .react-datepicker__month-container,
+  .react-datepicker__header {
+    background-color: var(--dark-bg-base-300);
+  }
+
+  .react-datepicker__current-month,
+  .react-datepicker__day-name,
+  .react-datepicker__day {
+    color: #a6adba;
+  }
+}

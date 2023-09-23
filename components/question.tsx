@@ -28,7 +28,7 @@ export default function Question() {
         <textarea
           placeholder="Ask a question"
           disabled={loading}
-          className="textarea textarea-bordered inline-block h-48 w-full resize-none p-6 text-lg"
+          className="textarea textarea-bordered mx-auto block h-48 w-11/12 resize-none p-6 text-lg"
           value={value}
           onChange={(event) => setValue(event.target.value)}
         />
@@ -40,8 +40,9 @@ export default function Question() {
           Ask
         </button>
       </form>
-      <>{loading && <LoadingSpinner />}</>
-      <>{answer && <div>{answer}</div>}</>
+      <div className="mx-auto h-48 w-11/12 rounded-lg border p-6">
+        {loading ? <LoadingSpinner /> : answer}
+      </div>
     </>
   );
 }

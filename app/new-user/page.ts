@@ -10,6 +10,7 @@ export default async function CreateNewUser() {
 
   const match = await prisma.user.findUnique({
     where: { clerkId: user.id },
+    select: {},
   });
 
   if (!match)

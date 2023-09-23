@@ -1,45 +1,66 @@
+import { JSX, ReactElement } from "react";
 import { Analysis } from "@prisma/client";
 
 export default function AnalysisTable({ analysis }: { analysis: Analysis }) {
-  return (
-    <table className="table mb-4">
-      <tbody>
-        <tr>
-          <th>
-            <span className="text-base">Mood</span>
-          </th>
-          <td className="flex items-center gap-2 text-base">
-            <div className="font-bold capitalize">{analysis.mood}</div>
-            <div className="text-xl">
-              {analysis.emoji.length
-                ? String.fromCodePoint(Number(analysis.emoji))
-                : ""}
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <th className="flex items-start">
-            <span className="text-base">Subject</span>
-          </th>
-          <td className="text-base capitalize">{analysis.subject}</td>
-        </tr>
-        <tr>
-          <th className="flex items-start">
-            <span className="text-base">Summery</span>
-          </th>
-          <td className="text-base">
-            {analysis.subject.length
-              ? analysis.summery[0].toUpperCase() + analysis.summery.slice(1)
+  const table = [
+    {
+      name: "Mood",
+      td: (
+        <td className="flex basis-full gap-2 text-base">
+          <div className="font-bold capitalize">{analysis.mood}</div>
+          <div className="text-xl">
+            {analysis.emoji.length
+              ? String.fromCodePoint(Number(analysis.emoji))
               : ""}
-          </td>
-        </tr>
-        <tr>
-          <th className="flex items-start">
-            <span className="text-base">Sentiment Score</span>
-          </th>
-          <td className="text-base">{analysis.sentiment}</td>
-        </tr>
+          </div>
+        </td>
+      ),
+    },
+    {
+      name: "Subject",
+      td: (
+        <td className="basis-full text-base capitalize">{analysis.subject}</td>
+      ),
+    },
+    {
+      name: "Summery",
+      td: (
+        <td className="basis-full text-base">
+          {analysis.subject.length
+            ? analysis.summery[0].toUpperCase() + analysis.summery.slice(1)
+            : ""}
+        </td>
+      ),
+    },
+    {
+      name: "Sentiment Score",
+      td: <td className="basis-full text-base">{analysis.sentiment}</td>,
+    },
+  ];
+
+  return (
+    <table className="table">
+      <tbody>
+        {table.map(({ name, td }) => (
+          <TableRow key={name} name={name} td={td} />
+        ))}
       </tbody>
     </table>
+  );
+}
+
+interface TableRowProps {
+  name: string;
+  td: ReactElement<JSX.IntrinsicElements["td"]>;
+}
+
+function TableRow({ name, td }: TableRowProps) {
+  return (
+    <tr className="flex items-start">
+      <th className="basis-44">
+        <span className="text-base">{name}</span>
+      </th>
+      {td}
+    </tr>
   );
 }
