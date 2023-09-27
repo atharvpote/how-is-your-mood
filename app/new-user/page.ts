@@ -8,10 +8,7 @@ export default async function CreateNewUser() {
   if (!user)
     throw new Error(" Authentication credentials were missing or incorrect");
 
-  const match = await prisma.user.findUnique({
-    where: { clerkId: user.id },
-    select: {},
-  });
+  const match = await prisma.user.findUnique({ where: { clerkId: user.id } });
 
   if (!match)
     await prisma.user.create({
@@ -19,7 +16,6 @@ export default async function CreateNewUser() {
         clerkId: user.id,
         email: user.emailAddresses[0].emailAddress,
       },
-      select: {},
     });
 
   redirect("/journal");

@@ -65,7 +65,6 @@ export async function DELETE(_: Request, { params: { id } }: ParamType) {
     try {
       await prisma.journal.delete({
         where: { userId_id: { userId, id } },
-        select: {},
       });
 
       return NextResponse.json({ status: 200 });

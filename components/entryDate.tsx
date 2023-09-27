@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import { displayError, updateDate } from "@/utils/client";
-import useEntryDate from "@/utils/hooks";
+import { useEntryDate } from "@/utils/hooks";
 
 import "react-datepicker/dist/react-datepicker.css";
 import "@/style/datePicker.css";

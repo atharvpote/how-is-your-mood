@@ -69,24 +69,15 @@ export type EntryAnalysis = Pick<
   "sentiment" | "mood" | "emoji" | "subject" | "summery"
 >;
 
-const selectAnalysis = {
-  emoji: true,
-  mood: true,
-  subject: true,
-  summery: true,
-  sentiment: true,
-};
-
 export async function updateContent(
   userId: string,
   entryId: string,
   content: string,
 ) {
   try {
-    const { id: journalEntryId } = await prisma.journal.update({
+    await prisma.journal.update({
       where: { userId_id: { userId, id: entryId } },
       data: { content },
-      select: { id: true },
     });
 
     let analysis: Pick<
@@ -94,9 +85,18 @@ export async function updateContent(
       "emoji" | "mood" | "subject" | "summery" | "sentiment"
     >;
 
+    const where = { entryId };
+    const select = {
+      emoji: true,
+      mood: true,
+      subject: true,
+      summery: true,
+      sentiment: true,
+    };
+
     if (content.trim().length === 0)
       analysis = await prisma.analysis.update({
-        where: { entryId: journalEntryId },
+        where,
         data: {
           emoji: "",
           mood: "",
@@ -104,24 +104,14 @@ export async function updateContent(
           summery: "",
           sentiment: 0,
         },
-        select: selectAnalysis,
+        select,
       });
-    else {
-      const { mood, emoji, sentiment, subject, summery } =
-        await analyze(content);
-
+    else
       analysis = await prisma.analysis.update({
-        where: { entryId: journalEntryId },
-        data: {
-          emoji,
-          mood,
-          subject,
-          summery,
-          sentiment,
-        },
-        select: selectAnalysis,
+        where,
+        data: await analyze(content),
+        select,
       });
-    }
 
     return NextResponse.json({ analysis }, { status: 200 });
   } catch (error) {
@@ -134,7 +124,6 @@ export async function updateDate(userId: string, entryId: string, date: Date) {
     await prisma.journal.update({
       where: { userId_id: { userId, id: entryId } },
       data: { date },
-      select: {},
     });
 
     return NextResponse.json({ status: 200 });

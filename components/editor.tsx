@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useAutosave } from "react-autosave";
 import { displayError, updateContent } from "@/utils/client";
 import { LoadingSpinner } from "./loading";
@@ -21,10 +21,6 @@ export default function Editor({ entry, analysis }: PropTypes) {
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
 
   const previous = useRef(content);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
 
   useAutosave({
     data: content,
@@ -67,13 +63,11 @@ export default function Editor({ entry, analysis }: PropTypes) {
             <LoadingSpinner />
           </div>
         ) : (
-          <>
-            {content.trim().length !== 0 && (
-              <div className="pb-8">
-                <AnalysisTable analysis={analysisState} />
-              </div>
-            )}
-          </>
+          content.trim().length !== 0 && (
+            <div className="pb-8">
+              <AnalysisTable analysis={analysisState} />
+            </div>
+          )
         )}
       </section>
     </div>

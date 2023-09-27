@@ -11,7 +11,7 @@ export function useEntries() {
   return useSWR<Entry[], AxiosError>("/api/journal", async (url: string) => {
     const {
       data: { entries },
-    } = await axios.get<{ entries: Journal[] }>(url);
+    } = await axios.get<{ entries: Entry[] }>(url);
 
     return entries;
   });
@@ -26,7 +26,7 @@ export function useAnalyses(start: Date, end: Date) {
   return useSWR<ChartAnalysis[], AxiosError>({ start, end }, async () => {
     const {
       data: { analyses },
-    } = await axios.post<{ analyses: Analysis[] }>("/api/analysis/", {
+    } = await axios.post<{ analyses: ChartAnalysis[] }>("/api/analysis/", {
       start,
       end,
     });
@@ -35,7 +35,7 @@ export function useAnalyses(start: Date, end: Date) {
   });
 }
 
-export default function useEntryDate(id: string) {
+export function useEntryDate(id: string) {
   return useSWR<Date, AxiosError>(`/api/journal/${id}`, async (url: string) => {
     const {
       data: { date },
@@ -45,17 +45,16 @@ export default function useEntryDate(id: string) {
   });
 }
 
-export function useGlobalTheme() {
-  const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const [theme, setTheme] = useState<"light" | "dark">(
-    isDark ? "dark" : "light",
+export function usePrefersColor() {
+  const [isDark, setIsDark] = useState(
+    window.matchMedia("(prefers-color-scheme: dark)").matches,
   );
 
   window
     .matchMedia("(prefers-color-scheme: dark)")
-    .addEventListener("change", (event) => {
-      event.matches ? setTheme("dark") : setTheme("light");
-    });
+    .addEventListener("change", (event) =>
+      event.matches ? setIsDark(true) : setIsDark(false),
+    );
 
-  return theme;
+  return isDark;
 }

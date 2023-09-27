@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEntries } from "@/utils/hooks";
+import { Entry, useEntries } from "@/utils/hooks";
 import { LoadingSpinner } from "./loading";
 import ErrorComponent from "./error";
-import { differenceInDays, format, formatRelative, subDays } from "date-fns";
+import { differenceInDays, format, formatRelative } from "date-fns";
 
 export default function Entries() {
   const { data, error, isLoading } = useEntries();
@@ -48,28 +48,36 @@ export default function Entries() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
       {data.map((entry) => (
-        <Link
-          href={`/journal/${entry.id}`}
-          key={entry.id}
-          className="card bg-neutral text-neutral-content transition-all hover:bg-neutral-focus focus:bg-neutral-focus"
-        >
-          <div className="card-body">
-            <div className="card-title">
-              <h3 className="capitalize">
-                {differenceInDays(new Date(), new Date(entry.date)) < 6
-                  ? formatRelative(subDays(new Date(entry.date), 5), new Date())
-                      .split("at")[0]
-                      .trim()
-                  : format(new Date(entry.date), "dd/MM/yyyy")}
-              </h3>
-            </div>
-            <p className="text-neutral-content/50">
-              {entry.content.substring(0, 120)}
-              {entry.content.length > 120 ? "..." : ""}
-            </p>
-          </div>
-        </Link>
+        <Card key={entry.id} entry={entry} />
       ))}
     </div>
+  );
+}
+
+function Card({ entry }: { entry: Entry }) {
+  const today = new Date();
+  const entryDate = new Date(entry.date);
+
+  const title =
+    differenceInDays(today, entryDate) < 7
+      ? formatRelative(entryDate, today).split(" at ")[0].trim()
+      : format(entryDate, "dd/MM/yyyy");
+
+  return (
+    <Link
+      href={`/journal/${entry.id}`}
+      key={entry.id}
+      className="card bg-neutral text-neutral-content transition-all hover:bg-neutral-focus focus:bg-neutral-focus"
+    >
+      <article className="card-body">
+        <div className="card-title">
+          <h3 className="capitalize">{title}</h3>
+        </div>
+        <p className="text-neutral-content/50">
+          {entry.content.substring(0, 120)}
+          {entry.content.length > 120 ? "..." : ""}
+        </p>
+      </article>
+    </Link>
   );
 }
