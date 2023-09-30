@@ -25,7 +25,7 @@ export default function Navbar() {
         </label>
       </div>
       <div className="flex-1">
-        <Link href="/" className="btn btn-ghost">
+        <Link href="/" prefetch className="btn btn-ghost">
           <span className="text-xl font-bold capitalize lg:mx-0 lg:text-2xl">
             How is your <span className="text-primary">mood</span>?
           </span>

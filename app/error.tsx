@@ -2,11 +2,11 @@
 
 import ErrorComponent from "@/components/error";
 
-interface ErrorPropType {
+interface PropType {
   error: Error & { digest?: string };
 }
 
-export default function Error({ error }: ErrorPropType) {
+export default function Error({ error }: PropType) {
   return (
     <div className="grid h-screen place-content-center">
       <ErrorComponent error={error} />

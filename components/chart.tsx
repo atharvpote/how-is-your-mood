@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { endOfWeek, startOfWeek } from "date-fns";
+import { addDays, endOfWeek, startOfWeek } from "date-fns";
 import {
   ResponsiveContainer,
   Line,
@@ -11,23 +11,25 @@ import {
   YAxis,
 } from "recharts";
 import DatePicker from "react-datepicker";
-import { Journal } from "@prisma/client";
-import { mapAnalyses } from "@/utils/client";
-import { useAnalyses } from "@/utils/hooks";
 import { LoadingSpinner } from "./loading";
 import ErrorComponent from "./error";
 import CustomTooltip from "./tooltip";
 
 import "react-datepicker/dist/react-datepicker.css";
 import "@/style/datePicker.css";
+import { Analysis } from "@prisma/client";
+import axios, { AxiosError } from "axios";
+import useSWR from "swr";
 
 interface PropTypes {
-  mostRecentEntry: Pick<Journal, "date">;
+  mostRecentEntry: Date;
 }
 
-export default function HistoryChart({ mostRecentEntry }: PropTypes) {
-  const [start, setStart] = useState(startOfWeek(mostRecentEntry.date));
-  const [end, setEnd] = useState(endOfWeek(mostRecentEntry.date));
+export default function HistoryChart({
+  mostRecentEntry: mostRecent,
+}: PropTypes) {
+  const [start, setStart] = useState(startOfWeek(mostRecent));
+  const [end, setEnd] = useState(endOfWeek(mostRecent));
   const [allDays, setAllDays] = useState(false);
 
   const { data, error, isLoading } = useAnalyses(start, end);
@@ -132,4 +134,44 @@ export default function HistoryChart({ mostRecentEntry }: PropTypes) {
       </div>
     </>
   );
+}
+
+export type ChartAnalysis = Pick<
+  Analysis,
+  "sentiment" | "date" | "mood" | "emoji"
+>;
+
+function useAnalyses(start: Date, end: Date) {
+  return useSWR<ChartAnalysis[], AxiosError>({ start, end }, async () => {
+    const {
+      data: { analyses },
+    } = await axios.post<{ analyses: ChartAnalysis[] }>("/api/analysis/", {
+      start,
+      end,
+    });
+
+    return analyses;
+  });
+}
+
+function mapAnalyses(start: Date, end: Date, analyses: ChartAnalysis[]) {
+  const range: Date[] = [];
+  let current = start;
+
+  while (current <= end) {
+    range.push(current);
+
+    current = addDays(current, 1);
+  }
+
+  return range.map((date) => {
+    const analysis = analyses.find(
+      (analysis) =>
+        new Date(analysis.date).toDateString() === date.toDateString(),
+    );
+
+    if (analysis) return analysis;
+
+    return { date };
+  });
 }

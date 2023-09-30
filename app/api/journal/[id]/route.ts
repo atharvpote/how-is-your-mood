@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse, updateContent, updateDate } from "@/utils/server";
+import { errorResponse } from "@/utils/server";
+import { analyze } from "@/utils/ai";
+import { Analysis } from "@prisma/client";
 
 interface ParamType {
   params: {
@@ -31,25 +33,56 @@ export async function GET(_: Request, { params: { id } }: ParamType) {
 
 export async function PUT(request: Request, { params: { id } }: ParamType) {
   try {
-    const data = z
-      .union([
-        z.object({ type: z.literal("content"), content: z.string() }),
-        z.object({ type: z.literal("date"), date: z.string() }),
-      ])
-      .parse(await request.json());
+    const data = z.object({ content: z.string() }).parse(await request.json());
 
     try {
       const userId = await getUserIdByClerkId();
 
-      if (data.type === "date") {
-        const { date } = data;
-
-        return await updateDate(userId, id, new Date(date));
-      }
-
       const { content } = data;
 
-      return await updateContent(userId, id, content);
+      try {
+        await prisma.journal.update({
+          where: { userId_id: { userId, id } },
+          data: { content },
+        });
+
+        let analysis: Pick<
+          Analysis,
+          "emoji" | "mood" | "subject" | "summery" | "sentiment"
+        >;
+
+        const where = { entryId: id };
+        const select = {
+          emoji: true,
+          mood: true,
+          subject: true,
+          summery: true,
+          sentiment: true,
+        };
+
+        if (content.trim().length === 0)
+          analysis = await prisma.analysis.update({
+            where,
+            data: {
+              emoji: "",
+              mood: "",
+              subject: "",
+              summery: "",
+              sentiment: 0,
+            },
+            select,
+          });
+        else
+          analysis = await prisma.analysis.update({
+            where,
+            data: await analyze(content),
+            select,
+          });
+
+        return NextResponse.json({ analysis }, { status: 200 });
+      } catch (error) {
+        return errorResponse(error, 500);
+      }
     } catch (error) {
       return errorResponse(error, 401);
     }

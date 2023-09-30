@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Entry, useEntries } from "@/utils/hooks";
 import { LoadingSpinner } from "./loading";
 import ErrorComponent from "./error";
 import { differenceInDays, format, formatRelative } from "date-fns";
+import useSWR from "swr";
+import axios, { AxiosError } from "axios";
+import { Journal } from "@prisma/client";
 
 export default function Entries() {
   const { data, error, isLoading } = useEntries();
@@ -80,4 +82,16 @@ function Card({ entry }: { entry: Entry }) {
       </article>
     </Link>
   );
+}
+
+export type Entry = Pick<Journal, "id" | "date" | "content">;
+
+function useEntries() {
+  return useSWR<Entry[], AxiosError>("/api/journal", async (url: string) => {
+    const {
+      data: { entries },
+    } = await axios.get<{ entries: Entry[] }>(url);
+
+    return entries;
+  });
 }

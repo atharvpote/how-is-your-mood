@@ -1,9 +1,9 @@
-import { ChartAnalysis } from "@/utils/hooks";
 import { TooltipProps } from "recharts";
 import {
   ValueType,
   NameType,
 } from "recharts/types/component/DefaultTooltipContent";
+import { ChartAnalysis } from "./chart";
 
 export default function CustomTooltip({
   active,
@@ -24,7 +24,7 @@ export default function CustomTooltip({
       <div className="rounded-lg border border-white/25 bg-neutral px-6 py-3 text-neutral-content shadow-md backdrop-blur dark:border-black/25">
         <p className="label text-sm">{dateLabel}</p>
         <p className="text-xl capitalize">
-          {analysis.mood} {String.fromCodePoint(Number(analysis.emoji))}
+          {analysis.mood} {analysis.emoji}
         </p>
       </div>
     );

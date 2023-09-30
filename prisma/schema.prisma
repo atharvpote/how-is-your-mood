@@ -59,5 +59,6 @@ model Analysis {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([entryId, date])
+  @@unique([entryId, userId])
   @@index([userId])
 }

@@ -39,6 +39,7 @@ export default function Drawer({ children }: PropsWithChildren) {
               <li key={href} className="mb-4">
                 <Link
                   href={href}
+                  prefetch
                   className={`btn btn-ghost grid place-content-center text-xl capitalize ${
                     label === path.split("/")[1] ? "active" : ""
                   }`}

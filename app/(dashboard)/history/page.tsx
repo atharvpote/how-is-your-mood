@@ -1,18 +1,22 @@
 import HistoryChart from "@/components/chart";
 import { getUserIdByClerkId } from "@/utils/auth";
-import { getMostRecentEntry } from "@/utils/server";
+import { prisma } from "@/utils/db";
 
 export default async function History() {
   const userId = await getUserIdByClerkId();
-  const entry = await getMostRecentEntry(userId);
+  const mostRecentEntry = await prisma.journal.findFirst({
+    where: { userId },
+    orderBy: { date: "desc" },
+    select: { date: true },
+  });
 
   return (
     <div className="flex h-0 min-h-[calc(100vh-5rem)] flex-col">
       <div className="prose prose-sm mx-8 my-4 md:prose-base">
         <h1>History</h1>
       </div>
-      {entry ? (
-        <HistoryChart mostRecentEntry={entry} />
+      {mostRecentEntry ? (
+        <HistoryChart mostRecentEntry={mostRecentEntry.date} />
       ) : (
         <div className="grid basis-full place-content-center">
           <div className="alert alert-info">

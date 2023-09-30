@@ -24,7 +24,7 @@ const parser = StructuredOutputParser.fromZodSchema(
       .describe("an emoji that represents the mood of the entry."),
     sentiment: z
       .number()
-      .describe("sentiment of the text and rated on a scale from -10 to 10"),
+      .describe("sentiment of the text and rated on a scale from -10 to 10."),
   }),
 );
 

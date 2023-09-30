@@ -1,40 +1,71 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAutosave } from "react-autosave";
-import { displayError, updateContent } from "@/utils/client";
+import { displayError } from "@/utils/client";
 import { LoadingSpinner } from "./loading";
 import DeleteEntry from "./deleteEntry";
 import EntryDate from "./entryDate";
 import AnalysisTable from "./analysisTable";
-import { EntryAnalysis } from "@/utils/server";
-import { Entry } from "@/utils/hooks";
+import axios from "axios";
+import { Analysis } from "@prisma/client";
+import { Entry } from "./entries";
+
+export type EntryAnalysis = Pick<
+  Analysis,
+  "sentiment" | "mood" | "emoji" | "subject" | "summery"
+>;
 
 interface PropTypes {
   entry: Entry;
-  analysis: EntryAnalysis;
+  entryAnalysis: EntryAnalysis;
 }
 
-export default function Editor({ entry, analysis }: PropTypes) {
+export default function Editor({ entry, entryAnalysis }: PropTypes) {
   const [content, setContent] = useState(entry.content);
-  const [analysisState, setAnalysisState] = useState(analysis);
-  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
+  const [analysis, setAnalysis] = useState(entryAnalysis);
+  const [loading, setLoading] = useState(false);
 
   const previous = useRef(content);
+  const cache = useRef(new Map<string, EntryAnalysis>());
+
+  useEffect(() => {
+    previous.current = content;
+    cache.current.set(content.trim(), entryAnalysis);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useAutosave({
     data: content,
     onSave: (content) => {
-      if (content.trim() !== previous.current.trim()) {
-        setLoadingAnalysis(true);
+      const trimmedContent = content.trim();
 
-        updateContent(content, entry.id)
-          .then((analysis) => {
-            setAnalysisState(analysis);
-            previous.current = content;
-          })
-          .catch((error) => displayError(error))
-          .finally(() => setLoadingAnalysis(false));
+      if (trimmedContent !== previous.current) {
+        previous.current = trimmedContent;
+
+        const cachedAnalysis = cache.current.get(trimmedContent);
+
+        if (cachedAnalysis) {
+          setAnalysis(cachedAnalysis);
+
+          axios
+            .put(`/api/journal/${entry.id}/write`, { content, cachedAnalysis })
+            .catch((error) => displayError(error));
+        } else {
+          setLoading(true);
+
+          axios
+            .put<{ analysis: EntryAnalysis }>(`/api/journal/${entry.id}`, {
+              content,
+            })
+            .then(({ data: { analysis } }) => {
+              setAnalysis(analysis);
+
+              cache.current.set(trimmedContent, analysis);
+            })
+            .catch((error) => displayError(error))
+            .finally(() => setLoading(false));
+        }
       }
     },
   });
@@ -58,18 +89,31 @@ export default function Editor({ entry, analysis }: PropTypes) {
       <div className="divider lg:divider-horizontal lg:basis-auto"></div>
       <section className="mx-4 overflow-x-auto lg:mx-0 lg:basis-2/5">
         <h2 className="my-6 text-2xl font-bold">Analysis</h2>
-        {loadingAnalysis ? (
+        {loading ? (
           <div className="lg:grid lg:h-[calc(100%-5.4rem)] lg:place-content-center">
             <LoadingSpinner />
           </div>
         ) : (
-          content.trim().length !== 0 && (
-            <div className="pb-8">
-              <AnalysisTable analysis={analysisState} />
-            </div>
-          )
+          <Analysis content={content} analysis={analysis} />
         )}
       </section>
+    </div>
+  );
+}
+
+interface AnalysisProps {
+  content: string;
+  analysis: EntryAnalysis;
+}
+
+function Analysis({ content, analysis }: AnalysisProps) {
+  return content.trim().length !== 0 ? (
+    <div className="pb-8">
+      <AnalysisTable analysis={analysis} />
+    </div>
+  ) : (
+    <div className="pb-4 lg:pr-4">
+      <div className="alert alert-info">Write something about your day.</div>
     </div>
   );
 }

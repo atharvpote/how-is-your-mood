@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { createEntry, errorResponse } from "@/utils/server";
+import { errorResponse } from "@/utils/server";
 
 export async function GET() {
   try {
@@ -23,7 +23,25 @@ export async function POST() {
   try {
     const userId = await getUserIdByClerkId();
 
-    const id = await createEntry(userId);
+    const { id, date } = await prisma.journal.create({
+      data: {
+        userId,
+        content: "",
+      },
+      select: { id: true, date: true },
+    });
+
+    await prisma.analysis.create({
+      data: {
+        emoji: "",
+        mood: "",
+        subject: "",
+        summery: "",
+        entryId: id,
+        date,
+        userId,
+      },
+    });
 
     return NextResponse.json({ id }, { status: 201 });
   } catch (error) {

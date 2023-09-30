@@ -1,13 +1,11 @@
-import { EntryAnalysis } from "@/utils/server";
 import { JSX, ReactElement } from "react";
+import { EntryAnalysis } from "./editor";
 
 interface AnalysisTableProps {
   analysis: EntryAnalysis;
 }
 
 export default function AnalysisTable({ analysis }: AnalysisTableProps) {
-  console.log(analysis);
-
   const table = [
     {
       name: "Mood",

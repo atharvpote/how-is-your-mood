@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { askQuestion, displayError } from "@/utils/client";
+import { displayError } from "@/utils/client";
 import { LoadingSpinner } from "./loading";
+import axios from "axios";
 
 export default function Question() {
   const [value, setValue] = useState("");
@@ -21,8 +22,9 @@ export default function Question() {
           if (value.trim().length !== 0) {
             setLoading(true);
 
-            askQuestion(value)
-              .then((answer) => setAnswer(answer))
+            axios
+              .post<{ answer: string }>("/api/question", { question: value })
+              .then(({ data: { answer } }) => setAnswer(answer))
               .catch((error) => displayError(error))
               .finally(() => setLoading(false));
           }

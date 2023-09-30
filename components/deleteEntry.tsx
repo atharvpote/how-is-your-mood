@@ -3,7 +3,8 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AiOutlineDelete } from "react-icons/ai";
-import { deleteEntry, displayError } from "@/utils/client";
+import { displayError } from "@/utils/client";
+import axios from "axios";
 
 export default function DeleteEntry({ entryId }: { entryId: string }) {
   const [deleting, setDeleting] = useState(false);
@@ -47,7 +48,8 @@ export default function DeleteEntry({ entryId }: { entryId: string }) {
               onClick={() => {
                 setDeleting(true);
 
-                deleteEntry(entryId)
+                axios
+                  .delete(`/api/journal/${entryId}`)
                   .then(() => router.replace("/journal/"))
                   .catch((error) => displayError(error))
                   .finally(() => setDeleting(false));

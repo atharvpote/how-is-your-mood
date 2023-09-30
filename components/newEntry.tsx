@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AiOutlinePlus } from "react-icons/ai";
-import { displayError, createEntry } from "@/utils/client";
+import { displayError } from "@/utils/client";
+import axios from "axios";
 
 export default function NewEntry() {
   const [creatingNewEntry, setCreatingNewEntry] = useState(false);
@@ -15,8 +16,9 @@ export default function NewEntry() {
       onClick={() => {
         setCreatingNewEntry(true);
 
-        createEntry()
-          .then((id) => router.push(`/journal/${id}`))
+        axios
+          .post<{ id: string }>("/api/journal")
+          .then(({ data: { id } }) => router.push(`/journal/${id}`))
           .catch((error) => displayError(error))
           .finally(() => setCreatingNewEntry(false));
       }}

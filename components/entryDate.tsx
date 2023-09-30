@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
-import { displayError, updateDate } from "@/utils/client";
-import { useEntryDate } from "@/utils/hooks";
-
+import { displayError } from "@/utils/client";
 import "react-datepicker/dist/react-datepicker.css";
 import "@/style/datePicker.css";
+import axios, { AxiosError } from "axios";
+import useSWR from "swr";
 
 interface PropTypes {
   entryDate: Date;
@@ -30,7 +30,9 @@ export default function EntryDate({ entryDate, entryId }: PropTypes) {
             if (date) {
               setDate(date);
 
-              updateDate(date, entryId).catch((error) => displayError(error));
+              axios
+                .put(`/api/journal/${entryId}/date`, { date })
+                .catch((error) => displayError(error));
             }
           }}
           dateFormat="dd/MM/yyyy"
@@ -39,4 +41,14 @@ export default function EntryDate({ entryDate, entryId }: PropTypes) {
       </span>
     </div>
   );
+}
+
+function useEntryDate(id: string) {
+  return useSWR<Date, AxiosError>(`/api/journal/${id}`, async (url: string) => {
+    const {
+      data: { date },
+    } = await axios.get<{ date: Date }>(url);
+
+    return date;
+  });
 }
