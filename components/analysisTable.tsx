@@ -1,22 +1,20 @@
 import { EntryAnalysis } from "@/utils/server";
 import { JSX, ReactElement } from "react";
 
-export default function AnalysisTable({
-  analysis,
-}: {
+interface AnalysisTableProps {
   analysis: EntryAnalysis;
-}) {
+}
+
+export default function AnalysisTable({ analysis }: AnalysisTableProps) {
+  console.log(analysis);
+
   const table = [
     {
       name: "Mood",
       td: (
-        <td className="flex basis-full gap-2 text-base">
+        <td className="flex basis-full items-center gap-2 text-base">
           <div className="font-bold capitalize">{analysis.mood}</div>
-          <div className="text-xl">
-            {analysis.emoji.length
-              ? String.fromCodePoint(Number(analysis.emoji))
-              : ""}
-          </div>
+          <div className="text-xl">{analysis.emoji}</div>
         </td>
       ),
     },

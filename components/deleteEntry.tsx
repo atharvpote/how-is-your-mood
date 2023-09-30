@@ -20,7 +20,7 @@ export default function DeleteEntry({ entryId }: { entryId: string }) {
         className="btn btn-error btn-outline"
       >
         {deleting ? (
-          <span className="loading loading-infinity loading-md " />
+          <span className="loading loading-infinity loading-md" />
         ) : (
           <div className="flex w-20 items-center justify-between">
             <AiOutlineDelete className="text-xl" />

@@ -12,9 +12,9 @@ export default function UserButton() {
 
 const elements = {
   elements: {
-    userButtonPopoverCard: "bg-[#19191a] text-white",
-    userButtonPopoverActionButtonIcon: "text-white",
-    userButtonPopoverActionButtonText: "text-white",
+    userButtonPopoverCard: "dark:bg-[#19191a] dark:text-white",
+    userButtonPopoverActionButtonIcon: "dark:text-white",
+    userButtonPopoverActionButtonText: "dark:text-white",
     userButtonPopoverFooter: "hidden",
   },
 };

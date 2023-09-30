@@ -21,14 +21,10 @@ const parser = StructuredOutputParser.fromZodSchema(
       ),
     emoji: z
       .string()
-      .describe(
-        "a hexadecimal emoji code that represents the mood of the entry. Example 0x1F603 for smiling face representing happiness.",
-      ),
+      .describe("an emoji that represents the mood of the entry."),
     sentiment: z
       .number()
-      .describe(
-        "sentiment of the text and rated on a scale from -10 to 10, where -10 is extremely negative, 0 is neutral, and 10 is extremely positive.",
-      ),
+      .describe("sentiment of the text and rated on a scale from -10 to 10"),
   }),
 );
 
