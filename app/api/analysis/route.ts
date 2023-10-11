@@ -2,13 +2,17 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse } from "@/utils/server";
+import { errorResponse, formatErrors } from "@/utils/server";
 
 export async function POST(request: Request) {
   try {
-    const { start, end } = z
+    const validation = z
       .object({ start: z.string().datetime(), end: z.string().datetime() })
-      .parse(await request.json());
+      .safeParse(await request.json());
+
+    if (!validation.success) throw new Error(formatErrors(validation.error));
+
+    const { start, end } = validation.data;
 
     try {
       const userId = await getUserIdByClerkId();

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { errorResponse } from "@/utils/server";
+import { errorResponse, formatErrors } from "@/utils/server";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/utils/db";
@@ -12,7 +12,7 @@ interface ParamType {
 
 export async function PUT(request: Request, { params: { id } }: ParamType) {
   try {
-    const { content, analysis } = z
+    const validation = z
       .object({
         content: z.string(),
         analysis: z.object({
@@ -23,7 +23,11 @@ export async function PUT(request: Request, { params: { id } }: ParamType) {
           summery: z.string(),
         }),
       })
-      .parse(await request.json());
+      .safeParse(await request.json());
+
+    if (!validation.success) throw new Error(formatErrors(validation.error));
+
+    const { content, analysis } = validation.data;
 
     try {
       const userId = await getUserIdByClerkId();

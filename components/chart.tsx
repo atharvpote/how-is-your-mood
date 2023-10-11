@@ -11,7 +11,6 @@ import {
   YAxis,
 } from "recharts";
 import DatePicker from "react-datepicker";
-import { LoadingSpinner } from "./loading";
 import ErrorComponent from "./error";
 import CustomTooltip from "./tooltip";
 
@@ -23,35 +22,23 @@ import useSWR from "swr";
 
 interface PropTypes {
   mostRecentEntry: Date;
+  analyses: ChartAnalysis[];
 }
 
 export default function HistoryChart({
   mostRecentEntry: mostRecent,
+  analyses,
 }: PropTypes) {
   const [start, setStart] = useState(startOfWeek(mostRecent));
   const [end, setEnd] = useState(endOfWeek(mostRecent));
   const [allDays, setAllDays] = useState(false);
 
-  const { data, error, isLoading } = useAnalyses(start, end);
-
-  if (isLoading)
-    return (
-      <div className="grid h-[calc(100%-4rem)] place-content-center">
-        <LoadingSpinner />
-      </div>
-    );
+  const { data, error } = useAnalyses(start, end);
 
   if (error)
     return (
       <div className="grid h-[calc(100%-4rem)] place-content-center">
         <ErrorComponent error={error} />
-      </div>
-    );
-
-  if (!data)
-    return (
-      <div className="grid h-[calc(100%-4rem)] place-content-center">
-        <ErrorComponent error={new Error("Did not receive any data")} />
       </div>
     );
 
@@ -105,7 +92,17 @@ export default function HistoryChart({
             <LineChart
               width={300}
               height={100}
-              data={allDays ? mapAnalyses(start, end, data) : data}
+              data={(function selectAppropriateDataToUse() {
+                if (data) {
+                  if (allDays) return mapAnalyses(start, end, data);
+
+                  return data;
+                } else {
+                  if (allDays) return mapAnalyses(start, end, analyses);
+
+                  return analyses;
+                }
+              })()}
               margin={{ top: 12, right: 50, bottom: 0, left: 0 }}
             >
               <Line

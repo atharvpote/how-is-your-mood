@@ -7,24 +7,24 @@ import { displayError } from "@/utils/client";
 import axios from "axios";
 
 export default function NewEntry() {
-  const [creatingNewEntry, setCreatingNewEntry] = useState(false);
+  const [creating, setCreating] = useState(false);
   const router = useRouter();
 
   return (
     <button
       aria-label="new entry"
       onClick={() => {
-        setCreatingNewEntry(true);
+        setCreating(true);
 
         axios
           .post<{ id: string }>("/api/journal")
           .then(({ data: { id } }) => router.push(`/journal/${id}`))
           .catch((error) => displayError(error))
-          .finally(() => setCreatingNewEntry(false));
+          .finally(() => setCreating(false));
       }}
       className="btn bg-neutral text-neutral-content hover:bg-neutral-focus"
     >
-      {creatingNewEntry ? (
+      {creating ? (
         <div className="grid w-16 place-content-center text-neutral-content/50">
           <span className="loading loading-infinity"></span>
         </div>

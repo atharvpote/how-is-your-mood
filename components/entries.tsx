@@ -1,22 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { LoadingSpinner } from "./loading";
 import ErrorComponent from "./error";
 import { differenceInDays, format, formatRelative } from "date-fns";
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { Journal } from "@prisma/client";
+import GetStarted from "./getStarted";
+export default function Entries({ entries }: { entries: Entry[] }) {
+  const { data, error } = useEntries();
 
-export default function Entries() {
-  const { data, error, isLoading } = useEntries();
-
-  if (isLoading)
-    return (
-      <div className="grid h-[calc(100%-4rem)] place-content-center">
-        <LoadingSpinner />
-      </div>
-    );
+  if (data === undefined)
+    if (entries.length === 0) return <GetStarted />;
+    else return <MapEntries entries={entries} />;
 
   if (error)
     return (
@@ -25,31 +21,15 @@ export default function Entries() {
       </div>
     );
 
-  if (!data?.length)
-    return (
-      <div className="grid h-[calc(100%-4rem)] basis-full place-content-center">
-        <div className="alert alert-info">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            className="h-6 w-6 shrink-0 stroke-current"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            ></path>
-          </svg>
-          <span>Get started by creating your first entry</span>
-        </div>
-      </div>
-    );
+  if (data.length === 0) return <GetStarted />;
 
+  return <MapEntries entries={data} />;
+}
+
+function MapEntries({ entries }: { entries: Entry[] }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-      {data.map((entry) => (
+      {entries.map((entry) => (
         <Card key={entry.id} entry={entry} />
       ))}
     </div>
@@ -76,7 +56,7 @@ function Card({ entry }: { entry: Entry }) {
           <h3 className="capitalize">{title}</h3>
         </div>
         <p className="text-neutral-content/50">
-          {entry.content.substring(0, 120)}
+          {entry.content.substring(0, 120).trim()}
           {entry.content.length > 120 ? "..." : ""}
         </p>
       </article>

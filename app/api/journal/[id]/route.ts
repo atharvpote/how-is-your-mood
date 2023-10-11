@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse } from "@/utils/server";
+import { errorResponse, formatErrors } from "@/utils/server";
 import { analyze } from "@/utils/ai";
 import { Analysis } from "@prisma/client";
 
@@ -33,12 +33,16 @@ export async function GET(_: Request, { params: { id } }: ParamType) {
 
 export async function PUT(request: Request, { params: { id } }: ParamType) {
   try {
-    const data = z.object({ content: z.string() }).parse(await request.json());
+    const validation = z
+      .object({ content: z.string() })
+      .safeParse(await request.json());
+
+    if (!validation.success) throw new Error(formatErrors(validation.error));
+
+    const { content } = validation.data;
 
     try {
       const userId = await getUserIdByClerkId();
-
-      const { content } = data;
 
       try {
         await prisma.journal.update({

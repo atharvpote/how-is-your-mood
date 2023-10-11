@@ -3,13 +3,17 @@ import { z } from "zod";
 import { qa } from "@/utils/ai";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse } from "@/utils/server";
+import { errorResponse, formatErrors } from "@/utils/server";
 
 export async function POST(request: Request) {
-  const requestData: unknown = await request.json();
-
   try {
-    const data = z.object({ question: z.string() }).parse(requestData);
+    const validation = z
+      .object({ question: z.string() })
+      .safeParse(await request.json());
+
+    if (!validation.success) throw new Error(formatErrors(validation.error));
+
+    const { question } = validation.data;
 
     try {
       const userId = await getUserIdByClerkId();
@@ -24,7 +28,7 @@ export async function POST(request: Request) {
       });
 
       try {
-        const answer = await qa(data.question, entries);
+        const answer = await qa(question, entries);
 
         return NextResponse.json({ answer }, { status: 200 });
       } catch (error) {

@@ -29,7 +29,7 @@ model Journal {
   updatedAt DateTime @updatedAt
 
   content String   @db.Text
-  date    DateTime @default(now())
+  date    DateTime
 
   userId String
   user   User   @relation(fields: [userId], references: [id])

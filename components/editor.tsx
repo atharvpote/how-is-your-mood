@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useAutosave } from "react-autosave";
 import { displayError } from "@/utils/client";
 import { LoadingSpinner } from "./loading";
@@ -27,13 +27,9 @@ export default function Editor({ entry, entryAnalysis }: PropTypes) {
   const [loading, setLoading] = useState(false);
 
   const previous = useRef(content);
-  const cache = useRef(new Map<string, EntryAnalysis>());
-
-  useEffect(() => {
-    previous.current = content;
-    cache.current.set(content.trim(), entryAnalysis);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const cache = useRef(
+    new Map<string, EntryAnalysis>([[content.trim(), entryAnalysis]]),
+  );
 
   useAutosave({
     data: content,
@@ -49,7 +45,10 @@ export default function Editor({ entry, entryAnalysis }: PropTypes) {
           setAnalysis(cachedAnalysis);
 
           axios
-            .put(`/api/journal/${entry.id}/write`, { content, cachedAnalysis })
+            .put(`/api/journal/${entry.id}/write`, {
+              content,
+              analysis: cachedAnalysis,
+            })
             .catch((error) => displayError(error));
         } else {
           setLoading(true);
@@ -94,7 +93,7 @@ export default function Editor({ entry, entryAnalysis }: PropTypes) {
             <LoadingSpinner />
           </div>
         ) : (
-          <Analysis content={content} analysis={analysis} />
+          <ShowAnalysis content={content} analysis={analysis} />
         )}
       </section>
     </div>
@@ -106,7 +105,7 @@ interface AnalysisProps {
   analysis: EntryAnalysis;
 }
 
-function Analysis({ content, analysis }: AnalysisProps) {
+function ShowAnalysis({ content, analysis }: AnalysisProps) {
   return content.trim().length !== 0 ? (
     <div className="pb-8">
       <AnalysisTable analysis={analysis} />

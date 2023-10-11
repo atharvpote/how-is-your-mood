@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse } from "@/utils/server";
+import { errorResponse, setTimeToMidnight } from "@/utils/server";
 
 export async function GET() {
   try {
@@ -27,6 +27,7 @@ export async function POST() {
       data: {
         userId,
         content: "",
+        date: setTimeToMidnight(new Date()),
       },
       select: { id: true, date: true },
     });
