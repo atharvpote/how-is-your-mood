@@ -1,14 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
+import axios from "axios";
 import { useAutosave } from "react-autosave";
+import { Analysis } from "@prisma/client";
 import { displayError } from "@/utils/client";
 import { LoadingSpinner } from "./loading";
-import DeleteEntry from "./deleteEntry";
-import EntryDate from "./entryDate";
+import DeleteJournalEntry from "./deleteJournalEntry";
+import JournalDate from "./journalDate";
 import AnalysisTable from "./analysisTable";
-import axios from "axios";
-import { Analysis } from "@prisma/client";
 import { Entry } from "./entries";
 
 export type EntryAnalysis = Pick<
@@ -70,11 +70,11 @@ export default function Editor({ entry, entryAnalysis }: PropTypes) {
   });
 
   return (
-    <div className="h-0 min-h-full lg:flex">
+    <div className="h-0 min-h-full lg:flex lg:pl-4">
       <div className="lg:basis-full">
         <div className="flex items-center justify-between p-4">
-          <EntryDate entryDate={entry.date} entryId={entry.id} />
-          <DeleteEntry entryId={entry.id} />
+          <JournalDate entryDate={entry.date} entryId={entry.id} />
+          <DeleteJournalEntry entryId={entry.id} />
         </div>
         <div className="mx-4 h-[60vh] lg:mr-0 lg:h-[calc(100%-5.4rem)] lg:pb-2">
           <textarea

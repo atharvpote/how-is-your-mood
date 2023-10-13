@@ -2,11 +2,11 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { AiOutlineDelete } from "react-icons/ai";
 import { displayError } from "@/utils/client";
-import axios from "axios";
 
-export default function DeleteEntry({ entryId }: { entryId: string }) {
+export default function DeleteJournalEntry({ entryId }: { entryId: string }) {
   const [deleting, setDeleting] = useState(false);
 
   const modal = useRef<HTMLDialogElement>(null);

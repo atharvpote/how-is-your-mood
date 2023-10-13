@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import axios from "axios";
 import { displayError } from "@/utils/client";
 import { LoadingSpinner } from "./loading";
-import axios from "axios";
 
 export default function Question() {
   const [value, setValue] = useState("");
@@ -12,9 +12,6 @@ export default function Question() {
 
   return (
     <>
-      <div className="prose prose-sm mx-8 my-4 md:prose-base">
-        <h1>Question</h1>
-      </div>
       <form
         onSubmit={(event) => {
           event.preventDefault();

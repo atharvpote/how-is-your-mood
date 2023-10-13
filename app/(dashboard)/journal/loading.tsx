@@ -1,5 +1,5 @@
-import DashboardLoading from "@/components/dashboardLoading";
+import { DashboardLoadingSpinner } from "@/components/loading";
 
 export default function Loading() {
-  return <DashboardLoading />;
+  return <DashboardLoadingSpinner />;
 }

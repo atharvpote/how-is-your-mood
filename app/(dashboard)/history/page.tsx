@@ -1,8 +1,8 @@
+import { endOfWeek, startOfWeek } from "date-fns";
 import HistoryChart, { ChartAnalysis } from "@/components/chart";
 import GetStarted from "@/components/getStarted";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { endOfWeek, startOfWeek } from "date-fns";
 
 export default async function History() {
   const userId = await getUserIdByClerkId();
@@ -31,14 +31,11 @@ export default async function History() {
 
   return (
     <div className="flex h-0 min-h-[calc(100vh-5rem)] flex-col">
-      <div className="prose prose-sm mx-8 my-4 md:prose-base">
-        <h1>History</h1>
+      <div className="prose mx-8 my-4 md:prose-lg">
+        <h2>History</h2>
       </div>
       {mostRecentEntry ? (
-        <HistoryChart
-          mostRecentEntry={mostRecentEntry.date}
-          analyses={analyses}
-        />
+        <HistoryChart mostRecent={mostRecentEntry.date} analyses={analyses} />
       ) : (
         <GetStarted />
       )}

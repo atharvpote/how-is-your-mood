@@ -1,27 +1,29 @@
 "use client";
 
+import { PropsWithChildren } from "react";
 import Link from "next/link";
-import ErrorComponent from "./error";
-import { differenceInDays, format, formatRelative } from "date-fns";
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
+import { differenceInDays, format, formatRelative } from "date-fns";
 import { Journal } from "@prisma/client";
 import GetStarted from "./getStarted";
+import ErrorComponent from "./error";
+
 export default function Entries({ entries }: { entries: Entry[] }) {
   const { data, error } = useEntries();
 
   if (data === undefined)
-    if (entries.length === 0) return <GetStarted />;
+    if (entries.length === 0) return <GetStartedFullScreen />;
     else return <MapEntries entries={entries} />;
 
   if (error)
     return (
-      <div className="grid h-[calc(100%-4rem)] place-content-center">
+      <FullScreen>
         <ErrorComponent error={error} />
-      </div>
+      </FullScreen>
     );
 
-  if (data.length === 0) return <GetStarted />;
+  if (data.length === 0) return <GetStartedFullScreen />;
 
   return <MapEntries entries={data} />;
 }
@@ -51,16 +53,32 @@ function Card({ entry }: { entry: Entry }) {
       key={entry.id}
       className="card bg-neutral text-neutral-content transition-all hover:bg-neutral-focus focus:bg-neutral-focus"
     >
-      <article className="card-body">
+      <article className="prose card-body">
         <div className="card-title">
-          <h3 className="capitalize">{title}</h3>
+          <h3 className="capitalize text-neutral-content">{title}</h3>
         </div>
-        <p className="text-neutral-content/50">
+        <p className="overflow-hidden text-neutral-content/50">
           {entry.content.substring(0, 120).trim()}
           {entry.content.length > 120 ? "..." : ""}
         </p>
       </article>
     </Link>
+  );
+}
+
+function FullScreen({ children }: PropsWithChildren) {
+  return (
+    <div className="flex h-[calc(100vh-11rem)] items-center justify-center">
+      {children}
+    </div>
+  );
+}
+
+function GetStartedFullScreen() {
+  return (
+    <FullScreen>
+      <GetStarted />
+    </FullScreen>
   );
 }
 

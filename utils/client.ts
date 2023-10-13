@@ -11,3 +11,7 @@ export function displayError(error: unknown) {
     alert("Unknown error");
   }
 }
+
+export function setTimeToMidnight(date: Date) {
+  return new Date(date.setHours(0, 0, 0, 0));
+}

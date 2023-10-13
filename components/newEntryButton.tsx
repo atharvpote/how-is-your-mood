@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { AiOutlinePlus } from "react-icons/ai";
 import { displayError } from "@/utils/client";
-import axios from "axios";
 
-export default function NewEntry() {
+export default function NewEntryButton() {
   const [creating, setCreating] = useState(false);
   const router = useRouter();
 

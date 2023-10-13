@@ -1,12 +1,14 @@
-import Profile from "@/components/userProfile";
+import { Profile } from "@/components/clerkUiComponents";
 
 export default function ProfilePage() {
   return (
     <div className="pb-8 sm:pl-4">
-      <div className="prose prose-sm mx-8 my-4 md:prose-base">
-        <h1>Profile</h1>
+      <div className="prose mx-8 my-4 md:prose-lg">
+        <h2>Profile</h2>
       </div>
-      <Profile />
+      <div className="px-1 sm:px-0">
+        <Profile />
+      </div>
     </div>
   );
 }

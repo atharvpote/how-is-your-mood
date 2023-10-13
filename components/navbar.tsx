@@ -1,9 +1,9 @@
+import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import UserButton from "./userButton";
 
 export default function Navbar() {
   return (
-    <div className="navbar px-4">
+    <div className="navbar lg:px-4">
       <div className="flex-none">
         <label
           htmlFor="my-drawer"
@@ -25,13 +25,17 @@ export default function Navbar() {
         </label>
       </div>
       <div className="flex-1">
-        <Link href="/" prefetch className="btn btn-ghost">
-          <span className="text-xl font-bold capitalize lg:mx-0 lg:text-2xl">
+        <Link
+          href="/"
+          prefetch
+          className="prose-sm btn btn-ghost h-full w-full max-w-fit"
+        >
+          <h1 className="font-bold capitalize lg:mx-0 ">
             How is your <span className="text-primary">mood</span>?
-          </span>
+          </h1>
         </Link>
       </div>
-      <div className="flex-none">
+      <div className="flex-none basis-8">
         <UserButton />
       </div>
     </div>
