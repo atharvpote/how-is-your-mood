@@ -11,7 +11,7 @@ interface PropTypes {
   entryId: string;
 }
 
-export default function JournalDate({ entryDate, entryId }: PropTypes) {
+export default function EntryDate({ entryDate, entryId }: PropTypes) {
   const [date, setDate] = useState(entryDate);
   const { data: upstreamDate } = useEntryDate(entryId);
 

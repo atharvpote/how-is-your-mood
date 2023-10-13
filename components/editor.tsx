@@ -7,7 +7,7 @@ import { Analysis } from "@prisma/client";
 import { displayError } from "@/utils/client";
 import { LoadingSpinner } from "./loading";
 import DeleteJournalEntry from "./deleteJournalEntry";
-import JournalDate from "./journalDate";
+import EntryDate from "./entryDate";
 import AnalysisTable from "./analysisTable";
 import { Entry } from "./entries";
 
@@ -73,7 +73,7 @@ export default function Editor({ entry, entryAnalysis }: PropTypes) {
     <div className="h-0 min-h-full lg:flex lg:pl-4">
       <div className="lg:basis-full">
         <div className="flex items-center justify-between p-4">
-          <JournalDate entryDate={entry.date} entryId={entry.id} />
+          <EntryDate entryDate={entry.date} entryId={entry.id} />
           <DeleteJournalEntry entryId={entry.id} />
         </div>
         <div className="mx-4 h-[60vh] lg:mr-0 lg:h-[calc(100%-5.4rem)] lg:pb-2">

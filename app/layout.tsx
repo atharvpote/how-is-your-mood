@@ -11,7 +11,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "How Is Your Mood?",
   description: "The AI powered journal app.",
-  icons: "./icon.png",
+  icons: "/icon.png",
 };
 
 export default function RootLayout({ children }: PropsWithChildren) {
