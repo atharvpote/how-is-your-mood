@@ -35,8 +35,8 @@ export default function Editor({ entry, entryAnalysis }: PropTypes) {
   const [scroll, setScroll] = useState(false);
 
   const modal = useRef<HTMLDialogElement>(null);
-  const input = useRef<HTMLInputElement>(null);
   const textarea = useRef<HTMLTextAreaElement>(null);
+  const input = useRef<HTMLInputElement>(null);
 
   const previous = useRef(content);
   const cache = useRef(
@@ -138,36 +138,36 @@ export default function Editor({ entry, entryAnalysis }: PropTypes) {
               </div>
             )}
           </button>
-          <dialog
-            id="my_modal_1"
-            className="modal modal-bottom sm:modal-middle"
-            ref={modal}
-          >
-            <form method="dialog" className="prose modal-box">
-              <button className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
-                ✕
-              </button>
-              <h3 className="font-bold">Are you sure</h3>
+          <dialog className="modal modal-bottom sm:modal-middle" ref={modal}>
+            <div className="prose modal-box">
+              <h3 className="font-bold">Are you sure?</h3>
               <p>Once you delete the entry, it can not be recovered.</p>
               <div className="modal-action">
-                {/* if there is a button in form, it will close the modal */}
-                <button
-                  onClick={() => {
-                    setDeleting(true);
+                <form method="dialog">
+                  {/* if there is a button in form, it will close the modal */}
+                  <button className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+                    ✕
+                  </button>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => {
+                        setDeleting(true);
 
-                    axios
-                      .delete(`/api/journal/${entry.id}`)
-                      .then(() => router.replace("/journal/"))
-                      .catch((error) => errorAlert(error))
-                      .finally(() => setDeleting(false));
-                  }}
-                  className="btn btn-error btn-outline"
-                >
-                  Yes
-                </button>
-                <button className="btn btn-outline">No</button>
+                        axios
+                          .delete(`/api/journal/${entry.id}`)
+                          .then(() => router.replace("/journal/"))
+                          .catch((error) => errorAlert(error))
+                          .finally(() => setDeleting(false));
+                      }}
+                      className="btn btn-error"
+                    >
+                      Yes
+                    </button>
+                    <button className="btn btn-outline">No</button>
+                  </div>
+                </form>
               </div>
-            </form>
+            </div>
             <form method="dialog" className="modal-backdrop">
               <button>close</button>
             </form>

@@ -3,7 +3,8 @@
 import { PropsWithChildren, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserButton } from "@clerk/nextjs";
+import { SignOutButton } from "@clerk/nextjs";
+import { MdLogout } from "react-icons/md";
 
 const links = [
   { href: "/journal", label: "journal" },
@@ -13,7 +14,8 @@ const links = [
 ] as const;
 
 export default function Drawer({ children }: PropsWithChildren) {
-  const input = useRef<HTMLInputElement | null>(null);
+  const input = useRef<HTMLInputElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
 
   const path = usePathname();
 
@@ -60,12 +62,38 @@ export default function Drawer({ children }: PropsWithChildren) {
               </h1>
             </Link>
           </div>
+          {/* Logout */}
           <div className="flex flex-none basis-12 items-center justify-center">
-            <UserButton
-              userProfileMode="navigation"
-              userProfileUrl="/profile"
-              afterSignOutUrl="/"
-            />
+            <button
+              className="btn btn-square btn-ghost text-2xl"
+              onClick={() => {
+                dialog.current?.showModal();
+              }}
+            >
+              <MdLogout />
+            </button>
+            <dialog className="modal modal-bottom sm:modal-middle" ref={dialog}>
+              <div className="prose modal-box">
+                <h3 className="font-bold">You want to log out?</h3>
+                <div className="modal-action">
+                  <form method="dialog">
+                    {/* if there is a button in form, it will close the modal */}
+                    <button className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+                      ✕
+                    </button>
+                    <div className="flex gap-4">
+                      <SignOutButton>
+                        <button className="btn btn-neutral">Yes</button>
+                      </SignOutButton>
+                      <button className="btn btn-outline">No</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              <form method="dialog" className="modal-backdrop">
+                <button>close</button>
+              </form>
+            </dialog>
           </div>
         </nav>
         {children}
