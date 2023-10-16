@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse, formatErrors } from "@/utils/server";
+import { errorResponse, formatErrors } from "@/utils";
 import { analyze } from "@/utils/ai";
 import { Analysis } from "@prisma/client";
 

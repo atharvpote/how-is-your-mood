@@ -3,7 +3,7 @@ import { z } from "zod";
 import { qa } from "@/utils/ai";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse, formatErrors } from "@/utils/server";
+import { errorResponse, formatErrors } from "@/utils";
 
 export async function POST(request: Request) {
   try {

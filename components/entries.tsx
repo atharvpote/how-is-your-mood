@@ -6,37 +6,41 @@ import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { differenceInDays, format, formatRelative } from "date-fns";
 import { Journal } from "@prisma/client";
-import GetStarted from "./getStarted";
-import ErrorComponent from "./error";
+import { dashboardNavHeight, dashboardNavHeight_SM } from "@/utils";
+import { ErrorComponent, GetStarted } from "./alerts";
 
 export default function Entries({ entries }: { entries: Entry[] }) {
   const { data, error } = useEntries();
 
   if (data === undefined)
-    if (entries.length === 0) return <GetStartedFullScreen />;
+    if (entries.length === 0) return <GetStartedHeightFull />;
     else return <MapEntries entries={entries} />;
 
   if (error)
     return (
-      <FullScreen>
-        <ErrorComponent error={error} />
-      </FullScreen>
+      <HeightFull>
+        <div>
+          <ErrorComponent error={error} />
+        </div>
+      </HeightFull>
     );
 
-  if (data.length === 0) return <GetStartedFullScreen />;
+  if (data.length === 0) return <GetStartedHeightFull />;
 
   return <MapEntries entries={data} />;
 }
 
 function MapEntries({ entries }: { entries: Entry[] }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 py-8 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
       {entries.map((entry) => (
         <Card key={entry.id} entry={entry} />
       ))}
     </div>
   );
 }
+
+const previewLength = 100;
 
 function Card({ entry }: { entry: Entry }) {
   const today = new Date();
@@ -57,28 +61,12 @@ function Card({ entry }: { entry: Entry }) {
         <div className="card-title">
           <h3 className="capitalize text-neutral-content">{title}</h3>
         </div>
-        <p className="overflow-hidden text-neutral-content/50">
-          {entry.content.substring(0, 120).trim()}
-          {entry.content.length > 120 ? "..." : ""}
+        <p className="overflow-hidden text-neutral-content/75">
+          {entry.content.substring(0, previewLength).trim()}
+          {entry.content.length > previewLength ? "..." : ""}
         </p>
       </article>
     </Link>
-  );
-}
-
-function FullScreen({ children }: PropsWithChildren) {
-  return (
-    <div className="flex h-[calc(100vh-11rem)] items-center justify-center">
-      {children}
-    </div>
-  );
-}
-
-function GetStartedFullScreen() {
-  return (
-    <FullScreen>
-      <GetStarted />
-    </FullScreen>
   );
 }
 
@@ -92,4 +80,34 @@ function useEntries() {
 
     return entries;
   });
+}
+
+function GetStartedHeightFull() {
+  return (
+    <HeightFull>
+      <div>
+        <GetStarted />
+      </div>
+    </HeightFull>
+  );
+}
+
+const journalHeaderHeight = 4;
+
+function HeightFull({ children }: PropsWithChildren) {
+  return (
+    <div
+      className={
+        "flex items-center justify-center" +
+        " " +
+        `h-[calc(100vh-${
+          dashboardNavHeight + journalHeaderHeight
+        }rem)] sm:h-[calc(100vh-${
+          dashboardNavHeight_SM + journalHeaderHeight
+        }rem)]`
+      }
+    >
+      {children}
+    </div>
+  );
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import { errorResponse, setTimeToMidnight } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse, setTimeToMidnight } from "@/utils/server";
 
 export async function GET() {
   try {

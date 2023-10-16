@@ -1,4 +1,4 @@
-import { Profile } from "@/components/clerkUiComponents";
+import { UserProfile } from "@clerk/nextjs";
 
 export default function ProfilePage() {
   return (
@@ -7,7 +7,7 @@ export default function ProfilePage() {
         <h2>Profile</h2>
       </div>
       <div className="px-1 sm:px-0">
-        <Profile />
+        <UserProfile />
       </div>
     </div>
   );

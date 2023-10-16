@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { errorResponse, formatErrors, setTimeToMidnight } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse, formatErrors, setTimeToMidnight } from "@/utils/server";
 
 interface ParamType {
   params: {

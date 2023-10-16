@@ -36,7 +36,7 @@
     "react-autosave": "^0.4.3",
     "react-dom": "^18.2.0",
     "react-icons": "^4.11.0",
-    "recharts": "^2.8.0",
+    "recharts": "^2.9.0",
     "svix": "^1.13.0",
     "swr": "^2.2.4",
     "tailwindcss": "^3.3.3",

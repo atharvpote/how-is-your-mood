@@ -1,6 +1,6 @@
 "use client";
 
-import ErrorComponent from "@/components/error";
+import { ErrorComponent } from "@/components/alerts";
 
 interface PropType {
   error: Error & { digest?: string };
@@ -8,8 +8,10 @@ interface PropType {
 
 export default function Error({ error }: PropType) {
   return (
-    <div className="grid h-screen place-content-center">
-      <ErrorComponent error={error} />
+    <div className="flex h-screen items-center justify-center">
+      <div>
+        <ErrorComponent error={error} />
+      </div>
     </div>
   );
 }

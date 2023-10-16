@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { AiOutlinePlus } from "react-icons/ai";
-import { displayError } from "@/utils/client";
+import { errorAlert } from "@/utils";
 
-export default function NewEntryButton() {
+export default function NewEntry() {
   const [creating, setCreating] = useState(false);
+
   const router = useRouter();
 
   return (
@@ -19,13 +20,13 @@ export default function NewEntryButton() {
         axios
           .post<{ id: string }>("/api/journal")
           .then(({ data: { id } }) => router.push(`/journal/${id}`))
-          .catch((error) => displayError(error))
+          .catch((error) => errorAlert(error))
           .finally(() => setCreating(false));
       }}
       className="btn bg-neutral text-neutral-content hover:bg-neutral-focus"
     >
       {creating ? (
-        <div className="grid w-16 place-content-center text-neutral-content/50">
+        <div className="flex w-16 items-center justify-center text-neutral-content/75">
           <span className="loading loading-infinity"></span>
         </div>
       ) : (

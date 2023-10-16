@@ -1,6 +1,7 @@
 import { endOfWeek, startOfWeek } from "date-fns";
+import { GetStarted } from "@/components/alerts";
 import HistoryChart, { ChartAnalysis } from "@/components/chart";
-import GetStarted from "@/components/getStarted";
+import { HistoryHeightFull } from "@/components/layouts";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 
@@ -30,14 +31,18 @@ export default async function History() {
   }
 
   return (
-    <div className="flex h-0 min-h-[calc(100vh-5rem)] flex-col">
-      <div className="prose mx-8 my-4 md:prose-lg">
+    <div className="px-4 xl:pl-8">
+      <div className="prose h-12 pt-4 md:prose-lg">
         <h2>History</h2>
       </div>
       {mostRecentEntry ? (
         <HistoryChart mostRecent={mostRecentEntry.date} analyses={analyses} />
       ) : (
-        <GetStarted />
+        <HistoryHeightFull>
+          <div>
+            <GetStarted />
+          </div>
+        </HistoryHeightFull>
       )}
     </div>
   );

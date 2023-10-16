@@ -1,16 +1,23 @@
 import Link from "next/link";
 import { SignUp } from "@clerk/nextjs";
 import { AiOutlineArrowLeft } from "react-icons/ai";
+import { globalNavHeight } from "@/utils";
 
 export default function SignUpPage() {
   return (
     <div className="min-h-screen">
       <nav className="flex justify-start p-2">
-        <Link href={"/"} className="btn btn-ghost">
+        <Link href={"/"} prefetch className="btn btn-ghost">
           <AiOutlineArrowLeft /> Back
         </Link>
       </nav>
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+      <div
+        className={
+          "flex items-center justify-center" +
+          " " +
+          `min-h-[calc(100vh-${globalNavHeight}rem)]`
+        }
+      >
         <SignUp />
       </div>
     </div>

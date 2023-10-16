@@ -4,7 +4,7 @@ import { prisma } from "./db";
 export async function getUserIdByClerkId() {
   const { userId } = auth();
 
-  if (!userId)
+  if (userId === null)
     throw new Error("Authentication credentials were missing or incorrect");
 
   const { id } = await prisma.user.findUniqueOrThrow({

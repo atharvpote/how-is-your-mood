@@ -1,5 +1,5 @@
 import Entries from "@/components/entries";
-import NewEntryButton from "@/components/newEntryButton";
+import NewEntry from "@/components/newEntry";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 
@@ -13,12 +13,12 @@ export default async function Journal() {
   });
 
   return (
-    <div className="p-4 xl:pl-8">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="px-4 xl:pl-8">
+      <div className="flex items-center justify-between pt-4">
         <div className="prose md:prose-lg">
           <h2>Journal</h2>
         </div>
-        <NewEntryButton />
+        <NewEntry />
       </div>
       <Entries entries={entries} />
     </div>

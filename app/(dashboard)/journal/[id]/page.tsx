@@ -28,7 +28,8 @@ export default async function EntryPage({ params: { id } }: PropTypes) {
     },
   });
 
-  if (!entry.analysis) throw new Error("NotFoundError: No Analysis found.");
+  if (entry.analysis === null)
+    throw new Error("NotFoundError: No Analysis found.");
 
   return (
     <div className="h-0 min-h-[calc(100vh-4rem)]">
