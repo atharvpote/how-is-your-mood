@@ -24,7 +24,7 @@ interface PropTypes {
 }
 
 export default function Editor({ entry, entryAnalysis }: PropTypes) {
-  const { data: upstreamDate } = useEntryDate(entry.id);
+  const { data: upstreamData } = useEntry(entry.id);
 
   const [content, setContent] = useState(entry.content);
   const [analysis, setAnalysis] = useState(entryAnalysis);
@@ -46,7 +46,11 @@ export default function Editor({ entry, entryAnalysis }: PropTypes) {
   const router = useRouter();
 
   useEffect(() => {
-    if (upstreamDate) setDate(new Date(upstreamDate));
+    if (upstreamData) {
+      setDate(new Date(upstreamData.date));
+      setContent(upstreamData.content);
+      setAnalysis(upstreamData.analysis);
+    }
 
     isTouchDevice() ? setTouchDevice(true) : setTouchDevice(false);
 
@@ -54,7 +58,7 @@ export default function Editor({ entry, entryAnalysis }: PropTypes) {
       if (textarea.current.scrollHeight > textarea.current.clientHeight)
         setScroll(true);
       else setScroll(false);
-  }, [upstreamDate]);
+  }, [upstreamData]);
 
   useAutosave({
     data: content,
@@ -208,14 +212,23 @@ export default function Editor({ entry, entryAnalysis }: PropTypes) {
   );
 }
 
-function useEntryDate(id: string) {
-  return useSWR<Date, AxiosError>(`/api/journal/${id}`, async (url: string) => {
-    const {
-      data: { date },
-    } = await axios.get<{ date: Date }>(url);
+interface UpstreamEntry {
+  date: Date;
+  content: string;
+  analysis: EntryAnalysis;
+}
 
-    return date;
-  });
+function useEntry(id: string) {
+  return useSWR<UpstreamEntry, AxiosError>(
+    `/api/journal/${id}`,
+    async (url: string) => {
+      const {
+        data: { date, content, analysis },
+      } = await axios.get<UpstreamEntry>(url);
+
+      return { date, content, analysis };
+    },
+  );
 }
 
 function isTouchDevice() {

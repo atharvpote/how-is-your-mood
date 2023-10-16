@@ -34,7 +34,7 @@ export default function HistoryChart({ mostRecent, analyses }: PropTypes) {
   const [end, setEnd] = useState(setTimeToMidnight(endOfWeek(mostRecent)));
   const [allDays, setAllDays] = useState(false);
 
-  const { data, error } = useAnalyses(start, end);
+  const { data: upstreamAnalysis, error } = useAnalyses(start, end);
 
   const startRef = useRef<HTMLInputElement | null>(null);
   const endRef = useRef<HTMLInputElement | null>(null);
@@ -109,7 +109,7 @@ export default function HistoryChart({ mostRecent, analyses }: PropTypes) {
                 width={300}
                 height={100}
                 data={selectAppropriateDataToUse(
-                  data,
+                  upstreamAnalysis,
                   allDays,
                   start,
                   end,
@@ -168,16 +168,16 @@ function isValidDateRange(start: Date, end: Date) {
 }
 
 function selectAppropriateDataToUse(
-  data: ChartAnalysis[] | undefined,
+  upstreamAnalysis: ChartAnalysis[] | undefined,
   allDays: boolean,
   start: Date,
   end: Date,
   analyses: ChartAnalysis[],
 ) {
-  if (data) {
-    if (allDays) return mapAnalyses(start, end, data);
+  if (upstreamAnalysis) {
+    if (allDays) return mapAnalyses(start, end, upstreamAnalysis);
 
-    return data;
+    return upstreamAnalysis;
   } else {
     if (allDays) return mapAnalyses(start, end, analyses);
 

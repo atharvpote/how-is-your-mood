@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 import { errorResponse, formatErrors } from "@/utils";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const validation = z
       .object({ start: z.string().datetime(), end: z.string().datetime() })

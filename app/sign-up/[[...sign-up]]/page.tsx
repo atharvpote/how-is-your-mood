@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { SignUp } from "@clerk/nextjs";
 import { AiOutlineArrowLeft } from "react-icons/ai";
-import { globalNavHeight } from "@/utils";
 
 export default function SignUpPage() {
   return (
@@ -11,13 +10,7 @@ export default function SignUpPage() {
           <AiOutlineArrowLeft /> Back
         </Link>
       </nav>
-      <div
-        className={
-          "flex items-center justify-center" +
-          " " +
-          `min-h-[calc(100vh-${globalNavHeight}rem)]`
-        }
-      >
+      <div className="flex min-h-[calc(100vh-var(--global-nav-height))] items-center justify-center">
         <SignUp />
       </div>
     </div>

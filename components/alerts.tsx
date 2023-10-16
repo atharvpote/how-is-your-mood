@@ -8,7 +8,7 @@ export function ErrorComponent({ error }: { error: Error }) {
 
 export function AlertInfo({ message }: { message: string }) {
   return (
-    <div className="alert alert-info">
+    <div className="alert alert-info max-w-xl">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

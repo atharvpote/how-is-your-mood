@@ -1,7 +1,7 @@
 import { RefObject } from "react";
 import { NextResponse } from "next/server";
 import { isAxiosError } from "axios";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
 export function errorResponse(error: unknown, status: number) {
   return NextResponse.json(
@@ -39,6 +39,10 @@ export function showPicker(element: RefObject<HTMLInputElement>) {
   return () => element.current?.showPicker();
 }
 
-export const globalNavHeight = 4;
-export const dashboardNavHeight = 8;
-export const dashboardNavHeight_SM = 4;
+export interface Context {
+  params: { id?: string };
+}
+
+export function contextValidator({ params }: Context) {
+  return z.object({ id: z.string().uuid() }).safeParse(params);
+}

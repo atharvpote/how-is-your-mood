@@ -1,9 +1,10 @@
-import { Webhook } from "svix";
+import { NextRequest } from "next/server";
 import { headers } from "next/headers";
+import { Webhook } from "svix";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { prisma } from "@/utils/db";
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
   }
 
   // Get the body
-  const payload: unknown = await req.json();
+  const payload: unknown = await request.json();
   const body = JSON.stringify(payload);
 
   // Create a new SVIX instance with your secret.

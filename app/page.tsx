@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs";
-import { globalNavHeight } from "@/utils";
 
 export default function Home() {
   if (auth().userId) redirect("/journal");
@@ -16,9 +15,7 @@ export default function Home() {
           Sign In
         </Link>
       </nav>
-      <div
-        className={"hero" + " " + `min-h-[calc(100vh-${globalNavHeight}rem)]`}
-      >
+      <div className="hero min-h-[calc(100vh-var(--global-nav-height))]">
         <div className="hero-content text-center">
           <header className="prose max-w-md">
             <h1 className="capitalize">The best Journal app</h1>

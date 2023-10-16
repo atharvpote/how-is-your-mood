@@ -1,20 +1,23 @@
 import Editor from "@/components/editor";
+import { Context, contextValidator, formatErrors } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 
-interface PropTypes {
-  params: { id: string };
-}
+export default async function EntryPage(context: Context) {
+  const validation = contextValidator(context);
 
-export default async function EntryPage({ params: { id } }: PropTypes) {
+  if (!validation.success) throw new Error(formatErrors(validation.error));
+
   const userId = await getUserIdByClerkId();
 
+  const { id } = validation.data;
   const entry = await prisma.journal.findUniqueOrThrow({
     where: { userId_id: { userId, id } },
     select: {
       content: true,
       id: true,
       date: true,
+
       analysis: {
         select: {
           emoji: true,
@@ -22,7 +25,6 @@ export default async function EntryPage({ params: { id } }: PropTypes) {
           sentiment: true,
           subject: true,
           summery: true,
-          date: true,
         },
       },
     },

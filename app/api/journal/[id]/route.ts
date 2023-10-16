@@ -1,45 +1,78 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse, formatErrors } from "@/utils";
+import {
+  Context,
+  contextValidator,
+  errorResponse,
+  formatErrors,
+} from "@/utils";
 import { analyze } from "@/utils/ai";
 import { Analysis } from "@prisma/client";
 
-interface ParamType {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(_: Request, { params: { id } }: ParamType) {
+export async function GET(_: never, context: Context) {
   try {
-    const userId = await getUserIdByClerkId();
-
-    try {
-      const { date } = await prisma.journal.findUniqueOrThrow({
-        where: { userId_id: { userId, id } },
-        select: { date: true },
-      });
-
-      return NextResponse.json({ date }, { status: 200 });
-    } catch (error) {
-      return errorResponse(error, 500);
-    }
-  } catch (error) {
-    return errorResponse(error, 401);
-  }
-}
-
-export async function PUT(request: Request, { params: { id } }: ParamType) {
-  try {
-    const validation = z
-      .object({ content: z.string() })
-      .safeParse(await request.json());
+    const validation = contextValidator(context);
 
     if (!validation.success) throw new Error(formatErrors(validation.error));
 
-    const { content } = validation.data;
+    try {
+      const userId = await getUserIdByClerkId();
+
+      const { id } = validation.data;
+
+      try {
+        const { date, content, analysis } =
+          await prisma.journal.findUniqueOrThrow({
+            where: { userId_id: { userId, id } },
+            select: {
+              content: true,
+              date: true,
+
+              analysis: {
+                select: {
+                  emoji: true,
+                  mood: true,
+                  sentiment: true,
+                  subject: true,
+                  summery: true,
+                },
+              },
+            },
+          });
+
+        if (analysis === null)
+          throw new Error("NotFoundError: No Analysis found.");
+
+        return NextResponse.json({ date, content, analysis }, { status: 200 });
+      } catch (error) {
+        return errorResponse(error, 500);
+      }
+    } catch (error) {
+      return errorResponse(error, 401);
+    }
+  } catch (error) {
+    return errorResponse(error, 400);
+  }
+}
+
+export async function PUT(request: NextRequest, context: Context) {
+  try {
+    const contextValidation = contextValidator(context);
+
+    if (!contextValidation.success)
+      throw new Error(formatErrors(contextValidation.error));
+
+    const requestValidation = z
+      .object({ content: z.string() })
+      .safeParse(await request.json());
+
+    if (!requestValidation.success)
+      throw new Error(formatErrors(requestValidation.error));
+
+    const { content } = requestValidation.data;
+    const { id } = contextValidation.data;
 
     try {
       const userId = await getUserIdByClerkId();
@@ -95,20 +128,30 @@ export async function PUT(request: Request, { params: { id } }: ParamType) {
   }
 }
 
-export async function DELETE(_: Request, { params: { id } }: ParamType) {
+export async function DELETE(_: never, context: Context) {
   try {
-    const userId = await getUserIdByClerkId();
+    const validation = contextValidator(context);
+
+    if (!validation.success) throw new Error(formatErrors(validation.error));
 
     try {
-      await prisma.journal.delete({
-        where: { userId_id: { userId, id } },
-      });
+      const userId = await getUserIdByClerkId();
 
-      return NextResponse.json({ status: 200 });
+      const { id } = validation.data;
+
+      try {
+        await prisma.journal.delete({
+          where: { userId_id: { userId, id } },
+        });
+
+        return NextResponse.json({ status: 200 });
+      } catch (error) {
+        return errorResponse(error, 500);
+      }
     } catch (error) {
-      return errorResponse(error, 500);
+      return errorResponse(error, 401);
     }
   } catch (error) {
-    return errorResponse(error, 401);
+    return errorResponse(error, 400);
   }
 }

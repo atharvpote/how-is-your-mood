@@ -6,13 +6,12 @@ import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { differenceInDays, format, formatRelative } from "date-fns";
 import { Journal } from "@prisma/client";
-import { dashboardNavHeight, dashboardNavHeight_SM } from "@/utils";
 import { ErrorComponent, GetStarted } from "./alerts";
 
 export default function Entries({ entries }: { entries: Entry[] }) {
-  const { data, error } = useEntries();
+  const { data: upstreamEntries, error } = useEntries();
 
-  if (data === undefined)
+  if (upstreamEntries === undefined)
     if (entries.length === 0) return <GetStartedHeightFull />;
     else return <MapEntries entries={entries} />;
 
@@ -25,16 +24,16 @@ export default function Entries({ entries }: { entries: Entry[] }) {
       </HeightFull>
     );
 
-  if (data.length === 0) return <GetStartedHeightFull />;
+  if (upstreamEntries.length === 0) return <GetStartedHeightFull />;
 
-  return <MapEntries entries={data} />;
+  return <MapEntries entries={upstreamEntries} />;
 }
 
 function MapEntries({ entries }: { entries: Entry[] }) {
   return (
     <div className="grid grid-cols-1 gap-4 py-8 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-      {entries.map((entry) => (
-        <Card key={entry.id} entry={entry} />
+      {entries.map((entry, index) => (
+        <Card key={entry.id} entry={entry} prefetch={index < 4} />
       ))}
     </div>
   );
@@ -42,7 +41,7 @@ function MapEntries({ entries }: { entries: Entry[] }) {
 
 const previewLength = 100;
 
-function Card({ entry }: { entry: Entry }) {
+function Card({ entry, prefetch }: { entry: Entry; prefetch: boolean }) {
   const today = new Date();
   const entryDate = new Date(entry.date);
 
@@ -53,8 +52,9 @@ function Card({ entry }: { entry: Entry }) {
 
   return (
     <Link
-      href={`/journal/${entry.id}`}
       key={entry.id}
+      href={`/journal/${entry.id}`}
+      prefetch={prefetch}
       className="card bg-neutral text-neutral-content transition-all hover:bg-neutral-focus focus:bg-neutral-focus"
     >
       <article className="prose card-body">
@@ -92,21 +92,9 @@ function GetStartedHeightFull() {
   );
 }
 
-const journalHeaderHeight = 4;
-
 function HeightFull({ children }: PropsWithChildren) {
   return (
-    <div
-      className={
-        "flex items-center justify-center" +
-        " " +
-        `h-[calc(100vh-${
-          dashboardNavHeight + journalHeaderHeight
-        }rem)] sm:h-[calc(100vh-${
-          dashboardNavHeight_SM + journalHeaderHeight
-        }rem)]`
-      }
-    >
+    <div className="flex h-[calc(100vh-(var(--dashboard-nav-height)+var(--journal-header-height)))] items-center justify-center sm:h-[calc(100vh-(var(--dashboard-nav-height-sm)+var(--journal-header-height)))]">
       {children}
     </div>
   );
