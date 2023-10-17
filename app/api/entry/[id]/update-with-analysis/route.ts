@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
-  Context,
+  RequestContext,
   contextValidator,
   errorResponse,
   formatErrors,
@@ -9,7 +9,7 @@ import {
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 
-export async function PUT(request: NextRequest, context: Context) {
+export async function PUT(request: NextRequest, context: RequestContext) {
   try {
     const contextValidation = contextValidator(context);
 

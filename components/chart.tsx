@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
-import { addDays, endOfWeek, format, startOfWeek } from "date-fns";
+import { addDays } from "date-fns";
 import {
   ResponsiveContainer,
   Line,
@@ -17,27 +17,38 @@ import {
   NameType,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
-import { Analysis } from "@prisma/client";
-import { setTimeToMidnight, showPicker } from "@/utils";
 import { AlertError, ErrorComponent } from "./alerts";
 import { HistoryHeightFull } from "./layouts";
+import { useAnalyses } from "@/utils/hooks";
+import { ChartAnalysis } from "@/utils/types";
+import { HistoryDateRangeContext } from "@/contexts/history";
 
-interface PropTypes {
-  mostRecent: Date;
+export default function HistoryChart({
+  analyses: initialAnalyses,
+}: {
   analyses: ChartAnalysis[];
-}
+}) {
+  const historyDateRangeContext = useContext(HistoryDateRangeContext);
 
-export default function HistoryChart({ mostRecent, analyses }: PropTypes) {
-  const [start, setStart] = useState(
-    setTimeToMidnight(startOfWeek(mostRecent)),
-  );
-  const [end, setEnd] = useState(setTimeToMidnight(endOfWeek(mostRecent)));
-  const [allDays, setAllDays] = useState(false);
+  if (historyDateRangeContext === null)
+    throw new Error(
+      "HistoryContext must be used within HistoryContextProvider",
+    );
 
-  const { data: upstreamAnalysis, error } = useAnalyses(start, end);
+  const { setRecent, start, end, showAllDates } = historyDateRangeContext;
 
-  const startRef = useRef<HTMLInputElement | null>(null);
-  const endRef = useRef<HTMLInputElement | null>(null);
+  const [analyses, setAnalyses] = useState(initialAnalyses);
+
+  const { data: updatedRecent } = useMostRecent();
+  const { data: updatedAnalyses, error } = useAnalyses(start, end);
+
+  useEffect(() => {
+    if (updatedRecent) {
+      setRecent(updatedRecent);
+    }
+
+    if (updatedAnalyses) setAnalyses(updatedAnalyses);
+  }, [setRecent, updatedAnalyses, updatedRecent]);
 
   if (error)
     return (
@@ -50,139 +61,63 @@ export default function HistoryChart({ mostRecent, analyses }: PropTypes) {
 
   return (
     <>
-      <div className="flex justify-center py-4">
-        <div className="flex flex-col gap-2">
-          <div className="form-control">
-            <div className="flex flex-col items-center gap-2 sm:flex-row">
-              <span>From</span>
-              <input
-                type="date"
-                className={`h-12 cursor-pointer rounded-lg bg-neutral p-2 text-center font-semibold text-neutral-content focus:bg-neutral-focus ${
-                  isValidDateRange(start, end) ? "outline outline-error" : ""
-                }`}
-                value={format(start, "yyyy-MM-dd")}
-                ref={startRef}
-                onClick={showPicker(startRef)}
-                onFocus={showPicker(startRef)}
-                onChange={({ target: { value } }) => {
-                  setStart(setTimeToMidnight(new Date(value)));
-                }}
-              />
-              <span>To</span>
-              <input
-                type="date"
-                className={`h-12 cursor-pointer rounded-lg bg-neutral p-2 text-center font-semibold text-neutral-content focus:bg-neutral-focus ${
-                  isValidDateRange(start, end) ? "outline outline-error" : ""
-                }`}
-                value={format(end, "yyyy-MM-dd")}
-                ref={endRef}
-                onClick={showPicker(endRef)}
-                onFocus={showPicker(endRef)}
-                onChange={({ target: { value } }) => {
-                  setEnd(setTimeToMidnight(new Date(value)));
-                }}
-              />
-            </div>
-            <label className="label flex cursor-pointer gap-2">
-              <span className="label-text">Include all days in between</span>
-              <input
-                type="checkbox"
-                checked={allDays}
-                onChange={() => setAllDays(!allDays)}
-                className="checkbox-primary checkbox"
-              />
-            </label>
+      {isValidDateRange(start, end) ? (
+        <div className="flex h-[calc(100vh-26.75rem)] items-center justify-center sm:h-[calc(100vh-14.125rem)]">
+          <div>
+            <AlertError error="Invalid Date Range" />
           </div>
         </div>
-      </div>
-      <>
-        {isValidDateRange(start, end) ? (
-          <div className="flex h-[calc(100vh-26.75rem)] items-center justify-center sm:h-[calc(100vh-14.125rem)]">
-            <div>
-              <AlertError error="Invalid Date Range" />
-            </div>
-          </div>
-        ) : (
-          <div className="h-screen">
-            <ResponsiveContainer width={"100%"} height={"100%"}>
-              <LineChart
-                width={300}
-                height={100}
-                data={selectAppropriateDataToUse(
-                  upstreamAnalysis,
-                  allDays,
-                  start,
-                  end,
-                  analyses,
-                )}
-                margin={{ top: 12, right: 50, bottom: 0, left: 0 }}
-              >
-                <Line
-                  dataKey="sentiment"
-                  type="monotone"
-                  stroke="#570df8"
-                  strokeWidth={2}
-                  activeDot={{ r: 8 }}
-                  dot={{ r: 4 }}
-                />
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={(label: string) =>
-                    `${new Date(label).toLocaleDateString("en-us", {
-                      month: "short",
-                      day: "numeric",
-                    })}`
-                  }
-                />
-                <YAxis dataKey="sentiment" domain={[-10, 10]} />
-                <Tooltip content={<CustomTooltip />} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </>
+      ) : (
+        <div className="h-screen">
+          <ResponsiveContainer width={"100%"} height={"100%"}>
+            <LineChart
+              width={300}
+              height={100}
+              data={showAllDates ? mapAnalyses(start, end, analyses) : analyses}
+              margin={{ top: 12, right: 50, bottom: 0, left: 0 }}
+            >
+              <Line
+                dataKey="sentiment"
+                type="monotone"
+                stroke="#570df8"
+                strokeWidth={2}
+                activeDot={{ r: 8 }}
+                dot={{ r: 4 }}
+              />
+              <XAxis
+                dataKey="date"
+                tickFormatter={(label: string) => {
+                  return `${new Date(label).toLocaleDateString("en-us", {
+                    month: "short",
+                    day: "numeric",
+                  })}`;
+                }}
+              />
+              <YAxis dataKey="sentiment" domain={[-10, 10]} />
+              <Tooltip content={<CustomTooltip />} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </>
   );
 }
 
-export type ChartAnalysis = Pick<
-  Analysis,
-  "sentiment" | "date" | "mood" | "emoji"
->;
+function useMostRecent() {
+  return useSWR<Date | undefined, AxiosError>(
+    "/api/analysis/most-recent",
+    async (key: string) => {
+      const {
+        data: { mostRecent },
+      } = await axios.get<{ mostRecent?: Date }>(key);
 
-function useAnalyses(start: Date, end: Date) {
-  return useSWR<ChartAnalysis[], AxiosError>({ start, end }, async () => {
-    const {
-      data: { analyses },
-    } = await axios.post<{ analyses: ChartAnalysis[] }>("/api/analysis/", {
-      start,
-      end,
-    });
-
-    return analyses;
-  });
+      return mostRecent ? new Date(mostRecent) : mostRecent;
+    },
+  );
 }
 
 function isValidDateRange(start: Date, end: Date) {
   return start.getTime() >= end.getTime();
-}
-
-function selectAppropriateDataToUse(
-  upstreamAnalysis: ChartAnalysis[] | undefined,
-  allDays: boolean,
-  start: Date,
-  end: Date,
-  analyses: ChartAnalysis[],
-) {
-  if (upstreamAnalysis) {
-    if (allDays) return mapAnalyses(start, end, upstreamAnalysis);
-
-    return upstreamAnalysis;
-  } else {
-    if (allDays) return mapAnalyses(start, end, analyses);
-
-    return analyses;
-  }
 }
 
 function mapAnalyses(start: Date, end: Date, analyses: ChartAnalysis[]) {

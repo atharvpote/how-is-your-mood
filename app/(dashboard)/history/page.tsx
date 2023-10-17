@@ -1,14 +1,17 @@
 import { endOfWeek, startOfWeek } from "date-fns";
+import HistoryDateRange from "@/components/HistoryDateRange";
 import { GetStarted } from "@/components/alerts";
-import HistoryChart, { ChartAnalysis } from "@/components/chart";
+import HistoryChart from "@/components/chart";
+import HistoryContextProvider from "@/contexts/history";
 import { HistoryHeightFull } from "@/components/layouts";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
+import { ChartAnalysis } from "@/utils/types";
 
 export default async function History() {
   const userId = await getUserIdByClerkId();
 
-  const mostRecentEntry = await prisma.journal.findFirst({
+  const mostRecent = await prisma.journal.findFirst({
     where: { userId },
     orderBy: { date: "desc" },
     select: { date: true },
@@ -16,13 +19,13 @@ export default async function History() {
 
   let analyses: ChartAnalysis[] = [];
 
-  if (mostRecentEntry) {
+  if (mostRecent) {
     analyses = await prisma.analysis.findMany({
       where: {
         userId,
         AND: [
-          { date: { gte: startOfWeek(mostRecentEntry.date) } },
-          { date: { lte: endOfWeek(mostRecentEntry.date) } },
+          { date: { gte: startOfWeek(mostRecent.date) } },
+          { date: { lte: endOfWeek(mostRecent.date) } },
         ],
       },
       orderBy: { date: "asc" },
@@ -35,8 +38,15 @@ export default async function History() {
       <div className="prose h-12 pt-4 md:prose-lg">
         <h2>History</h2>
       </div>
-      {mostRecentEntry ? (
-        <HistoryChart mostRecent={mostRecentEntry.date} analyses={analyses} />
+      {mostRecent ? (
+        <HistoryContextProvider recent={mostRecent.date}>
+          <div className="flex justify-center py-4">
+            <div className="flex flex-col gap-2">
+              <HistoryDateRange />
+            </div>
+          </div>
+          <HistoryChart analyses={analyses} />
+        </HistoryContextProvider>
       ) : (
         <HistoryHeightFull>
           <div>

@@ -1,13 +1,10 @@
 "use client";
 
 import { ErrorComponent } from "@/components/alerts";
+import { ErrorBoundaryProps } from "@/utils";
 import { useRouter } from "next/navigation";
 
-interface PropType {
-  error: Error & { digest?: string };
-}
-
-export default function Error({ error }: PropType) {
+export default function Error({ error }: ErrorBoundaryProps) {
   const router = useRouter();
 
   setTimeout(() => {

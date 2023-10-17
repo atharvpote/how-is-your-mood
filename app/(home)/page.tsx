@@ -1,10 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs";
 
 export default function Home() {
-  if (auth().userId) redirect("/journal");
-
   return (
     <div className="min-h-screen bg-base-200">
       <nav className="flex justify-end gap-4 p-2">

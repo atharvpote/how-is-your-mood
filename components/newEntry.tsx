@@ -18,7 +18,7 @@ export default function NewEntry() {
         setCreating(true);
 
         axios
-          .post<{ id: string }>("/api/journal")
+          .post<{ id: string }>("/api/entry")
           .then(({ data: { id } }) => router.push(`/journal/${id}`))
           .catch((error) => errorAlert(error))
           .finally(() => setCreating(false));

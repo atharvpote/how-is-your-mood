@@ -39,10 +39,18 @@ export function showPicker(element: RefObject<HTMLInputElement>) {
   return () => element.current?.showPicker();
 }
 
-export interface Context {
+export interface RequestContext {
   params: { id?: string };
 }
 
-export function contextValidator({ params }: Context) {
+export function contextValidator({ params }: RequestContext) {
   return z.object({ id: z.string().uuid() }).safeParse(params);
+}
+
+export function isTouchDevice() {
+  return window.matchMedia("(any-pointer: coarse)").matches;
+}
+
+export interface ErrorBoundaryProps {
+  error: Error & { digest?: string };
 }

@@ -1,19 +1,25 @@
 "use client";
 
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { differenceInDays, format, formatRelative } from "date-fns";
-import { Journal } from "@prisma/client";
 import { ErrorComponent, GetStarted } from "./alerts";
+import { Entry } from "@/utils/types";
 
-export default function Entries({ entries }: { entries: Entry[] }) {
-  const { data: upstreamEntries, error } = useEntries();
+export default function Entries({
+  entries: initialEntries,
+}: {
+  entries: Entry[];
+}) {
+  const [entries, setEntries] = useState(initialEntries);
 
-  if (upstreamEntries === undefined)
-    if (entries.length === 0) return <GetStartedHeightFull />;
-    else return <MapEntries entries={entries} />;
+  const { data: updatedEntries, error } = useEntries();
+
+  useEffect(() => {
+    if (updatedEntries) setEntries(updatedEntries);
+  }, [updatedEntries]);
 
   if (error)
     return (
@@ -24,13 +30,9 @@ export default function Entries({ entries }: { entries: Entry[] }) {
       </HeightFull>
     );
 
-  if (upstreamEntries.length === 0) return <GetStartedHeightFull />;
-
-  return <MapEntries entries={upstreamEntries} />;
-}
-
-function MapEntries({ entries }: { entries: Entry[] }) {
-  return (
+  return entries.length === 0 ? (
+    <GetStartedHeightFull />
+  ) : (
     <div className="grid grid-cols-1 gap-4 py-8 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
       {entries.map((entry, index) => (
         <Card key={entry.id} entry={entry} prefetch={index < 4} />
@@ -43,12 +45,11 @@ const previewLength = 100;
 
 function Card({ entry, prefetch }: { entry: Entry; prefetch: boolean }) {
   const today = new Date();
-  const entryDate = new Date(entry.date);
 
   const title =
-    differenceInDays(today, entryDate) < 7
-      ? formatRelative(entryDate, today).split(" at ")[0].trim()
-      : format(entryDate, "dd/MM/yyyy");
+    differenceInDays(today, entry.date) < 7
+      ? formatRelative(entry.date, today).split(" at ")[0].trim()
+      : format(entry.date, "dd/MM/yyyy");
 
   return (
     <Link
@@ -70,15 +71,13 @@ function Card({ entry, prefetch }: { entry: Entry; prefetch: boolean }) {
   );
 }
 
-export type Entry = Pick<Journal, "id" | "date" | "content">;
-
 function useEntries() {
-  return useSWR<Entry[], AxiosError>("/api/journal", async (url: string) => {
+  return useSWR<Entry[], AxiosError>("/api/entries", async (url: string) => {
     const {
       data: { entries },
     } = await axios.get<{ entries: Entry[] }>(url);
 
-    return entries;
+    return entries.map((entry) => ({ ...entry, date: new Date(entry.date) }));
   });
 }
 

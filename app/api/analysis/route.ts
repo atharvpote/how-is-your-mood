@@ -1,18 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { errorResponse, formatErrors } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse, formatErrors } from "@/utils";
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
+  const params = request.nextUrl.searchParams;
+
+  const startValidation = z.string().datetime().safeParse(params.get("start"));
+  const endValidation = z.string().datetime().safeParse(params.get("end"));
+
   try {
-    const validation = z
-      .object({ start: z.string().datetime(), end: z.string().datetime() })
-      .safeParse(await request.json());
+    if (!startValidation.success)
+      throw new Error(formatErrors(startValidation.error));
 
-    if (!validation.success) throw new Error(formatErrors(validation.error));
+    if (!endValidation.success)
+      throw new Error(formatErrors(endValidation.error));
 
-    const { start, end } = validation.data;
+    const { data: start } = startValidation;
+    const { data: end } = endValidation;
 
     try {
       const userId = await getUserIdByClerkId();

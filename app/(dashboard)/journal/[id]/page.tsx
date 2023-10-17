@@ -1,9 +1,14 @@
+import Analysis from "@/components/analysis";
+import DeleteEntry from "@/components/deleteEntry";
 import Editor from "@/components/editor";
-import { Context, contextValidator, formatErrors } from "@/utils";
+import EntryDate from "@/components/entryDate";
+import AnalysisContextProvider from "@/contexts/analysis";
+import EntryDateContextProvider from "@/contexts/entryDate";
+import { RequestContext, contextValidator, formatErrors } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 
-export default async function EntryPage(context: Context) {
+export default async function EditorPage(context: RequestContext) {
   const validation = contextValidator(context);
 
   if (!validation.success) throw new Error(formatErrors(validation.error));
@@ -11,13 +16,13 @@ export default async function EntryPage(context: Context) {
   const userId = await getUserIdByClerkId();
 
   const { id } = validation.data;
+
   const entry = await prisma.journal.findUniqueOrThrow({
     where: { userId_id: { userId, id } },
     select: {
       content: true,
       id: true,
       date: true,
-
       analysis: {
         select: {
           emoji: true,
@@ -30,12 +35,30 @@ export default async function EntryPage(context: Context) {
     },
   });
 
-  if (entry.analysis === null)
-    throw new Error("NotFoundError: No Analysis found.");
+  if (entry.analysis === null) throw new Error("Analysis is null");
 
   return (
-    <div className="h-0 min-h-[calc(100vh-4rem)]">
-      <Editor entry={entry} entryAnalysis={entry.analysis} />
-    </div>
+    <AnalysisContextProvider analysis={entry.analysis} content={entry.content}>
+      <EntryDateContextProvider date={entry.date}>
+        <div className="px-4 md:flex md:h-[calc(100vh-var(--dashboard-nav-height-sm))] lg:pl-8">
+          <div className="h-[calc(100vh-11rem)] sm:h-[calc(100vh-7rem)] md:h-[calc(100%-1rem)] md:grow md:basis-full">
+            <div className="flex items-center justify-between py-4">
+              <EntryDate id={entry.id} />
+              <DeleteEntry id={entry.id} />
+            </div>
+            <div className="h-[calc(100%-5rem)]">
+              <Editor entry={entry} />
+            </div>
+          </div>
+          <div className="divider md:divider-horizontal md:grow-0" />
+          <section className="prose sm:mx-auto sm:max-w-2xl md:h-full md:grow-0 md:basis-96 md:self-start">
+            <h2 className="font-bold md:mt-6">Analysis</h2>
+            <div className="pb-4 md:relative md:h-[calc(100%-5.3rem)]">
+              <Analysis />
+            </div>
+          </section>
+        </div>
+      </EntryDateContextProvider>
+    </AnalysisContextProvider>
   );
 }

@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getUserIdByClerkId } from "@/utils/auth";
-import { prisma } from "@/utils/db";
+import { Analysis } from "@prisma/client";
 import {
-  Context,
+  RequestContext,
   contextValidator,
   errorResponse,
   formatErrors,
 } from "@/utils";
+import { getUserIdByClerkId } from "@/utils/auth";
 import { analyze } from "@/utils/ai";
-import { Analysis } from "@prisma/client";
+import { prisma } from "@/utils/db";
 
-export async function GET(_: never, context: Context) {
+export async function GET(_: never, context: RequestContext) {
   try {
     const validation = contextValidator(context);
 
@@ -57,7 +57,7 @@ export async function GET(_: never, context: Context) {
   }
 }
 
-export async function PUT(request: NextRequest, context: Context) {
+export async function PUT(request: NextRequest, context: RequestContext) {
   try {
     const contextValidation = contextValidator(context);
 
@@ -128,7 +128,7 @@ export async function PUT(request: NextRequest, context: Context) {
   }
 }
 
-export async function DELETE(_: never, context: Context) {
+export async function DELETE(_: never, context: RequestContext) {
   try {
     const validation = contextValidator(context);
 

@@ -52,9 +52,10 @@ async function getPrompt(content: string) {
   return input;
 }
 
-type Entry = Pick<Journal, "id" | "createdAt" | "content">;
-
-export async function qa(question: string, entries: Entry[]) {
+export async function qa(
+  question: string,
+  entries: Pick<Journal, "id" | "createdAt" | "content">[],
+) {
   const docs = entries.map(
     ({ content, id, createdAt }) =>
       new Document({
