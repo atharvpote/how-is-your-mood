@@ -10,7 +10,7 @@ export async function GET() {
     const entries = await prisma.journal.findMany({
       where: { userId },
       orderBy: { date: "desc" },
-      select: { id: true, date: true, content: true },
+      select: { id: true, date: true, preview: true },
     });
 
     return NextResponse.json({ entries }, { status: 200 });

@@ -5,13 +5,13 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { differenceInDays, format, formatRelative } from "date-fns";
-import { Entry } from "@/utils";
+import { EntryPreview, previewLength } from "@/utils";
 import { ErrorComponent, GetStarted } from "./alerts";
 
 export default function Entries({
   initialEntries,
 }: {
-  initialEntries: Entry[];
+  initialEntries: EntryPreview[];
 }) {
   const [entries, setEntries] = useState(initialEntries);
 
@@ -41,13 +41,11 @@ export default function Entries({
   );
 }
 
-const previewLength = 100;
-
 function Card({
-  entry: { content, date, id },
+  entry: { date, id, preview },
   prefetch,
 }: {
-  entry: Entry;
+  entry: EntryPreview;
   prefetch: boolean;
 }) {
   const today = new Date();
@@ -69,8 +67,7 @@ function Card({
           <h3 className="capitalize text-neutral-content">{title}</h3>
         </div>
         <p className="overflow-hidden text-neutral-content/75">
-          {content.substring(0, previewLength).trim()}
-          {content.length > previewLength ? "..." : ""}
+          {preview.trim() + (preview.length < previewLength ? "" : "...")}
         </p>
       </article>
     </Link>
@@ -78,13 +75,16 @@ function Card({
 }
 
 function useEntries() {
-  return useSWR<Entry[], AxiosError>("/api/entries", async (url: string) => {
-    const {
-      data: { entries },
-    } = await axios.get<{ entries: Entry[] }>(url);
+  return useSWR<EntryPreview[], AxiosError>(
+    "/api/entries",
+    async (url: string) => {
+      const {
+        data: { entries },
+      } = await axios.get<{ entries: EntryPreview[] }>(url);
 
-    return entries.map((entry) => ({ ...entry, date: new Date(entry.date) }));
-  });
+      return entries.map((entry) => ({ ...entry, date: new Date(entry.date) }));
+    },
+  );
 }
 
 function GetStartedHeightFull() {

@@ -29,6 +29,7 @@ model Journal {
   updatedAt DateTime @updatedAt
 
   content String   @db.Text
+  preview String   @default("") @db.VarChar(100)
   date    DateTime
 
   userId String

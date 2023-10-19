@@ -6,7 +6,7 @@ export default function QuestionPage() {
       <div className="prose mx-8 my-4 md:prose-lg">
         <h2>Question</h2>
       </div>
-      <Question />;
+      <Question />
     </>
   );
 }

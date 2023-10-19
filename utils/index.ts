@@ -70,6 +70,14 @@ export type EntryAnalysis = Pick<
   "sentiment" | "mood" | "emoji" | "subject" | "summery"
 >;
 
-export type Entry = Pick<Journal, "id" | "date" | "content">;
+export type Entry = Pick<Journal, "content" | "date" | "id">;
+
+export type EntryPreview = Omit<Entry, "content"> & Pick<Journal, "preview">;
 
 export type SetState<T> = Dispatch<SetStateAction<T>>;
+
+export const previewLength = 100;
+
+export function contentPreview(content: string) {
+  return content.substring(0, previewLength);
+}

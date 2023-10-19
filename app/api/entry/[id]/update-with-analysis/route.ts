@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
   RequestContext,
+  contentPreview,
   contextValidator,
   errorResponse,
   formatErrors,
@@ -41,7 +42,7 @@ export async function PUT(request: NextRequest, context: RequestContext) {
       try {
         await prisma.journal.update({
           where: { userId_id: { userId, id } },
-          data: { content },
+          data: { content, preview: contentPreview(content) },
         });
 
         await prisma.analysis.update({

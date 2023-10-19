@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Analysis } from "@prisma/client";
 import {
   RequestContext,
+  contentPreview,
   contextValidator,
   errorResponse,
   formatErrors,
@@ -79,7 +80,7 @@ export async function PUT(request: NextRequest, context: RequestContext) {
       try {
         await prisma.journal.update({
           where: { userId_id: { userId, id } },
-          data: { content },
+          data: { content, preview: contentPreview(content) },
         });
 
         let analysis: Pick<
