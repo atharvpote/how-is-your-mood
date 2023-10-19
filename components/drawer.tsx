@@ -65,6 +65,7 @@ export default function Drawer({ children }: PropsWithChildren) {
           {/* Logout */}
           <div className="flex flex-none basis-12 items-center justify-center">
             <button
+              aria-label="logout"
               className="btn btn-square btn-ghost text-2xl"
               onClick={() => {
                 if (!dialog.current) throw new Error("Dialog is null");
@@ -75,8 +76,8 @@ export default function Drawer({ children }: PropsWithChildren) {
               <MdLogout />
             </button>
             <dialog className="modal modal-bottom sm:modal-middle" ref={dialog}>
-              <div className="prose modal-box">
-                <h3 className="font-bold">You want to log out?</h3>
+              <div className="prose-sm modal-box">
+                <h2 className="font-bold">You want to log out?</h2>
                 <div className="modal-action">
                   <form method="dialog">
                     {/* if there is a button in form, it will close the modal */}

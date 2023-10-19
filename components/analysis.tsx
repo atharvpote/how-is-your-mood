@@ -48,7 +48,7 @@ export default function Analysis() {
         </td>
       ),
     },
-  ];
+  ] as const;
 
   return loading ? (
     <div className="flex h-full items-center justify-center">
