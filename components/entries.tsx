@@ -93,7 +93,7 @@ function GetStartedHeightFull() {
 
 function HeightFull({ children }: PropsWithChildren) {
   return (
-    <div className="flex h-[calc(100vh-(var(--dashboard-nav-height)+var(--journal-header-height)))] items-center justify-center sm:h-[calc(100vh-(var(--dashboard-nav-height-sm)+var(--journal-header-height)))]">
+    <div className="flex h-[calc(100svh-(var(--dashboard-nav-height)+var(--journal-header-height)))] items-center justify-center sm:h-[calc(100svh-(var(--dashboard-nav-height-sm)+var(--journal-header-height)))]">
       {children}
     </div>
   );

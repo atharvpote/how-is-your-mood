@@ -62,7 +62,7 @@ export default function HistoryChart({
   return (
     <>
       {isValidDateRange(start, end) ? (
-        <div className="flex h-[calc(100vh-26.75rem)] items-center justify-center sm:h-[calc(100vh-14.125rem)]">
+        <div className="flex h-[calc(100svh-26.75rem)] items-center justify-center sm:h-[calc(100svh-14.125rem)]">
           <div>
             <AlertError error="Invalid Date Range" />
           </div>

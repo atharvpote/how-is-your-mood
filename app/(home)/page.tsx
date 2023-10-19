@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-base-200">
+    <div className="min-h-[100svh] bg-base-200">
       <nav className="flex justify-end gap-4 p-2">
         <Link href={"/sign-up"} prefetch className="btn btn-primary">
           Sign Up
@@ -11,7 +11,7 @@ export default function Home() {
           Sign In
         </Link>
       </nav>
-      <div className="hero min-h-[calc(100vh-var(--global-nav-height))]">
+      <div className="hero min-h-[calc(100svh-var(--global-nav-height))]">
         <div className="hero-content text-center">
           <header className="prose max-w-md">
             <h1 className="capitalize">The best Journal app</h1>
