@@ -34,7 +34,7 @@ export default async function EditorPage(context: RequestContext) {
     },
   });
 
-  if (entry.analysis === null) throw new Error("Analysis is null");
+  if (!entry.analysis) throw new Error("Analysis is null");
 
   return (
     <AnalysisContextProvider

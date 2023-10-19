@@ -34,8 +34,8 @@ export default async function History() {
   }
 
   return (
-    <div className="px-4 xl:pl-8">
-      <div className="prose h-12 pt-4 md:prose-lg">
+    <>
+      <div className="prose h-12 px-4 pt-4 md:prose-lg xl:pl-8">
         <h2>History</h2>
       </div>
       {mostRecent ? (
@@ -54,6 +54,6 @@ export default async function History() {
           </div>
         </HistoryHeightFull>
       )}
-    </div>
+    </>
   );
 }

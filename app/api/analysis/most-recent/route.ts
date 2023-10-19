@@ -15,7 +15,7 @@ export async function GET() {
       });
 
       return NextResponse.json(
-        { mostRecent: mostRecent?.date },
+        { mostRecent: mostRecent?.date ?? null },
         { status: 200 },
       );
     } catch (error) {

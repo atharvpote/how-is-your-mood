@@ -37,7 +37,11 @@ export function setTimeToMidnight(date: Date) {
 }
 
 export function showPicker(element: RefObject<HTMLInputElement>) {
-  return () => element.current?.showPicker();
+  return () => {
+    if (!element.current) throw new Error("Input date is null");
+
+    element.current.showPicker();
+  };
 }
 
 export interface RequestContext {

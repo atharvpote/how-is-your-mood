@@ -42,8 +42,7 @@ export async function GET(_: never, context: RequestContext) {
             },
           });
 
-        if (analysis === null)
-          throw new Error("NotFoundError: No Analysis found.");
+        if (!analysis) throw new Error("NotFoundError: No Analysis found.");
 
         return NextResponse.json({ date, content, analysis }, { status: 200 });
       } catch (error) {
@@ -97,7 +96,7 @@ export async function PUT(request: NextRequest, context: RequestContext) {
           sentiment: true,
         };
 
-        if (content.trim().length === 0)
+        if (!content.trim())
           analysis = await prisma.analysis.update({
             where,
             data: {

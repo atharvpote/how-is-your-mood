@@ -2,13 +2,13 @@ import { auth } from "@clerk/nextjs";
 import { prisma } from "./db";
 
 export async function getUserIdByClerkId() {
-  const { userId } = auth();
+  const { userId: clerkId } = auth();
 
-  if (userId === null)
+  if (!clerkId)
     throw new Error("Authentication credentials were missing or incorrect");
 
   const { id } = await prisma.user.findUniqueOrThrow({
-    where: { clerkId: userId },
+    where: { clerkId },
     select: { id: true },
   });
 

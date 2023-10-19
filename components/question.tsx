@@ -16,7 +16,7 @@ export default function Question() {
         onSubmit={({ preventDefault }) => {
           preventDefault();
 
-          if (value.trim().length !== 0) {
+          if (value.trim()) {
             setLoading(true);
 
             axios

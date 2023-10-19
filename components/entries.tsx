@@ -30,7 +30,7 @@ export default function Entries({
       </HeightFull>
     );
 
-  return entries.length === 0 ? (
+  return !entries.length ? (
     <GetStartedHeightFull />
   ) : (
     <div className="grid grid-cols-1 gap-4 py-8 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
@@ -43,18 +43,24 @@ export default function Entries({
 
 const previewLength = 100;
 
-function Card({ entry, prefetch }: { entry: Entry; prefetch: boolean }) {
+function Card({
+  entry: { content, date, id },
+  prefetch,
+}: {
+  entry: Entry;
+  prefetch: boolean;
+}) {
   const today = new Date();
 
   const title =
-    differenceInDays(today, entry.date) < 7
-      ? formatRelative(entry.date, today).split(" at ")[0].trim()
-      : format(entry.date, "dd/MM/yyyy");
+    differenceInDays(today, date) < 7
+      ? formatRelative(date, today).split(" at ")[0]?.trim()
+      : format(date, "dd/MM/yyyy");
 
   return (
     <Link
-      key={entry.id}
-      href={`/journal/${entry.id}`}
+      key={id}
+      href={`/journal/${id}`}
       prefetch={prefetch}
       className="card bg-neutral text-neutral-content transition-all hover:bg-neutral-focus focus:bg-neutral-focus"
     >
@@ -63,8 +69,8 @@ function Card({ entry, prefetch }: { entry: Entry; prefetch: boolean }) {
           <h3 className="capitalize text-neutral-content">{title}</h3>
         </div>
         <p className="overflow-hidden text-neutral-content/75">
-          {entry.content.substring(0, previewLength).trim()}
-          {entry.content.length > previewLength ? "..." : ""}
+          {content.substring(0, previewLength).trim()}
+          {content.length > previewLength ? "..." : ""}
         </p>
       </article>
     </Link>

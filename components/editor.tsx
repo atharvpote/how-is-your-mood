@@ -12,17 +12,17 @@ import { useParams } from "next/navigation";
 export default function Editor({ entry }: { entry: Omit<Entry, "id"> }) {
   const { id } = useParams();
 
-  if (Array.isArray(id)) throw new Error("Invalid Entry ID");
+  if (!id || Array.isArray(id)) throw new Error("Entry ID is undefined");
 
   const analysisContext = useContext(AnalysisContext);
   const entryDateContext = useContext(EntryDateContext);
 
-  if (analysisContext === null)
+  if (!analysisContext)
     throw new Error(
       "AnalysisContext must be used within AnalysisContextProvider",
     );
 
-  if (entryDateContext === null)
+  if (!entryDateContext)
     throw new Error(
       "EntryDateContext must be used within EntryDateContextProvider",
     );

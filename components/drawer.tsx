@@ -67,7 +67,9 @@ export default function Drawer({ children }: PropsWithChildren) {
             <button
               className="btn btn-square btn-ghost text-2xl"
               onClick={() => {
-                dialog.current?.showModal();
+                if (!dialog.current) throw new Error("Dialog is null");
+
+                dialog.current.showModal();
               }}
             >
               <MdLogout />
@@ -116,7 +118,10 @@ export default function Drawer({ children }: PropsWithChildren) {
                     label === section ? "active" : ""
                   }`}
                   onClick={() => {
-                    input.current?.click();
+                    if (!input.current)
+                      throw new Error("Input checkbox is null");
+
+                    input.current.click();
                   }}
                 >
                   {label}

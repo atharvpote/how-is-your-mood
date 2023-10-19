@@ -10,11 +10,11 @@ import { useContext, useEffect, useRef, useState } from "react";
 export default function EntryDate() {
   const { id } = useParams();
 
-  if (Array.isArray(id)) throw new Error("Invalid Entry ID");
+  if (!id || Array.isArray(id)) throw new Error("Entry ID is undefined");
 
   const entryDateContext = useContext(EntryDateContext);
 
-  if (entryDateContext === null)
+  if (!entryDateContext)
     throw new Error(
       "EntryDateContext must be used within EntryDateContextProvider",
     );

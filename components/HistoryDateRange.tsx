@@ -8,15 +8,15 @@ import { useContext, useRef } from "react";
 export default function HistoryDateRange() {
   const historyDateRangeContext = useContext(HistoryDateRangeContext);
 
-  if (historyDateRangeContext === null)
+  if (!historyDateRangeContext)
     throw new Error(
       "HistoryContext must be used within HistoryContextProvider",
     );
 
   const { start, setStart, end, setEnd } = historyDateRangeContext;
 
-  const startRef = useRef<HTMLInputElement | null>(null);
-  const endRef = useRef<HTMLInputElement | null>(null);
+  const startRef = useRef<HTMLInputElement>(null);
+  const endRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="form-control">

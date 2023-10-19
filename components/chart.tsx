@@ -31,7 +31,7 @@ export default function HistoryChart({
 }) {
   const historyDateRangeContext = useContext(HistoryDateRangeContext);
 
-  if (historyDateRangeContext === null)
+  if (!historyDateRangeContext)
     throw new Error(
       "HistoryContext must be used within HistoryContextProvider",
     );
@@ -69,7 +69,7 @@ export default function HistoryChart({
           </div>
         </div>
       ) : (
-        <div className="h-screen">
+        <div className="h-screen pr-4">
           <ResponsiveContainer width={"100%"} height={"100%"}>
             <LineChart
               width={300}
@@ -123,12 +123,12 @@ export default function HistoryChart({
 }
 
 function useMostRecent() {
-  return useSWR<Date | undefined, AxiosError>(
+  return useSWR<Date | null, AxiosError>(
     "/api/analysis/most-recent",
     async (key: string) => {
       const {
         data: { mostRecent },
-      } = await axios.get<{ mostRecent?: Date }>(key);
+      } = await axios.get<{ mostRecent: Date | null }>(key);
 
       return mostRecent ? new Date(mostRecent) : mostRecent;
     },
@@ -136,7 +136,7 @@ function useMostRecent() {
 }
 
 function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
-  if (active && payload?.length) {
+  if (active && payload?.[0]?.payload) {
     const data: unknown = payload[0].payload;
 
     const validation = z

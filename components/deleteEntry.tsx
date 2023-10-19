@@ -9,7 +9,7 @@ import { AiOutlineDelete } from "react-icons/ai";
 export default function DeleteEntry() {
   const { id } = useParams();
 
-  if (Array.isArray(id)) throw new Error("Invalid Entry ID");
+  if (!id || Array.isArray(id)) throw new Error("Entry ID is undefined");
 
   const [deleting, setDeleting] = useState(false);
 
@@ -21,7 +21,11 @@ export default function DeleteEntry() {
     <>
       <button
         type="button"
-        onClick={() => modal.current?.showModal()}
+        onClick={() => {
+          if (!modal.current) throw new Error("Dialog in null");
+
+          modal.current.showModal();
+        }}
         className="btn btn-error btn-outline"
       >
         {deleting ? (

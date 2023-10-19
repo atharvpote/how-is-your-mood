@@ -7,34 +7,35 @@ import { LoadingSpinner } from "./loading";
 export default function Analysis() {
   const context = useContext(AnalysisContext);
 
-  if (context === null)
+  if (!context)
     throw new Error(
       "AnalysisContext must be used within AnalysisContextProvider",
     );
 
-  const { analysis, loading } = context;
+  const {
+    analysis: { emoji, mood, sentiment, subject, summery },
+    loading,
+  } = context;
 
   const table = [
     {
       name: "Mood",
       td: (
         <td className="flex basis-full items-center gap-2">
-          <div className="font-bold capitalize">{analysis.mood}</div>
-          <div className="">{analysis.emoji}</div>
+          <div className="font-bold capitalize">{mood}</div>
+          <div className="">{emoji}</div>
         </td>
       ),
     },
     {
       name: "Subject",
-      td: <td className="basis-full capitalize">{analysis.subject}</td>,
+      td: <td className="basis-full capitalize">{subject}</td>,
     },
     {
       name: "Summery",
       td: (
         <td className="basis-full">
-          {analysis.subject.length
-            ? analysis.summery[0].toUpperCase() + analysis.summery.slice(1)
-            : ""}
+          {summery[0] ? summery[0].toUpperCase() + summery.slice(1) : ""}
         </td>
       ),
     },
@@ -42,7 +43,7 @@ export default function Analysis() {
       name: "Sentiment Score",
       td: (
         <td className="basis-full">
-          <span className="font-bold">{analysis.sentiment}</span>
+          <span className="font-bold">{sentiment}</span>
           /10
         </td>
       ),
