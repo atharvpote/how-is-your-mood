@@ -4,13 +4,14 @@ import { EntryDateContext } from "@/contexts/entryDate";
 import { errorAlert, isTouchDevice, showPicker } from "@/utils";
 import axios from "axios";
 import { format } from "date-fns";
+import { useParams } from "next/navigation";
 import { useContext, useEffect, useRef, useState } from "react";
 
-interface Props {
-  id: string;
-}
+export default function EntryDate() {
+  const { id } = useParams();
 
-export default function EntryDate({ id }: Props) {
+  if (Array.isArray(id)) throw new Error("Invalid Entry ID");
+
   const entryDateContext = useContext(EntryDateContext);
 
   if (entryDateContext === null)

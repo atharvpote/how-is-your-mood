@@ -2,7 +2,7 @@
 
 import { PropsWithChildren, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useSelectedLayoutSegment } from "next/navigation";
 import { SignOutButton } from "@clerk/nextjs";
 import { MdLogout } from "react-icons/md";
 
@@ -17,7 +17,7 @@ export default function Drawer({ children }: PropsWithChildren) {
   const input = useRef<HTMLInputElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
 
-  const path = usePathname();
+  const section = useSelectedLayoutSegment();
 
   return (
     <div className="drawer bg-base-100 lg:drawer-open">
@@ -113,7 +113,7 @@ export default function Drawer({ children }: PropsWithChildren) {
                   href={href}
                   prefetch
                   className={`btn btn-ghost flex items-center justify-center text-xl capitalize ${
-                    label === path.split("/")[1] ? "active" : ""
+                    label === section ? "active" : ""
                   }`}
                   onClick={() => {
                     input.current?.click();

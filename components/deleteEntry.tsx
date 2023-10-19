@@ -1,12 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { errorAlert } from "@/utils";
 import axios from "axios";
 import { useRef, useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 
-export default function DeleteEntry({ id }: { id: string }) {
+export default function DeleteEntry() {
+  const { id } = useParams();
+
+  if (Array.isArray(id)) throw new Error("Invalid Entry ID");
+
   const [deleting, setDeleting] = useState(false);
 
   const modal = useRef<HTMLDialogElement>(null);

@@ -1,7 +1,7 @@
 "use client";
 
-import { SetState } from "@/utils/types";
 import { PropsWithChildren, createContext, useMemo, useState } from "react";
+import { SetState } from "@/utils";
 
 export const EntryDateContext = createContext<{
   date: Date;

@@ -5,8 +5,8 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { differenceInDays, format, formatRelative } from "date-fns";
+import { Entry } from "@/utils";
 import { ErrorComponent, GetStarted } from "./alerts";
-import { Entry } from "@/utils/types";
 
 export default function Entries({
   initialEntries,

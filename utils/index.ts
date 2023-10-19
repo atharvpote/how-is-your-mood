@@ -1,7 +1,8 @@
-import { RefObject } from "react";
+import { Dispatch, RefObject, SetStateAction } from "react";
 import { NextResponse } from "next/server";
 import { isAxiosError } from "axios";
 import { ZodError, z } from "zod";
+import { Analysis, Journal } from "@prisma/client";
 
 export function errorResponse(error: unknown, status: number) {
   return NextResponse.json(
@@ -28,7 +29,7 @@ export function errorAlert(error: unknown) {
 }
 
 export function formatErrors(error: ZodError) {
-  return error.format()._errors.join(".\n");
+  return error.format()._errors.join(", ");
 }
 
 export function setTimeToMidnight(date: Date) {
@@ -54,3 +55,17 @@ export function isTouchDevice() {
 export interface ErrorBoundaryProps {
   error: Error & { digest?: string };
 }
+
+export type ChartAnalysis = Pick<
+  Analysis,
+  "sentiment" | "date" | "mood" | "emoji"
+>;
+
+export type EntryAnalysis = Pick<
+  Analysis,
+  "sentiment" | "mood" | "emoji" | "subject" | "summery"
+>;
+
+export type Entry = Pick<Journal, "id" | "date" | "content">;
+
+export type SetState<T> = Dispatch<SetStateAction<T>>;

@@ -1,13 +1,12 @@
 "use client";
 
-import { setTimeToMidnight } from "@/utils";
-import { SetState } from "@/utils/types";
+import { SetState, setTimeToMidnight } from "@/utils";
 import { endOfWeek, startOfWeek } from "date-fns";
 import { PropsWithChildren, createContext, useMemo, useState } from "react";
 
 export const HistoryDateRangeContext = createContext<{
-  recent: Date;
-  setRecent: SetState<Date>;
+  mostRecent: Date;
+  setMostRecent: SetState<Date>;
   start: Date;
   setStart: SetState<Date>;
   end: Date;
@@ -18,20 +17,22 @@ export default function HistoryContextProvider({
   children,
   initialRecent,
 }: PropsWithChildren<{ initialRecent: Date }>) {
-  const [recent, setRecent] = useState(initialRecent);
-  const [start, setStart] = useState(setTimeToMidnight(startOfWeek(recent)));
-  const [end, setEnd] = useState(setTimeToMidnight(endOfWeek(recent)));
+  const [mostRecent, setMostRecent] = useState(initialRecent);
+  const [start, setStart] = useState(
+    setTimeToMidnight(startOfWeek(mostRecent)),
+  );
+  const [end, setEnd] = useState(setTimeToMidnight(endOfWeek(mostRecent)));
 
   const value = useMemo(
     () => ({
-      recent,
-      setRecent,
+      mostRecent,
+      setMostRecent,
       start,
       setStart,
       end,
       setEnd,
     }),
-    [end, recent, start],
+    [end, mostRecent, start],
   );
 
   return (

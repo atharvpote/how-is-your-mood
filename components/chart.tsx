@@ -18,11 +18,11 @@ import {
   NameType,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
+import { z } from "zod";
+import { HistoryDateRangeContext } from "@/contexts/history";
+import { ChartAnalysis, formatErrors } from "@/utils";
 import { AlertError, ErrorComponent } from "./alerts";
 import { HistoryHeightFull } from "./layouts";
-import { useAnalyses } from "@/utils/hooks";
-import { ChartAnalysis } from "@/utils/types";
-import { HistoryDateRangeContext } from "@/contexts/history";
 
 export default function HistoryChart({
   initialAnalyses,
@@ -36,7 +36,7 @@ export default function HistoryChart({
       "HistoryContext must be used within HistoryContextProvider",
     );
 
-  const { setRecent, start, end } = historyDateRangeContext;
+  const { setMostRecent, start, end } = historyDateRangeContext;
 
   const [analyses, setAnalyses] = useState(initialAnalyses);
 
@@ -45,11 +45,11 @@ export default function HistoryChart({
 
   useEffect(() => {
     if (updatedRecent) {
-      setRecent(updatedRecent);
+      setMostRecent(updatedRecent);
     }
 
     if (updatedAnalyses) setAnalyses(updatedAnalyses);
-  }, [setRecent, updatedAnalyses, updatedRecent]);
+  }, [setMostRecent, updatedAnalyses, updatedRecent]);
 
   if (error)
     return (
@@ -135,33 +135,62 @@ function useMostRecent() {
   );
 }
 
-function isValidDateRange(start: Date, end: Date) {
-  return start.getTime() >= end.getTime();
-}
-
-function CustomTooltip({
-  active,
-  payload,
-  label,
-}: TooltipProps<ValueType, NameType>) {
-  const dateLabel = new Date(label as string).toLocaleDateString("en-us", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-
+function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (active && payload?.length) {
-    const analysis = payload[0].payload as ChartAnalysis;
+    const data: unknown = payload[0].payload;
+
+    const validation = z
+      .object({
+        sentiment: z.number(),
+        date: z.date(),
+        mood: z.string(),
+        emoji: z.string(),
+      })
+      .safeParse(data);
+
+    if (!validation.success) throw new Error(formatErrors(validation.error));
+
+    const { mood, date, emoji } = validation.data;
 
     return (
-      <article className="prose rounded-lg border border-white/25 bg-neutral px-4 py-2 text-neutral-content shadow-md backdrop-blur dark:border-black/25">
-        <h3 className="label mb-0 px-0 text-neutral-content">{dateLabel}</h3>
+      <article className="prose rounded-lg bg-neutral px-4 py-2 text-neutral-content ">
+        <h3 className="label mb-0 px-0 capitalize text-neutral-content">
+          {mood} {emoji}
+        </h3>
         <p className="pb-2 capitalize">
-          {analysis.mood} {analysis.emoji}
+          {date.toLocaleDateString("en-us", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })}
         </p>
       </article>
     );
   }
 
   return null;
+}
+
+function useAnalyses(start: Date, end: Date) {
+  const params = new URLSearchParams({
+    start: start.toISOString(),
+    end: end.toISOString(),
+  });
+
+  return useSWR<ChartAnalysis[], AxiosError>({ start, end }, async () => {
+    const {
+      data: { analyses },
+    } = await axios.get<{ analyses: ChartAnalysis[] }>(
+      `/api/analysis?${params.toString()}`,
+    );
+
+    return analyses.map((analysis) => ({
+      ...analysis,
+      date: new Date(analysis.date),
+    }));
+  });
+}
+
+function isValidDateRange(start: Date, end: Date) {
+  return start.getTime() >= end.getTime();
 }

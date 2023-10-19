@@ -5,11 +5,15 @@ import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { useAutosave } from "react-autosave";
 import { AnalysisContext } from "@/contexts/analysis";
-import { errorAlert, isTouchDevice } from "@/utils";
-import { Entry, EntryAnalysis } from "@/utils/types";
+import { Entry, EntryAnalysis, errorAlert, isTouchDevice } from "@/utils";
 import { EntryDateContext } from "@/contexts/entryDate";
+import { useParams } from "next/navigation";
 
-export default function Editor({ entry }: { entry: Entry }) {
+export default function Editor({ entry }: { entry: Omit<Entry, "id"> }) {
+  const { id } = useParams();
+
+  if (Array.isArray(id)) throw new Error("Invalid Entry ID");
+
   const analysisContext = useContext(AnalysisContext);
   const entryDateContext = useContext(EntryDateContext);
 
@@ -38,7 +42,7 @@ export default function Editor({ entry }: { entry: Entry }) {
   const textarea = useRef<HTMLTextAreaElement>(null);
   const previous = useRef(content.trim());
 
-  const { data: updatedEntry } = useEntry(entry.id);
+  const { data: updatedEntry } = useEntry(id);
 
   useEffect(() => {
     if (updatedEntry) {
@@ -72,7 +76,7 @@ export default function Editor({ entry }: { entry: Entry }) {
 
           if (previous.current !== trimmedContent)
             axios
-              .put(`/api/entry/${entry.id}/update-with-analysis`, {
+              .put(`/api/entry/${id}/update-with-analysis`, {
                 content,
                 analysis: match,
               })
@@ -81,7 +85,7 @@ export default function Editor({ entry }: { entry: Entry }) {
           setLoading(true);
 
           axios
-            .put<{ analysis: EntryAnalysis }>(`/api/entry/${entry.id}`, {
+            .put<{ analysis: EntryAnalysis }>(`/api/entry/${id}`, {
               content,
             })
             .then(({ data: { analysis } }) => {

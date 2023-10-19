@@ -21,7 +21,6 @@ export default async function EditorPage(context: RequestContext) {
     where: { userId_id: { userId, id } },
     select: {
       content: true,
-      id: true,
       date: true,
       analysis: {
         select: {
@@ -46,8 +45,8 @@ export default async function EditorPage(context: RequestContext) {
         <div className="px-4 md:flex md:h-[calc(100svh-var(--dashboard-nav-height-sm))] lg:pl-8">
           <div className="h-[calc(100svh-11rem)] sm:h-[calc(100svh-7rem)] md:h-[calc(100%-1rem)] md:grow md:basis-full">
             <div className="flex items-center justify-between py-4">
-              <EntryDate id={entry.id} />
-              <DeleteEntry id={entry.id} />
+              <EntryDate />
+              <DeleteEntry />
             </div>
             <div className="h-[calc(100%-5rem)]">
               <Editor entry={entry} />

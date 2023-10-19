@@ -4,9 +4,9 @@ import { GetStarted } from "@/components/alerts";
 import HistoryChart from "@/components/chart";
 import HistoryContextProvider from "@/contexts/history";
 import { HistoryHeightFull } from "@/components/layouts";
+import { ChartAnalysis } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { ChartAnalysis } from "@/utils/types";
 
 export default async function History() {
   const userId = await getUserIdByClerkId();

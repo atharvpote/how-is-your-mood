@@ -1,6 +1,5 @@
 "use client";
 
-import { EntryAnalysis, SetState } from "@/utils/types";
 import {
   MutableRefObject,
   PropsWithChildren,
@@ -9,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { EntryAnalysis, SetState } from "@/utils";
 
 export const AnalysisContext = createContext<{
   analysis: EntryAnalysis;
