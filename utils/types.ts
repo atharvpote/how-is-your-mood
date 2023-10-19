@@ -1,4 +1,5 @@
 import { Analysis, Journal } from "@prisma/client";
+import { Dispatch, SetStateAction } from "react";
 
 export type ChartAnalysis = Pick<
   Analysis,
@@ -11,3 +12,5 @@ export type EntryAnalysis = Pick<
 >;
 
 export type Entry = Pick<Journal, "id" | "date" | "content">;
+
+export type SetState<T> = Dispatch<SetStateAction<T>>;

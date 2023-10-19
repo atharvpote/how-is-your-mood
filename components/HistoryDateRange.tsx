@@ -13,8 +13,7 @@ export default function HistoryDateRange() {
       "HistoryContext must be used within HistoryContextProvider",
     );
 
-  const { start, setStart, end, setEnd, showAllDates, setShowAllDates } =
-    historyDateRangeContext;
+  const { start, setStart, end, setEnd } = historyDateRangeContext;
 
   const startRef = useRef<HTMLInputElement | null>(null);
   const endRef = useRef<HTMLInputElement | null>(null);
@@ -51,15 +50,6 @@ export default function HistoryDateRange() {
           }}
         />
       </div>
-      <label className="label flex cursor-pointer gap-2">
-        <span className="label-text">Include all days in between</span>
-        <input
-          type="checkbox"
-          checked={showAllDates}
-          onChange={() => setShowAllDates(!showAllDates)}
-          className="checkbox-primary checkbox"
-        />
-      </label>
     </div>
   );
 }

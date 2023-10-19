@@ -20,7 +20,7 @@ export default async function EntriesPage() {
         </div>
         <NewEntry />
       </header>
-      <Entries entries={entries} />
+      <Entries initialEntries={entries} />
     </div>
   );
 }

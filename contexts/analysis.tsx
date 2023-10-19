@@ -1,11 +1,9 @@
 "use client";
 
-import { EntryAnalysis } from "@/utils/types";
+import { EntryAnalysis, SetState } from "@/utils/types";
 import {
-  Dispatch,
   MutableRefObject,
   PropsWithChildren,
-  SetStateAction,
   createContext,
   useMemo,
   useRef,
@@ -14,17 +12,17 @@ import {
 
 export const AnalysisContext = createContext<{
   analysis: EntryAnalysis;
-  setAnalysis: Dispatch<SetStateAction<EntryAnalysis>>;
+  setAnalysis: SetState<EntryAnalysis>;
   loading: boolean;
-  setLoading: Dispatch<SetStateAction<boolean>>;
+  setLoading: SetState<boolean>;
   cache: MutableRefObject<Map<string, EntryAnalysis>>;
 } | null>(null);
 
 export default function AnalysisContextProvider({
   children,
   content,
-  analysis: initialAnalysis,
-}: PropsWithChildren<{ content: string; analysis: EntryAnalysis }>) {
+  initialAnalysis,
+}: PropsWithChildren<{ content: string; initialAnalysis: EntryAnalysis }>) {
   const [analysis, setAnalysis] = useState(initialAnalysis);
   const [loading, setLoading] = useState(false);
 

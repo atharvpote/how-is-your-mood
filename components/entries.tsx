@@ -9,9 +9,9 @@ import { ErrorComponent, GetStarted } from "./alerts";
 import { Entry } from "@/utils/types";
 
 export default function Entries({
-  entries: initialEntries,
+  initialEntries,
 }: {
-  entries: Entry[];
+  initialEntries: Entry[];
 }) {
   const [entries, setEntries] = useState(initialEntries);
 

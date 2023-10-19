@@ -38,8 +38,11 @@ export default async function EditorPage(context: RequestContext) {
   if (entry.analysis === null) throw new Error("Analysis is null");
 
   return (
-    <AnalysisContextProvider analysis={entry.analysis} content={entry.content}>
-      <EntryDateContextProvider date={entry.date}>
+    <AnalysisContextProvider
+      initialAnalysis={entry.analysis}
+      content={entry.content}
+    >
+      <EntryDateContextProvider initialDate={entry.date}>
         <div className="px-4 md:flex md:h-[calc(100svh-var(--dashboard-nav-height-sm))] lg:pl-8">
           <div className="h-[calc(100svh-11rem)] sm:h-[calc(100svh-7rem)] md:h-[calc(100%-1rem)] md:grow md:basis-full">
             <div className="flex items-center justify-between py-4">

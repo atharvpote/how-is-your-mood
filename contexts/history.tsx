@@ -1,35 +1,26 @@
 "use client";
 
 import { setTimeToMidnight } from "@/utils";
+import { SetState } from "@/utils/types";
 import { endOfWeek, startOfWeek } from "date-fns";
-import {
-  Dispatch,
-  PropsWithChildren,
-  SetStateAction,
-  createContext,
-  useMemo,
-  useState,
-} from "react";
+import { PropsWithChildren, createContext, useMemo, useState } from "react";
 
 export const HistoryDateRangeContext = createContext<{
   recent: Date;
-  setRecent: Dispatch<SetStateAction<Date>>;
+  setRecent: SetState<Date>;
   start: Date;
-  setStart: Dispatch<SetStateAction<Date>>;
+  setStart: SetState<Date>;
   end: Date;
-  setEnd: Dispatch<SetStateAction<Date>>;
-  showAllDates: boolean;
-  setShowAllDates: Dispatch<SetStateAction<boolean>>;
+  setEnd: SetState<Date>;
 } | null>(null);
 
 export default function HistoryContextProvider({
   children,
-  recent: initialRecent,
-}: PropsWithChildren<{ recent: Date }>) {
+  initialRecent,
+}: PropsWithChildren<{ initialRecent: Date }>) {
   const [recent, setRecent] = useState(initialRecent);
   const [start, setStart] = useState(setTimeToMidnight(startOfWeek(recent)));
   const [end, setEnd] = useState(setTimeToMidnight(endOfWeek(recent)));
-  const [showAllDates, setShowAllDates] = useState(false);
 
   const value = useMemo(
     () => ({
@@ -39,10 +30,8 @@ export default function HistoryContextProvider({
       setStart,
       end,
       setEnd,
-      showAllDates,
-      setShowAllDates,
     }),
-    [end, recent, showAllDates, start],
+    [end, recent, start],
   );
 
   return (

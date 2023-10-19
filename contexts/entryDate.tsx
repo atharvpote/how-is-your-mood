@@ -1,23 +1,17 @@
 "use client";
 
-import {
-  Dispatch,
-  PropsWithChildren,
-  SetStateAction,
-  createContext,
-  useMemo,
-  useState,
-} from "react";
+import { SetState } from "@/utils/types";
+import { PropsWithChildren, createContext, useMemo, useState } from "react";
 
 export const EntryDateContext = createContext<{
   date: Date;
-  setDate: Dispatch<SetStateAction<Date>>;
+  setDate: SetState<Date>;
 } | null>(null);
 
 export default function EntryDateContextProvider({
   children,
-  date: initialDate,
-}: PropsWithChildren<{ date: Date }>) {
+  initialDate,
+}: PropsWithChildren<{ initialDate: Date }>) {
   const [date, setDate] = useState(initialDate);
 
   const value = useMemo(() => ({ date, setDate }), [date]);

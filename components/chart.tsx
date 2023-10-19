@@ -3,7 +3,6 @@
 import { useContext, useEffect, useState } from "react";
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
-import { addDays } from "date-fns";
 import {
   ResponsiveContainer,
   Line,
@@ -12,6 +11,8 @@ import {
   Tooltip,
   YAxis,
   TooltipProps,
+  CartesianGrid,
+  Legend,
 } from "recharts";
 import {
   NameType,
@@ -24,9 +25,9 @@ import { ChartAnalysis } from "@/utils/types";
 import { HistoryDateRangeContext } from "@/contexts/history";
 
 export default function HistoryChart({
-  analyses: initialAnalyses,
+  initialAnalyses,
 }: {
-  analyses: ChartAnalysis[];
+  initialAnalyses: ChartAnalysis[];
 }) {
   const historyDateRangeContext = useContext(HistoryDateRangeContext);
 
@@ -35,7 +36,7 @@ export default function HistoryChart({
       "HistoryContext must be used within HistoryContextProvider",
     );
 
-  const { setRecent, start, end, showAllDates } = historyDateRangeContext;
+  const { setRecent, start, end } = historyDateRangeContext;
 
   const [analyses, setAnalyses] = useState(initialAnalyses);
 
@@ -73,9 +74,10 @@ export default function HistoryChart({
             <LineChart
               width={300}
               height={100}
-              data={showAllDates ? mapAnalyses(start, end, analyses) : analyses}
-              margin={{ top: 12, right: 50, bottom: 0, left: 0 }}
+              data={analyses}
+              margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
             >
+              <CartesianGrid strokeOpacity={0.25} />
               <Line
                 dataKey="sentiment"
                 type="monotone"
@@ -86,15 +88,32 @@ export default function HistoryChart({
               />
               <XAxis
                 dataKey="date"
-                tickFormatter={(label: string) => {
-                  return `${new Date(label).toLocaleDateString("en-us", {
+                tickMargin={8}
+                domain={[
+                  start.toLocaleDateString("en-us", {
                     month: "short",
                     day: "numeric",
-                  })}`;
-                }}
+                  }),
+                  end.toLocaleDateString("en-us", {
+                    month: "short",
+                    day: "numeric",
+                  }),
+                ]}
+                tickFormatter={(label: string) =>
+                  new Date(label).toLocaleDateString("en-us", {
+                    month: "short",
+                    day: "numeric",
+                  })
+                }
+                minTickGap={16}
               />
-              <YAxis dataKey="sentiment" domain={[-10, 10]} />
+              <YAxis dataKey="sentiment" domain={[-10, 10]} tickMargin={8} />
               <Tooltip content={<CustomTooltip />} />
+              <Legend
+                verticalAlign="top"
+                height={36}
+                formatter={() => "Mood"}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -118,28 +137,6 @@ function useMostRecent() {
 
 function isValidDateRange(start: Date, end: Date) {
   return start.getTime() >= end.getTime();
-}
-
-function mapAnalyses(start: Date, end: Date, analyses: ChartAnalysis[]) {
-  const range: Date[] = [];
-  let current = start;
-
-  while (current <= end) {
-    range.push(current);
-
-    current = addDays(current, 1);
-  }
-
-  return range.map((date) => {
-    const analysis = analyses.find(
-      (analysis) =>
-        new Date(analysis.date).toDateString() === date.toDateString(),
-    );
-
-    if (analysis) return analysis;
-
-    return { date };
-  });
 }
 
 function CustomTooltip({
