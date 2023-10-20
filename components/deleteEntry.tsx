@@ -3,17 +3,17 @@
 import { useParams, useRouter } from "next/navigation";
 import { errorAlert } from "@/utils";
 import axios from "axios";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
+import { LoadingSpinner } from "./loading";
 
 export default function DeleteEntry() {
   const { id } = useParams();
 
   if (!id || Array.isArray(id)) throw new Error("Entry ID is undefined");
 
-  const [deleting, setDeleting] = useState(false);
-
-  const modal = useRef<HTMLDialogElement>(null);
+  const modal = useRef<HTMLDialogElement | null>(null);
+  const loading = useRef<HTMLDialogElement | null>(null);
 
   const router = useRouter();
 
@@ -28,14 +28,10 @@ export default function DeleteEntry() {
         }}
         className="btn btn-error btn-outline hover:btn-error"
       >
-        {deleting ? (
-          <span className="loading loading-infinity loading-md" />
-        ) : (
-          <div className="flex w-20 items-center justify-between">
-            <AiOutlineDelete className="text-xl" />
-            <span>Delete</span>
-          </div>
-        )}
+        <div className="flex w-20 items-center justify-between">
+          <AiOutlineDelete className="text-xl" />
+          <span>Delete</span>
+        </div>
       </button>
       <dialog className="modal modal-bottom sm:modal-middle" ref={modal}>
         <div className="prose modal-box">
@@ -50,7 +46,9 @@ export default function DeleteEntry() {
               <div className="flex gap-4">
                 <button
                   onClick={() => {
-                    setDeleting(true);
+                    if (!loading.current) throw new Error("Modal is null");
+
+                    loading.current.showModal();
 
                     axios
                       .delete(`/api/entry/${id}`)
@@ -61,13 +59,21 @@ export default function DeleteEntry() {
                         errorAlert(error);
                       })
                       .finally(() => {
-                        setDeleting(false);
+                        if (!loading.current) throw new Error("Modal is null");
+
+                        loading.current.close();
                       });
                   }}
                   className="btn btn-error btn-outline hover:btn-error"
                 >
                   Yes
                 </button>
+                <dialog
+                  className="bg-transparent backdrop:backdrop-brightness-75"
+                  ref={loading}
+                >
+                  <LoadingSpinner />
+                </dialog>
                 <button className="btn btn-outline">No</button>
               </div>
             </form>

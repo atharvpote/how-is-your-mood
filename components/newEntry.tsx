@@ -1,46 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { AiOutlinePlus } from "react-icons/ai";
 import { errorAlert } from "@/utils";
+import { LoadingSpinner } from "./loading";
 
 export default function NewEntry() {
-  const [creating, setCreating] = useState(false);
+  const loading = useRef<HTMLDialogElement | null>(null);
 
   const router = useRouter();
 
   return (
-    <button
-      aria-label="new entry"
-      onClick={() => {
-        setCreating(true);
+    <>
+      <button
+        aria-label="new entry"
+        onClick={() => {
+          if (!loading.current) throw new Error("Modal is null");
 
-        axios
-          .post<{ id: string }>("/api/entry")
-          .then(({ data: { id } }) => {
-            router.push(`/journal/${id}`);
-          })
-          .catch((error) => {
-            errorAlert(error);
-          })
-          .finally(() => {
-            setCreating(false);
-          });
-      }}
-      className="btn bg-neutral text-neutral-content hover:bg-neutral-focus"
-    >
-      {creating ? (
-        <div className="flex w-16 items-center justify-center text-neutral-content/75">
-          <span className="loading loading-infinity"></span>
-        </div>
-      ) : (
+          loading.current.showModal();
+
+          axios
+            .post<{ id: string }>("/api/entry")
+            .then(({ data: { id } }) => {
+              router.push(`/journal/${id}`);
+            })
+            .catch((error) => {
+              errorAlert(error);
+            })
+            .finally(() => {
+              if (!loading.current) throw new Error("Modal is null");
+
+              loading.current.close();
+            });
+        }}
+        className="btn bg-neutral text-neutral-content hover:bg-neutral-focus"
+      >
         <div className="flex w-16 items-center justify-between">
           <AiOutlinePlus className="text-lg" />
           <span className="text-lg capitalize">New</span>
         </div>
-      )}
-    </button>
+      </button>
+      <dialog
+        className="bg-transparent backdrop:backdrop-brightness-75"
+        ref={loading}
+      >
+        <LoadingSpinner />
+      </dialog>
+    </>
   );
 }

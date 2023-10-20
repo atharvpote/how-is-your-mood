@@ -15,8 +15,8 @@ export default function HistoryDateRange() {
 
   const { start, setStart, end, setEnd } = historyDateRangeContext;
 
-  const startRef = useRef<HTMLInputElement>(null);
-  const endRef = useRef<HTMLInputElement>(null);
+  const startRef = useRef<HTMLInputElement | null>(null);
+  const endRef = useRef<HTMLInputElement | null>(null);
 
   return (
     <div className="form-control">

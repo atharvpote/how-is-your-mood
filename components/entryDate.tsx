@@ -23,7 +23,7 @@ export default function EntryDate() {
 
   const [touchDevice, setTouchDevice] = useState(false);
 
-  const input = useRef<HTMLInputElement>(null);
+  const input = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     isTouchDevice() ? setTouchDevice(true) : setTouchDevice(false);

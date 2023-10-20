@@ -19,7 +19,8 @@ export function errorResponse(error: unknown, status: number) {
 export function errorAlert(error: unknown) {
   if (isAxiosError(error))
     if (error.response) {
-      const { data, status } = error.response;
+      const { status } = error.response;
+      const data: unknown = error.response.data;
 
       const validation = z.object({ message: z.string() }).safeParse(data);
 
@@ -41,14 +42,17 @@ export function errorAlert(error: unknown) {
 export function handleHookError(error: unknown) {
   if (isAxiosError(error))
     if (error.response) {
-      const { data, status } = error.response;
+      const { status } = error.response;
+      const data: unknown = error.response.data;
 
-      throw new Error(`${status}: ${data}`);
+      const validation = z.object({ message: z.string() }).safeParse(data);
+
+      if (validation.success)
+        throw new Error(`${status}: ${validation.data.message}`);
+      else throw new Error(`Unknown error: ${Object(data)}`);
     } else if (error.request) throw new Error("You're offline");
-    else {
-      throw new Error(`"Error": ${error.message}`);
-    }
-  else throw new Error(`Unknown Error: ${error}`);
+    else throw new Error(`"Error": ${error.message}`);
+  else throw new Error(`Unknown Error: ${Object(error)}`);
 }
 
 export function formatErrors(error: ZodError) {

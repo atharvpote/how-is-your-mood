@@ -15,8 +15,8 @@ const links = [
 ] as const;
 
 export default function Drawer({ children }: PropsWithChildren) {
-  const input = useRef<HTMLInputElement>(null);
-  const dialog = useRef<HTMLDialogElement>(null);
+  const input = useRef<HTMLInputElement | null>(null);
+  const dialog = useRef<HTMLDialogElement | null>(null);
 
   const section = useSelectedLayoutSegment();
 

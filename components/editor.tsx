@@ -45,7 +45,7 @@ export default function Editor({ entry }: { entry: Omit<Entry, "id"> }) {
   const [touchDevice, setTouchDevice] = useState(false);
   const [scroll, setScroll] = useState(false);
 
-  const textarea = useRef<HTMLTextAreaElement>(null);
+  const textarea = useRef<HTMLTextAreaElement | null>(null);
   const previous = useRef(content.trim());
 
   const { data: updatedEntry } = useEntry(id);

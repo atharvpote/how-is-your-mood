@@ -5,6 +5,7 @@ export function PageLoadingSpinner() {
     </div>
   );
 }
+
 export function DashboardLoadingSpinner() {
   return (
     <div className="h-0 min-h-[calc(100svh-8rem)] sm:min-h-[calc(100svh-4rem)]">
