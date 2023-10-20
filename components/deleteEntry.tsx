@@ -54,9 +54,15 @@ export default function DeleteEntry() {
 
                     axios
                       .delete(`/api/entry/${id}`)
-                      .then(() => router.replace("/journal/"))
-                      .catch((error) => errorAlert(error))
-                      .finally(() => setDeleting(false));
+                      .then(() => {
+                        router.replace("/journal/");
+                      })
+                      .catch((error) => {
+                        errorAlert(error);
+                      })
+                      .finally(() => {
+                        setDeleting(false);
+                      });
                   }}
                   className="btn btn-error btn-outline hover:btn-error"
                 >

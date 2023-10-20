@@ -5,7 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { differenceInDays, format, formatRelative } from "date-fns";
-import { EntryPreview, previewLength } from "@/utils";
+import { EntryPreview, handleHookError, previewLength } from "@/utils";
 import { ErrorComponent, GetStarted } from "./alerts";
 
 export default function Entries({
@@ -75,14 +75,21 @@ function Card({
 }
 
 function useEntries() {
-  return useSWR<EntryPreview[], AxiosError>(
+  return useSWR<EntryPreview[] | undefined, AxiosError>(
     "/api/entries",
     async (url: string) => {
-      const {
-        data: { entries },
-      } = await axios.get<{ entries: EntryPreview[] }>(url);
+      try {
+        const {
+          data: { entries },
+        } = await axios.get<{ entries: EntryPreview[] }>(url);
 
-      return entries.map((entry) => ({ ...entry, date: new Date(entry.date) }));
+        return entries.map((entry) => ({
+          ...entry,
+          date: new Date(entry.date),
+        }));
+      } catch (error) {
+        handleHookError(error);
+      }
     },
   );
 }

@@ -7,7 +7,7 @@ import { Analysis, Journal } from "@prisma/client";
 export function errorResponse(error: unknown, status: number) {
   return NextResponse.json(
     error instanceof Error
-      ? { error: { code: status, message: error.message } }
+      ? { message: error.message }
       : {
           message: "Unknown error",
           error,
@@ -17,15 +17,38 @@ export function errorResponse(error: unknown, status: number) {
 }
 
 export function errorAlert(error: unknown) {
-  if (isAxiosError(error)) {
-    console.error(error.message);
+  if (isAxiosError(error))
+    if (error.response) {
+      const { data, status } = error.response;
 
-    alert(error.message);
-  } else {
-    console.error("Unknown error", error);
+      const validation = z.object({ message: z.string() }).safeParse(data);
 
+      validation.success
+        ? alert(`${status}: ${validation.data.message}`)
+        : console.error("Unknown error", data);
+    } else if (error.request) alert("You're offline");
+    else {
+      alert(error.message);
+      console.error(`Error: ${error.message}`);
+    }
+  else {
     alert("Unknown error");
+
+    console.error(error);
   }
+}
+
+export function handleHookError(error: unknown) {
+  if (isAxiosError(error))
+    if (error.response) {
+      const { data, status } = error.response;
+
+      throw new Error(`${status}: ${data}`);
+    } else if (error.request) throw new Error("You're offline");
+    else {
+      throw new Error(`"Error": ${error.message}`);
+    }
+  else throw new Error(`Unknown Error: ${error}`);
 }
 
 export function formatErrors(error: ZodError) {
@@ -53,7 +76,9 @@ export function contextValidator({ params }: RequestContext) {
 }
 
 export function isTouchDevice() {
-  return window.matchMedia("(any-pointer: coarse)").matches;
+  return typeof window !== "undefined"
+    ? window.matchMedia("(any-pointer: coarse)").matches
+    : false;
 }
 
 export interface ErrorBoundaryProps {

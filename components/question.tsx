@@ -21,9 +21,15 @@ export default function Question() {
 
             axios
               .post<{ answer: string }>("/api/question", { question: value })
-              .then(({ data: { answer } }) => setAnswer(answer))
-              .catch((error) => errorAlert(error))
-              .finally(() => setLoading(false));
+              .then(({ data: { answer } }) => {
+                setAnswer(answer);
+              })
+              .catch((error) => {
+                errorAlert(error);
+              })
+              .finally(() => {
+                setLoading(false);
+              });
           }
         }}
       >
@@ -32,7 +38,9 @@ export default function Question() {
           disabled={loading}
           className="textarea textarea-bordered mx-auto block h-48 w-11/12 resize-none bg-neutral p-6 text-lg text-neutral-content"
           value={value}
-          onChange={({ target: { value } }) => setValue(value)}
+          onChange={({ target: { value } }) => {
+            setValue(value);
+          }}
         />
         <button
           type="submit"

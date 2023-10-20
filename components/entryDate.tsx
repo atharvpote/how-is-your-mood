@@ -49,7 +49,9 @@ export default function EntryDate() {
 
             axios
               .put(`/api/entry/${id}/update/date`, { date })
-              .catch((error) => errorAlert(error));
+              .catch((error) => {
+                errorAlert(error);
+              });
           }}
         />
       </span>

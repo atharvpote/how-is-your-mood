@@ -20,7 +20,7 @@ import {
 } from "recharts/types/component/DefaultTooltipContent";
 import { z } from "zod";
 import { HistoryDateRangeContext } from "@/contexts/history";
-import { ChartAnalysis, formatErrors } from "@/utils";
+import { ChartAnalysis, formatErrors, handleHookError } from "@/utils";
 import { AlertError, ErrorComponent } from "./alerts";
 import { HistoryHeightFull } from "./layouts";
 
@@ -123,14 +123,18 @@ export default function HistoryChart({
 }
 
 function useMostRecent() {
-  return useSWR<Date | null, AxiosError>(
+  return useSWR<(Date | null) | undefined, AxiosError>(
     "/api/analysis/most-recent",
     async (key: string) => {
-      const {
-        data: { mostRecent },
-      } = await axios.get<{ mostRecent: Date | null }>(key);
+      try {
+        const {
+          data: { mostRecent },
+        } = await axios.get<{ mostRecent: Date | null }>(key);
 
-      return mostRecent ? new Date(mostRecent) : mostRecent;
+        return mostRecent ? new Date(mostRecent) : mostRecent;
+      } catch (error) {
+        handleHookError(error);
+      }
     },
   );
 }
@@ -177,18 +181,25 @@ function useAnalyses(start: Date, end: Date) {
     end: end.toISOString(),
   });
 
-  return useSWR<ChartAnalysis[], AxiosError>({ start, end }, async () => {
-    const {
-      data: { analyses },
-    } = await axios.get<{ analyses: ChartAnalysis[] }>(
-      `/api/analysis?${params.toString()}`,
-    );
+  return useSWR<ChartAnalysis[] | undefined, AxiosError>(
+    { start, end },
+    async () => {
+      try {
+        const {
+          data: { analyses },
+        } = await axios.get<{ analyses: ChartAnalysis[] }>(
+          `/api/analysis?${params.toString()}`,
+        );
 
-    return analyses.map((analysis) => ({
-      ...analysis,
-      date: new Date(analysis.date),
-    }));
-  });
+        return analyses.map((analysis) => ({
+          ...analysis,
+          date: new Date(analysis.date),
+        }));
+      } catch (error) {
+        handleHookError(error);
+      }
+    },
+  );
 }
 
 function isValidDateRange(start: Date, end: Date) {

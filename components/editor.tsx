@@ -5,7 +5,13 @@ import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { useAutosave } from "react-autosave";
 import { AnalysisContext } from "@/contexts/analysis";
-import { Entry, EntryAnalysis, errorAlert, isTouchDevice } from "@/utils";
+import {
+  Entry,
+  EntryAnalysis,
+  errorAlert,
+  handleHookError,
+  isTouchDevice,
+} from "@/utils";
 import { EntryDateContext } from "@/contexts/entryDate";
 import { useParams } from "next/navigation";
 
@@ -80,7 +86,9 @@ export default function Editor({ entry }: { entry: Omit<Entry, "id"> }) {
                 content,
                 analysis: match,
               })
-              .catch((error) => errorAlert(error));
+              .catch((error) => {
+                errorAlert(error);
+              });
         } else {
           setLoading(true);
 
@@ -93,8 +101,12 @@ export default function Editor({ entry }: { entry: Omit<Entry, "id"> }) {
 
               cache.set(trimmedContent, analysis);
             })
-            .catch((error) => errorAlert(error))
-            .finally(() => setLoading(false));
+            .catch((error) => {
+              errorAlert(error);
+            })
+            .finally(() => {
+              setLoading(false);
+            });
         }
       }
     },
@@ -124,14 +136,18 @@ interface UpdatedEntry {
 }
 
 function useEntry(id: string) {
-  return useSWR<UpdatedEntry, AxiosError>(
+  return useSWR<UpdatedEntry | undefined, AxiosError>(
     `/api/entry/${id}`,
     async (url: string) => {
-      const {
-        data: { date, content, analysis },
-      } = await axios.get<UpdatedEntry>(url);
+      try {
+        const {
+          data: { date, content, analysis },
+        } = await axios.get<UpdatedEntry>(url);
 
-      return { date: new Date(date), content, analysis };
+        return { date: new Date(date), content, analysis };
+      } catch (error) {
+        handleHookError(error);
+      }
     },
   );
 }

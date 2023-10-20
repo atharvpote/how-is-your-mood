@@ -19,9 +19,15 @@ export default function NewEntry() {
 
         axios
           .post<{ id: string }>("/api/entry")
-          .then(({ data: { id } }) => router.push(`/journal/${id}`))
-          .catch((error) => errorAlert(error))
-          .finally(() => setCreating(false));
+          .then(({ data: { id } }) => {
+            router.push(`/journal/${id}`);
+          })
+          .catch((error) => {
+            errorAlert(error);
+          })
+          .finally(() => {
+            setCreating(false);
+          });
       }}
       className="btn bg-neutral text-neutral-content hover:bg-neutral-focus"
     >
