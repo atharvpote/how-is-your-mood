@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { SignOutButton } from "@clerk/nextjs";
 import { MdLogout } from "react-icons/md";
+import { isTouchDevice } from "@/utils";
 
 const links = [
   { href: "/journal", label: "journal" },
@@ -64,17 +65,22 @@ export default function Drawer({ children }: PropsWithChildren) {
           </div>
           {/* Logout */}
           <div className="flex flex-none basis-12 items-center justify-center">
-            <button
-              aria-label="logout"
-              className="btn btn-square btn-ghost text-2xl"
-              onClick={() => {
-                if (!dialog.current) throw new Error("Dialog is null");
-
-                dialog.current.showModal();
-              }}
+            <div
+              className={!isTouchDevice() ? "tooltip tooltip-left" : ""}
+              data-tip="Log Out"
             >
-              <MdLogout />
-            </button>
+              <button
+                aria-label="logout"
+                className="btn btn-square btn-ghost text-2xl"
+                onClick={() => {
+                  if (!dialog.current) throw new Error("Dialog is null");
+
+                  dialog.current.showModal();
+                }}
+              >
+                <MdLogout />
+              </button>
+            </div>
             <dialog className="modal modal-bottom sm:modal-middle" ref={dialog}>
               <div className="prose-sm modal-box">
                 <h2 className="font-bold">You want to log out?</h2>
@@ -86,7 +92,9 @@ export default function Drawer({ children }: PropsWithChildren) {
                     </button>
                     <div className="flex gap-4">
                       <SignOutButton>
-                        <button className="btn btn-neutral">Yes</button>
+                        <button className="btn btn-error btn-outline hover:btn-error">
+                          Yes
+                        </button>
                       </SignOutButton>
                       <button className="btn btn-outline">No</button>
                     </div>

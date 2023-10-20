@@ -26,7 +26,7 @@ export default function DeleteEntry() {
 
           modal.current.showModal();
         }}
-        className="btn btn-error btn-outline"
+        className="btn btn-error btn-outline hover:btn-error"
       >
         {deleting ? (
           <span className="loading loading-infinity loading-md" />
@@ -58,7 +58,7 @@ export default function DeleteEntry() {
                       .catch((error) => errorAlert(error))
                       .finally(() => setDeleting(false));
                   }}
-                  className="btn btn-error"
+                  className="btn btn-error btn-outline hover:btn-error"
                 >
                   Yes
                 </button>
