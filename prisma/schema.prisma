@@ -39,6 +39,7 @@ model Journal {
 
   @@unique([userId, id])
   @@unique([id, date])
+  @@index([date])
 }
 
 model Analysis {
@@ -62,4 +63,5 @@ model Analysis {
   @@unique([entryId, userId])
   @@unique([entryId, date])
   @@index([userId])
+  @@index([date])
 }
