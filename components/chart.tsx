@@ -29,6 +29,7 @@ import {
 } from "@/utils";
 import { AlertError, ErrorComponent } from "./alerts";
 import { HistoryHeightFull } from "./layouts";
+import { endOfWeek, startOfWeek } from "date-fns";
 
 export default function HistoryChart({
   initialAnalyses,
@@ -42,20 +43,23 @@ export default function HistoryChart({
       "HistoryContext must be used within HistoryContextProvider",
     );
 
-  const { setMostRecent, start, end } = historyDateRangeContext;
+  const { start, end, setStart, setEnd } = historyDateRangeContext;
 
   const [analyses, setAnalyses] = useState(initialAnalyses);
 
-  const { data: updatedRecent } = useMostRecent();
+  const { data: updatedMostRecent } = useMostRecent();
   const { data: updatedAnalyses, error } = useAnalyses(start, end);
 
   useEffect(() => {
-    if (updatedRecent) {
-      setMostRecent(updatedRecent);
+    if (updatedMostRecent) {
+      setStart(startOfWeek(updatedMostRecent));
+      setEnd(endOfWeek(updatedMostRecent));
     }
+  }, [setEnd, setStart, updatedMostRecent]);
 
+  useEffect(() => {
     if (updatedAnalyses) setAnalyses(updatedAnalyses);
-  }, [setMostRecent, updatedAnalyses, updatedRecent]);
+  }, [updatedAnalyses]);
 
   if (error)
     return (
