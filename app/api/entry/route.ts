@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { errorResponse, setTimeToMidnight } from "@/utils";
+import { setHours, setMinutes } from "date-fns";
+import { errorResponse } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 
@@ -11,7 +12,7 @@ export async function POST() {
       data: {
         userId,
         content: "",
-        date: setTimeToMidnight(new Date()),
+        date: normalizeTime(new Date()),
       },
       select: { id: true, date: true },
     });
@@ -32,4 +33,8 @@ export async function POST() {
   } catch (error) {
     return errorResponse(error, 401);
   }
+}
+
+function normalizeTime(date: Date) {
+  return new Date(setMinutes(setHours(date, 5), 30));
 }

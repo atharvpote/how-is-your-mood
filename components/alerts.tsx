@@ -1,9 +1,17 @@
 export function GetStarted() {
-  return <AlertInfo message="Get started by creating your first entry" />;
+  return (
+    <div className="p-4">
+      <AlertInfo message="Get started by creating your first entry" />;
+    </div>
+  );
 }
 
-export function ErrorComponent({ error }: { error: Error }) {
-  return <AlertError error={error.message} />;
+export function ErrorComponent({ error: { message } }: { error: Error }) {
+  return (
+    <div className="p-4">
+      <AlertError message={message} />
+    </div>
+  );
 }
 
 export function AlertInfo({ message }: { message: string }) {
@@ -27,7 +35,7 @@ export function AlertInfo({ message }: { message: string }) {
   );
 }
 
-export function AlertError({ error }: { error: string }) {
+export function AlertError({ message }: { message: string }) {
   return (
     <div className="alert alert-error">
       <svg
@@ -43,7 +51,7 @@ export function AlertError({ error }: { error: string }) {
           d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
         />
       </svg>
-      <span>{error}</span>
+      <span>{message}</span>
     </div>
   );
 }

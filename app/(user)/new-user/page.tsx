@@ -1,5 +1,9 @@
-import { PageLoadingSpinner } from "@/components/loading";
+import { LoadingSpinner } from "@/components/loading";
 
 export default function NewUser() {
-  return <PageLoadingSpinner />;
+  return (
+    <div className="flex h-[100svh] items-center justify-center">
+      <LoadingSpinner />
+    </div>
+  );
 }

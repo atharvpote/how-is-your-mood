@@ -39,7 +39,7 @@ export default async function History() {
         <h2>History</h2>
       </div>
       {mostRecent ? (
-        <HistoryContextProvider initialRecent={mostRecent.date}>
+        <HistoryContextProvider initialMostRecent={mostRecent.date}>
           <div className="flex justify-center py-4">
             <div className="flex flex-col gap-2">
               <HistoryDateRange />
@@ -49,9 +49,7 @@ export default async function History() {
         </HistoryContextProvider>
       ) : (
         <HistoryHeightFull>
-          <div>
-            <GetStarted />
-          </div>
+          <GetStarted />
         </HistoryHeightFull>
       )}
     </>

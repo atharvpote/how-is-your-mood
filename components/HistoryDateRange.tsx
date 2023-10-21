@@ -1,7 +1,7 @@
 "use client";
 
 import { HistoryDateRangeContext } from "@/contexts/history";
-import { setTimeToMidnight, showPicker } from "@/utils";
+import { isValidDateRange, showPicker } from "@/utils";
 import { format } from "date-fns";
 import { useContext, useRef } from "react";
 
@@ -32,7 +32,7 @@ export default function HistoryDateRange() {
           onClick={showPicker(startRef)}
           onFocus={showPicker(startRef)}
           onChange={({ target: { value } }) => {
-            setStart(setTimeToMidnight(new Date(value)));
+            setStart(new Date(value));
           }}
         />
         <span>To</span>
@@ -46,14 +46,10 @@ export default function HistoryDateRange() {
           onClick={showPicker(endRef)}
           onFocus={showPicker(endRef)}
           onChange={({ target: { value } }) => {
-            setEnd(setTimeToMidnight(new Date(value)));
+            setEnd(new Date(value));
           }}
         />
       </div>
     </div>
   );
-}
-
-function isValidDateRange(start: Date, end: Date) {
-  return start.getTime() >= end.getTime();
 }

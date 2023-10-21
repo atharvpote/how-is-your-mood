@@ -28,10 +28,7 @@ export function errorAlert(error: unknown) {
         ? alert(`${status}: ${validation.data.message}`)
         : console.error("Unknown error", data);
     } else if (error.request) alert("You're offline");
-    else {
-      alert(error.message);
-      console.error(`Error: ${error.message}`);
-    }
+    else alert(error.message);
   else {
     alert("Unknown error");
 
@@ -59,11 +56,7 @@ export function formatErrors(error: ZodError) {
   return error.format()._errors.join(", ");
 }
 
-export function setTimeToMidnight(date: Date) {
-  return new Date(date.setHours(0, 0, 0, 0));
-}
-
-export function showPicker(element: RefObject<HTMLInputElement>) {
+export function showPicker(element: RefObject<HTMLInputElement | null>) {
   return () => {
     if (!element.current) throw new Error("Input date is null");
 
@@ -83,6 +76,14 @@ export function isTouchDevice() {
   return typeof window !== "undefined"
     ? window.matchMedia("(any-pointer: coarse)").matches
     : false;
+}
+
+export function contentPreview(content: string) {
+  return content.substring(0, previewLength);
+}
+
+export function isValidDateRange(start: Date, end: Date) {
+  return start.getTime() >= end.getTime();
 }
 
 export interface ErrorBoundaryProps {
@@ -105,8 +106,6 @@ export type EntryPreview = Omit<Entry, "content"> & Pick<Journal, "preview">;
 
 export type SetState<T> = Dispatch<SetStateAction<T>>;
 
-export const previewLength = 100;
+export type DataWithSerializedDate<T> = T & { date: string };
 
-export function contentPreview(content: string) {
-  return content.substring(0, previewLength);
-}
+export const previewLength = 100;

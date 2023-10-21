@@ -4,8 +4,14 @@ import { PropsWithChildren, useEffect, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
-import { differenceInDays, format, formatRelative } from "date-fns";
-import { EntryPreview, handleHookError, previewLength } from "@/utils";
+import { formatRelative } from "date-fns";
+import { enIN } from "date-fns/locale";
+import {
+  EntryPreview,
+  DataWithSerializedDate,
+  handleHookError,
+  previewLength,
+} from "@/utils";
 import { ErrorComponent, GetStarted } from "./alerts";
 
 export default function Entries({
@@ -31,7 +37,9 @@ export default function Entries({
     );
 
   return !entries.length ? (
-    <GetStartedHeightFull />
+    <HeightFull>
+      <GetStarted />
+    </HeightFull>
   ) : (
     <div className="grid grid-cols-1 gap-4 py-8 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
       {entries.map((entry, index) => (
@@ -48,12 +56,9 @@ function Card({
   entry: EntryPreview;
   prefetch: boolean;
 }) {
-  const today = new Date();
-
-  const title =
-    differenceInDays(today, date) < 7
-      ? formatRelative(date, today).split(" at ")[0]?.trim()
-      : format(date, "dd/MM/yyyy");
+  const title = formatRelative(date, new Date(), { locale: enIN })
+    .split(" at ")[0]
+    ?.trim();
 
   return (
     <Link
@@ -74,6 +79,14 @@ function Card({
   );
 }
 
+function HeightFull({ children }: PropsWithChildren) {
+  return (
+    <div className="flex h-[calc(100svh-(var(--dashboard-nav-height)+var(--journal-header-height)))] items-center justify-center sm:h-[calc(100svh-(var(--dashboard-nav-height-sm)+var(--journal-header-height)))]">
+      {children}
+    </div>
+  );
+}
+
 function useEntries() {
   return useSWR<EntryPreview[] | undefined, AxiosError>(
     "/api/entries",
@@ -81,7 +94,9 @@ function useEntries() {
       try {
         const {
           data: { entries },
-        } = await axios.get<{ entries: EntryPreview[] }>(url);
+        } = await axios.get<{
+          entries: DataWithSerializedDate<EntryPreview>[];
+        }>(url);
 
         return entries.map((entry) => ({
           ...entry,
@@ -91,23 +106,5 @@ function useEntries() {
         handleHookError(error);
       }
     },
-  );
-}
-
-function GetStartedHeightFull() {
-  return (
-    <HeightFull>
-      <div>
-        <GetStarted />
-      </div>
-    </HeightFull>
-  );
-}
-
-function HeightFull({ children }: PropsWithChildren) {
-  return (
-    <div className="flex h-[calc(100svh-(var(--dashboard-nav-height)+var(--journal-header-height)))] items-center justify-center sm:h-[calc(100svh-(var(--dashboard-nav-height-sm)+var(--journal-header-height)))]">
-      {children}
-    </div>
   );
 }

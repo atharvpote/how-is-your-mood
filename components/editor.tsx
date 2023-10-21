@@ -8,6 +8,7 @@ import { AnalysisContext } from "@/contexts/analysis";
 import {
   Entry,
   EntryAnalysis,
+  DataWithSerializedDate,
   errorAlert,
   handleHookError,
   isTouchDevice,
@@ -142,7 +143,7 @@ function useEntry(id: string) {
       try {
         const {
           data: { date, content, analysis },
-        } = await axios.get<UpdatedEntry>(url);
+        } = await axios.get<DataWithSerializedDate<UpdatedEntry>>(url);
 
         return { date: new Date(date), content, analysis };
       } catch (error) {

@@ -20,7 +20,13 @@ import {
 } from "recharts/types/component/DefaultTooltipContent";
 import { z } from "zod";
 import { HistoryDateRangeContext } from "@/contexts/history";
-import { ChartAnalysis, formatErrors, handleHookError } from "@/utils";
+import {
+  ChartAnalysis,
+  DataWithSerializedDate,
+  formatErrors,
+  handleHookError,
+  isValidDateRange,
+} from "@/utils";
 import { AlertError, ErrorComponent } from "./alerts";
 import { HistoryHeightFull } from "./layouts";
 
@@ -65,7 +71,7 @@ export default function HistoryChart({
       {isValidDateRange(start, end) ? (
         <div className="flex h-[calc(100svh-23.5rem)] items-center justify-center sm:h-[calc(100svh-12.5rem)]">
           <div>
-            <AlertError error="Invalid Date Range" />
+            <AlertError message="Invalid Date Range" />
           </div>
         </div>
       ) : (
@@ -122,23 +128,6 @@ export default function HistoryChart({
   );
 }
 
-function useMostRecent() {
-  return useSWR<(Date | null) | undefined, AxiosError>(
-    "/api/analysis/most-recent",
-    async (key: string) => {
-      try {
-        const {
-          data: { mostRecent },
-        } = await axios.get<{ mostRecent: Date | null }>(key);
-
-        return mostRecent ? new Date(mostRecent) : mostRecent;
-      } catch (error) {
-        handleHookError(error);
-      }
-    },
-  );
-}
-
 function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (active && payload?.[0]?.payload) {
     const data: unknown = payload[0].payload;
@@ -175,6 +164,23 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   return null;
 }
 
+function useMostRecent() {
+  return useSWR<(Date | null) | undefined, AxiosError>(
+    "/api/analysis/most-recent",
+    async (key: string) => {
+      try {
+        const {
+          data: { mostRecent },
+        } = await axios.get<{ mostRecent: string | null }>(key);
+
+        return mostRecent === null ? mostRecent : new Date(mostRecent);
+      } catch (error) {
+        handleHookError(error);
+      }
+    },
+  );
+}
+
 function useAnalyses(start: Date, end: Date) {
   const params = new URLSearchParams({
     start: start.toISOString(),
@@ -187,9 +193,9 @@ function useAnalyses(start: Date, end: Date) {
       try {
         const {
           data: { analyses },
-        } = await axios.get<{ analyses: ChartAnalysis[] }>(
-          `/api/analysis?${params.toString()}`,
-        );
+        } = await axios.get<{
+          analyses: DataWithSerializedDate<ChartAnalysis>[];
+        }>(`/api/analysis?${params.toString()}`);
 
         return analyses.map((analysis) => ({
           ...analysis,
@@ -200,8 +206,4 @@ function useAnalyses(start: Date, end: Date) {
       }
     },
   );
-}
-
-function isValidDateRange(start: Date, end: Date) {
-  return start.getTime() >= end.getTime();
 }

@@ -5,7 +5,6 @@ import {
   contextValidator,
   errorResponse,
   formatErrors,
-  setTimeToMidnight,
 } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
@@ -33,7 +32,7 @@ export async function PUT(request: NextRequest, context: RequestContext) {
       try {
         await prisma.journal.update({
           where: { userId_id: { userId, id } },
-          data: { date: setTimeToMidnight(new Date(date)) },
+          data: { date: new Date(date) },
         });
 
         return NextResponse.json({ status: 200 });
