@@ -1,49 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Analysis } from "@prisma/client";
-import {
-  RequestContext,
-  contentPreview,
-  contextValidator,
-  errorResponse,
-  formatErrors,
-} from "@/utils";
+import { contentPreview } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { analyze } from "@/utils/ai";
 import { prisma } from "@/utils/db";
+import { errorResponse, analysisNotFound } from "@/utils/error";
+import { EntryAnalysis, RequestContext } from "@/utils/types";
+import { fetchEntryAndAnalysis } from "@/utils/fetcher";
+import {
+  contextValidator,
+  notNullValidator,
+  zodRequestValidator,
+} from "@/utils/validator";
 
 export async function GET(_: never, context: RequestContext) {
   try {
     const validation = contextValidator(context);
 
-    if (!validation.success) throw new Error(formatErrors(validation.error));
+    const { id } = zodRequestValidator(validation);
 
     try {
       const userId = await getUserIdByClerkId();
 
-      const { id } = validation.data;
-
       try {
-        const { date, content, analysis } =
-          await prisma.journal.findUniqueOrThrow({
-            where: { userId_id: { userId, id } },
-            select: {
-              content: true,
-              date: true,
+        const { date, content, analysis } = await fetchEntryAndAnalysis(
+          userId,
+          id,
+        );
 
-              analysis: {
-                select: {
-                  emoji: true,
-                  mood: true,
-                  sentiment: true,
-                  subject: true,
-                  summery: true,
-                },
-              },
-            },
-          });
-
-        if (!analysis) throw new Error("NotFoundError: No Analysis found.");
+        notNullValidator<EntryAnalysis>(analysis, analysisNotFound);
 
         return NextResponse.json({ date, content, analysis }, { status: 200 });
       } catch (error) {
@@ -61,18 +47,13 @@ export async function PUT(request: NextRequest, context: RequestContext) {
   try {
     const contextValidation = contextValidator(context);
 
-    if (!contextValidation.success)
-      throw new Error(formatErrors(contextValidation.error));
+    const { id } = zodRequestValidator(contextValidation);
 
     const requestValidation = z
       .object({ content: z.string() })
       .safeParse(await request.json());
 
-    if (!requestValidation.success)
-      throw new Error(formatErrors(requestValidation.error));
-
-    const { content } = requestValidation.data;
-    const { id } = contextValidation.data;
+    const { content } = zodRequestValidator(requestValidation);
 
     try {
       const userId = await getUserIdByClerkId();
@@ -130,14 +111,14 @@ export async function PUT(request: NextRequest, context: RequestContext) {
 
 export async function DELETE(_: never, context: RequestContext) {
   try {
+    throw new Error("test");
+
     const validation = contextValidator(context);
 
-    if (!validation.success) throw new Error(formatErrors(validation.error));
+    const { id } = zodRequestValidator(validation);
 
     try {
       const userId = await getUserIdByClerkId();
-
-      const { id } = validation.data;
 
       try {
         await prisma.journal.delete({

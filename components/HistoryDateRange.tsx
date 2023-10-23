@@ -2,16 +2,18 @@
 
 import { HistoryDateRangeContext } from "@/contexts/history";
 import { isValidDateRange, showPicker } from "@/utils";
+import { HistoryDateContextInterface } from "@/utils/types";
+import { notNullValidator } from "@/utils/validator";
 import { format } from "date-fns";
 import { useContext, useRef } from "react";
 
 export default function HistoryDateRange() {
   const historyDateRangeContext = useContext(HistoryDateRangeContext);
 
-  if (!historyDateRangeContext)
-    throw new Error(
-      "HistoryContext must be used within HistoryContextProvider",
-    );
+  notNullValidator<HistoryDateContextInterface>(
+    historyDateRangeContext,
+    "HistoryContext must be used within HistoryContextProvider",
+  );
 
   const { start, setStart, end, setEnd } = historyDateRangeContext;
 

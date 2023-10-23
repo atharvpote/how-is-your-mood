@@ -1,37 +1,26 @@
-import { endOfWeek, startOfWeek } from "date-fns";
 import HistoryDateRange from "@/components/HistoryDateRange";
 import { GetStarted } from "@/components/alerts";
 import HistoryChart from "@/components/chart";
 import HistoryContextProvider from "@/contexts/history";
 import { HistoryHeightFull } from "@/components/layouts";
-import { ChartAnalysis } from "@/utils";
+import { ChartAnalysis } from "@/utils/types";
 import { getUserIdByClerkId } from "@/utils/auth";
-import { prisma } from "@/utils/db";
+import { fetchChatAnalysis, fetchMostRecentEntry } from "@/utils/fetcher";
+import { endOfWeek, startOfWeek } from "date-fns";
 
 export default async function History() {
   const userId = await getUserIdByClerkId();
 
-  const mostRecent = await prisma.journal.findFirst({
-    where: { userId },
-    orderBy: { date: "desc" },
-    select: { date: true },
-  });
+  const mostRecent = await fetchMostRecentEntry(userId);
 
   let analyses: ChartAnalysis[] = [];
 
-  if (mostRecent) {
-    analyses = await prisma.analysis.findMany({
-      where: {
-        userId,
-        AND: [
-          { date: { gte: startOfWeek(mostRecent.date) } },
-          { date: { lte: endOfWeek(mostRecent.date) } },
-        ],
-      },
-      orderBy: { date: "asc" },
-      select: { sentiment: true, date: true, mood: true, emoji: true },
-    });
-  }
+  if (mostRecent)
+    analyses = await fetchChatAnalysis(
+      userId,
+      startOfWeek(mostRecent.date),
+      endOfWeek(mostRecent.date),
+    );
 
   return (
     <>

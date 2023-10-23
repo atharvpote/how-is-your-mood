@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { AiOutlinePlus } from "react-icons/ai";
-import { errorAlert } from "@/utils";
+import { errorAlert } from "@/utils/error";
 import { LoadingSpinner } from "./loading";
 
 export default function NewEntry() {

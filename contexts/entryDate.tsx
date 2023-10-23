@@ -1,12 +1,11 @@
 "use client";
 
 import { PropsWithChildren, createContext, useMemo, useState } from "react";
-import { SetState } from "@/utils";
+import { EntryDateContextInterface } from "@/utils/types";
 
-export const EntryDateContext = createContext<{
-  date: Date;
-  setDate: SetState<Date>;
-} | null>(null);
+export const EntryDateContext = createContext<EntryDateContextInterface | null>(
+  null,
+);
 
 export default function EntryDateContextProvider({
   children,

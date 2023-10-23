@@ -1,11 +1,11 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { errorAlert } from "@/utils";
 import axios from "axios";
 import { useRef } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { LoadingSpinner } from "./loading";
+import { errorAlert } from "@/utils/error";
 
 export default function DeleteEntry() {
   const { id } = useParams();

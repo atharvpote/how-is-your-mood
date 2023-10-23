@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import axios from "axios";
-import { errorAlert } from "@/utils";
+import { errorAlert } from "@/utils/error";
 import { LoadingSpinner } from "./loading";
 
 export default function Question() {

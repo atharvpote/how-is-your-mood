@@ -18,18 +18,19 @@ import {
   NameType,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
+import { endOfWeek, startOfWeek } from "date-fns";
 import { z } from "zod";
 import { HistoryDateRangeContext } from "@/contexts/history";
+import { deserializeDate, isValidDateRange } from "@/utils";
+import { handleHookError } from "@/utils/error";
 import {
   ChartAnalysis,
   DataWithSerializedDate,
-  formatErrors,
-  handleHookError,
-  isValidDateRange,
-} from "@/utils";
+  HistoryDateContextInterface,
+} from "@/utils/types";
+import { notNullValidator, zodRequestValidator } from "@/utils/validator";
 import { AlertError, ErrorComponent } from "./alerts";
 import { HistoryHeightFull } from "./layouts";
-import { endOfWeek, startOfWeek } from "date-fns";
 
 export default function HistoryChart({
   initialAnalyses,
@@ -38,10 +39,10 @@ export default function HistoryChart({
 }) {
   const historyDateRangeContext = useContext(HistoryDateRangeContext);
 
-  if (!historyDateRangeContext)
-    throw new Error(
-      "HistoryContext must be used within HistoryContextProvider",
-    );
+  notNullValidator<HistoryDateContextInterface>(
+    historyDateRangeContext,
+    "HistoryContext must be used within HistoryContextProvider",
+  );
 
   const { start, end, setStart, setEnd } = historyDateRangeContext;
 
@@ -145,9 +146,7 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
       })
       .safeParse(data);
 
-    if (!validation.success) throw new Error(formatErrors(validation.error));
-
-    const { mood, date, emoji } = validation.data;
+    const { mood, date, emoji } = zodRequestValidator(validation);
 
     return (
       <article className="prose rounded-lg bg-neutral px-4 py-2 text-neutral-content ">
@@ -168,14 +167,22 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   return null;
 }
 
+let firstLoad = true;
+
 function useMostRecent() {
   return useSWR<(Date | null) | undefined, AxiosError>(
     "/api/analysis/most-recent",
-    async (key: string) => {
+    async (url: string) => {
+      if (firstLoad) {
+        firstLoad = false;
+
+        return null;
+      }
+
       try {
         const {
           data: { mostRecent },
-        } = await axios.get<{ mostRecent: string | null }>(key);
+        } = await axios.get<{ mostRecent: string | null }>(url);
 
         return mostRecent === null ? mostRecent : new Date(mostRecent);
       } catch (error) {
@@ -192,19 +199,22 @@ function useAnalyses(start: Date, end: Date) {
   });
 
   return useSWR<ChartAnalysis[] | undefined, AxiosError>(
-    { start, end },
-    async () => {
+    `/api/analysis?${params.toString()}`,
+    async (url: string) => {
+      if (firstLoad) {
+        firstLoad = false;
+
+        return undefined;
+      }
+
       try {
         const {
           data: { analyses },
         } = await axios.get<{
           analyses: DataWithSerializedDate<ChartAnalysis>[];
-        }>(`/api/analysis?${params.toString()}`);
+        }>(url);
 
-        return analyses.map((analysis) => ({
-          ...analysis,
-          date: new Date(analysis.date),
-        }));
+        return analyses.map(deserializeDate);
       } catch (error) {
         handleHookError(error);
       }

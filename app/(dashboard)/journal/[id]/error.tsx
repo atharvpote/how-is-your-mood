@@ -1,7 +1,7 @@
 "use client";
 
 import { ErrorComponent } from "@/components/alerts";
-import { ErrorBoundaryProps } from "@/utils";
+import { ErrorBoundaryProps } from "@/utils/types";
 
 export default function EditorError({ error }: ErrorBoundaryProps) {
   return (

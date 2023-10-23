@@ -1,7 +1,8 @@
 "use client";
 
 import { EntryDateContext } from "@/contexts/entryDate";
-import { errorAlert, isTouchDevice, showPicker } from "@/utils";
+import { isTouchDevice, showPicker } from "@/utils";
+import { errorAlert } from "@/utils/error";
 import axios from "axios";
 import { format } from "date-fns";
 import { useParams } from "next/navigation";

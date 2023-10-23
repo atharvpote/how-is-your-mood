@@ -1,18 +1,14 @@
 import { NextResponse } from "next/server";
-import { errorResponse } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
-import { prisma } from "@/utils/db";
+import { errorResponse } from "@/utils/error";
+import { fetchMostRecentEntry } from "@/utils/fetcher";
 
 export async function GET() {
   try {
     const userId = await getUserIdByClerkId();
 
     try {
-      const mostRecent = await prisma.journal.findFirst({
-        where: { userId },
-        orderBy: { date: "desc" },
-        select: { date: true },
-      });
+      const mostRecent = await fetchMostRecentEntry(userId);
 
       return NextResponse.json(
         { mostRecent: mostRecent?.date ?? null },

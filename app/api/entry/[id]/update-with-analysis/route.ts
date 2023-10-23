@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import {
-  RequestContext,
-  contentPreview,
-  contextValidator,
-  errorResponse,
-  formatErrors,
-} from "@/utils";
+import { contentPreview } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
+import { errorResponse } from "@/utils/error";
+import { RequestContext } from "@/utils/types";
+import { contextValidator, zodRequestValidator } from "@/utils/validator";
 
 export async function PUT(request: NextRequest, context: RequestContext) {
   try {
     const contextValidation = contextValidator(context);
 
-    if (!contextValidation.success)
-      throw new Error(formatErrors(contextValidation.error));
+    const { id } = zodRequestValidator(contextValidation);
 
     const requestValidation = z
       .object({
@@ -30,11 +26,7 @@ export async function PUT(request: NextRequest, context: RequestContext) {
       })
       .safeParse(await request.json());
 
-    if (!requestValidation.success)
-      throw new Error(formatErrors(requestValidation.error));
-
-    const { content, analysis } = requestValidation.data;
-    const { id } = contextValidation.data;
+    const { content, analysis } = zodRequestValidator(requestValidation);
 
     try {
       const userId = await getUserIdByClerkId();

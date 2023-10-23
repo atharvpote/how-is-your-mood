@@ -6,13 +6,10 @@ import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { formatRelative } from "date-fns";
 import { enIN } from "date-fns/locale";
-import {
-  EntryPreview,
-  DataWithSerializedDate,
-  handleHookError,
-  previewLength,
-} from "@/utils";
+import { previewLength, deserializeDate } from "@/utils";
 import { ErrorComponent, GetStarted } from "./alerts";
+import { handleHookError } from "@/utils/error";
+import { EntryPreview, DataWithSerializedDate } from "@/utils/types";
 
 export default function Entries({
   initialEntries,
@@ -87,10 +84,18 @@ function HeightFull({ children }: PropsWithChildren) {
   );
 }
 
+let firstLoad = true;
+
 function useEntries() {
   return useSWR<EntryPreview[] | undefined, AxiosError>(
     "/api/entries",
     async (url: string) => {
+      if (firstLoad) {
+        firstLoad = false;
+
+        return undefined;
+      }
+
       try {
         const {
           data: { entries },
@@ -98,10 +103,7 @@ function useEntries() {
           entries: DataWithSerializedDate<EntryPreview>[];
         }>(url);
 
-        return entries.map((entry) => ({
-          ...entry,
-          date: new Date(entry.date),
-        }));
+        return entries.map(deserializeDate);
       } catch (error) {
         handleHookError(error);
       }

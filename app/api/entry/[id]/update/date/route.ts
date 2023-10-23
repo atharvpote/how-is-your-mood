@@ -1,30 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import {
-  RequestContext,
-  contextValidator,
-  errorResponse,
-  formatErrors,
-} from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
+import { errorResponse } from "@/utils/error";
+import { RequestContext } from "@/utils/types";
+import { contextValidator, zodRequestValidator } from "@/utils/validator";
 
 export async function PUT(request: NextRequest, context: RequestContext) {
   try {
     const contextValidation = contextValidator(context);
 
-    if (!contextValidation.success)
-      throw new Error(formatErrors(contextValidation.error));
+    const { id } = zodRequestValidator(contextValidation);
 
     const requestValidation = z
       .object({ date: z.string().datetime() })
       .safeParse(await request.json());
 
-    if (!requestValidation.success)
-      throw new Error(formatErrors(requestValidation.error));
-
-    const { date } = requestValidation.data;
-    const { id } = contextValidation.data;
+    const { date } = zodRequestValidator(requestValidation);
 
     try {
       const userId = await getUserIdByClerkId();

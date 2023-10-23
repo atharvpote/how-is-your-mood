@@ -1,17 +1,13 @@
 import { NextResponse } from "next/server";
-import { errorResponse } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
-import { prisma } from "@/utils/db";
+import { errorResponse } from "@/utils/error";
+import { fetchEntries } from "@/utils/fetcher";
 
 export async function GET() {
   try {
     const userId = await getUserIdByClerkId();
 
-    const entries = await prisma.journal.findMany({
-      where: { userId },
-      orderBy: { date: "desc" },
-      select: { id: true, date: true, preview: true },
-    });
+    const entries = await fetchEntries(userId);
 
     return NextResponse.json({ entries }, { status: 200 });
   } catch (error) {

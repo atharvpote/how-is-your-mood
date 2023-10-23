@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { setHours, setMinutes } from "date-fns";
-import { errorResponse } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
+import { errorResponse } from "@/utils/error";
 
 export async function POST() {
   try {

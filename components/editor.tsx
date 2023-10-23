@@ -5,16 +5,18 @@ import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { useAutosave } from "react-autosave";
 import { AnalysisContext } from "@/contexts/analysis";
-import {
-  Entry,
-  EntryAnalysis,
-  DataWithSerializedDate,
-  errorAlert,
-  handleHookError,
-  isTouchDevice,
-} from "@/utils";
+import { isTouchDevice, deserializeDate } from "@/utils";
 import { EntryDateContext } from "@/contexts/entryDate";
 import { useParams } from "next/navigation";
+import { errorAlert, handleHookError } from "@/utils/error";
+import {
+  AnalysisContextInterface,
+  DataWithSerializedDate,
+  Entry,
+  EntryAnalysis,
+  EntryDateContextInterface,
+} from "@/utils/types";
+import { notNullValidator } from "@/utils/validator";
 
 export default function Editor({ entry }: { entry: Omit<Entry, "id"> }) {
   const { id } = useParams();
@@ -24,15 +26,15 @@ export default function Editor({ entry }: { entry: Omit<Entry, "id"> }) {
   const analysisContext = useContext(AnalysisContext);
   const entryDateContext = useContext(EntryDateContext);
 
-  if (!analysisContext)
-    throw new Error(
-      "AnalysisContext must be used within AnalysisContextProvider",
-    );
+  notNullValidator<AnalysisContextInterface>(
+    analysisContext,
+    "AnalysisContext must be used within AnalysisContextProvider",
+  );
 
-  if (!entryDateContext)
-    throw new Error(
-      "EntryDateContext must be used within EntryDateContextProvider",
-    );
+  notNullValidator<EntryDateContextInterface>(
+    entryDateContext,
+    "EntryDateContext must be used within EntryDateContextProvider",
+  );
 
   const {
     cache: { current: cache },
@@ -136,16 +138,24 @@ interface UpdatedEntry {
   analysis: EntryAnalysis;
 }
 
+let firstLoad = true;
+
 function useEntry(id: string) {
   return useSWR<UpdatedEntry | undefined, AxiosError>(
     `/api/entry/${id}`,
     async (url: string) => {
+      if (firstLoad) {
+        firstLoad = false;
+
+        return undefined;
+      }
+
       try {
         const {
           data: { date, content, analysis },
         } = await axios.get<DataWithSerializedDate<UpdatedEntry>>(url);
 
-        return { date: new Date(date), content, analysis };
+        return deserializeDate({ date, content, analysis });
       } catch (error) {
         handleHookError(error);
       }

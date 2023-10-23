@@ -1,15 +1,11 @@
 "use client";
 
-import { SetState } from "@/utils";
-import { endOfWeek, startOfWeek } from "date-fns";
 import { PropsWithChildren, createContext, useMemo, useState } from "react";
+import { endOfWeek, startOfWeek } from "date-fns";
+import { HistoryDateContextInterface } from "@/utils/types";
 
-export const HistoryDateRangeContext = createContext<{
-  start: Date;
-  setStart: SetState<Date>;
-  end: Date;
-  setEnd: SetState<Date>;
-} | null>(null);
+export const HistoryDateRangeContext =
+  createContext<HistoryDateContextInterface | null>(null);
 
 export default function HistoryContextProvider({
   children,

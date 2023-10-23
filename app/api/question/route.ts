@@ -3,7 +3,8 @@ import { z } from "zod";
 import { qa } from "@/utils/ai";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse, formatErrors } from "@/utils";
+import { errorResponse } from "@/utils/error";
+import { zodRequestValidator } from "@/utils/validator";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,9 +12,7 @@ export async function POST(request: NextRequest) {
       .object({ question: z.string() })
       .safeParse(await request.json());
 
-    if (!validation.success) throw new Error(formatErrors(validation.error));
-
-    const { question } = validation.data;
+    const { question } = zodRequestValidator(validation);
 
     try {
       const userId = await getUserIdByClerkId();

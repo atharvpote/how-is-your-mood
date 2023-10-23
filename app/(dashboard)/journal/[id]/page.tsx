@@ -4,37 +4,26 @@ import Editor from "@/components/editor";
 import EntryDate from "@/components/entryDate";
 import AnalysisContextProvider from "@/contexts/analysis";
 import EntryDateContextProvider from "@/contexts/entryDate";
-import { RequestContext, contextValidator, formatErrors } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
-import { prisma } from "@/utils/db";
+import { analysisNotFound } from "@/utils/error";
+import { fetchEntryAndAnalysis } from "@/utils/fetcher";
+import { RequestContext, EntryAnalysis } from "@/utils/types";
+import {
+  contextValidator,
+  notNullValidator,
+  zodRequestValidator,
+} from "@/utils/validator";
 
 export default async function EditorPage(context: RequestContext) {
   const validation = contextValidator(context);
 
-  if (!validation.success) throw new Error(formatErrors(validation.error));
+  const { id } = zodRequestValidator(validation);
 
   const userId = await getUserIdByClerkId();
 
-  const { id } = validation.data;
+  const entry = await fetchEntryAndAnalysis(userId, id);
 
-  const entry = await prisma.journal.findUniqueOrThrow({
-    where: { userId_id: { userId, id } },
-    select: {
-      content: true,
-      date: true,
-      analysis: {
-        select: {
-          emoji: true,
-          mood: true,
-          sentiment: true,
-          subject: true,
-          summery: true,
-        },
-      },
-    },
-  });
-
-  if (!entry.analysis) throw new Error("Analysis is null");
+  notNullValidator<EntryAnalysis>(entry.analysis, analysisNotFound);
 
   return (
     <AnalysisContextProvider

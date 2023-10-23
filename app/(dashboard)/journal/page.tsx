@@ -1,16 +1,12 @@
 import Entries from "@/components/entries";
 import NewEntry from "@/components/newEntry";
 import { getUserIdByClerkId } from "@/utils/auth";
-import { prisma } from "@/utils/db";
+import { fetchEntries } from "@/utils/fetcher";
 
 export default async function EntriesPage() {
   const userId = await getUserIdByClerkId();
 
-  const entries = await prisma.journal.findMany({
-    where: { userId },
-    orderBy: { date: "desc" },
-    select: { id: true, date: true, preview: true },
-  });
+  const entries = await fetchEntries(userId);
 
   return (
     <div className="px-4 xl:pl-8">

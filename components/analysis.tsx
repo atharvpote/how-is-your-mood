@@ -3,14 +3,16 @@
 import { useContext } from "react";
 import { AnalysisContext } from "@/contexts/analysis";
 import { LoadingSpinner } from "./loading";
+import { AnalysisContextInterface } from "@/utils/types";
+import { notNullValidator } from "@/utils/validator";
 
 export default function Analysis() {
   const context = useContext(AnalysisContext);
 
-  if (!context)
-    throw new Error(
-      "AnalysisContext must be used within AnalysisContextProvider",
-    );
+  notNullValidator<AnalysisContextInterface>(
+    context,
+    "AnalysisContext must be used within AnalysisContextProvider",
+  );
 
   const {
     analysis: { emoji, mood, sentiment, subject, summery },
