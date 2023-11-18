@@ -1,11 +1,12 @@
 "use client";
 
-import { PropsWithChildren, useRef } from "react";
+import { useRef } from "react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { SignOutButton } from "@clerk/nextjs";
 import { MdLogout } from "react-icons/md";
 import { isTouchDevice } from "@/utils";
+import { ReadonlyPropsWithChildren } from "@/utils/types";
 
 const links = [
   { href: "/journal", label: "journal" },
@@ -14,7 +15,7 @@ const links = [
   { href: "/profile", label: "profile" },
 ] as const;
 
-export default function Drawer({ children }: PropsWithChildren) {
+export default function Drawer({ children }: ReadonlyPropsWithChildren) {
   const input = useRef<HTMLInputElement | null>(null);
   const dialog = useRef<HTMLDialogElement | null>(null);
 
@@ -33,6 +34,7 @@ export default function Drawer({ children }: PropsWithChildren) {
         {/* Navbar */}
         <nav className="navbar h-32 sm:h-16 lg:px-4">
           <div className="flex-none">
+            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
             <label
               htmlFor="my-drawer"
               className="btn btn-square btn-ghost drawer-button lg:hidden"
@@ -92,7 +94,7 @@ export default function Drawer({ children }: PropsWithChildren) {
                     </button>
                     <div className="flex gap-4">
                       <SignOutButton>
-                        <button className="btn btn-error btn-outline hover:btn-error">
+                        <button className="btn btn-outline btn-error hover:btn-error">
                           Yes
                         </button>
                       </SignOutButton>

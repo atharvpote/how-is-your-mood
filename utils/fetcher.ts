@@ -24,7 +24,7 @@ export async function fetchChatAnalysis(
 }
 
 export async function fetchEntryAndAnalysis(userId: string, id: string) {
-  const entry = await prisma.journal.findUniqueOrThrow({
+  return await prisma.journal.findUniqueOrThrow({
     where: { userId_id: { userId, id } },
     select: {
       content: true,
@@ -41,8 +41,6 @@ export async function fetchEntryAndAnalysis(userId: string, id: string) {
       },
     },
   });
-
-  return entry;
 }
 
 export async function fetchEntries(userId: string) {

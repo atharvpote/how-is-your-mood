@@ -21,7 +21,9 @@ export function GetStarted() {
   );
 }
 
-export function ErrorComponent({ error: { message } }: { error: Error }) {
+export function ErrorComponent({
+  error: { message },
+}: Readonly<{ error: Error }>) {
   return (
     <div className="p-4">
       <AlertError message={message} />
@@ -29,7 +31,7 @@ export function ErrorComponent({ error: { message } }: { error: Error }) {
   );
 }
 
-export function AlertError({ message }: { message: string }) {
+export function AlertError({ message }: Readonly<{ message: string }>) {
   return (
     <div className="alert alert-error">
       <svg

@@ -1,13 +1,18 @@
-import { Dispatch, MutableRefObject, SetStateAction } from "react";
+import {
+  Dispatch,
+  MutableRefObject,
+  PropsWithChildren,
+  SetStateAction,
+} from "react";
 import { Analysis, Journal } from "@prisma/client";
 
 export interface RequestContext {
   params: { id?: string };
 }
 
-export interface ErrorBoundaryProps {
+export type ErrorBoundaryProps = Readonly<{
   error: Error & { digest?: string };
-}
+}>;
 
 export interface AnalysisContextInterface {
   analysis: EntryAnalysis;
@@ -46,3 +51,7 @@ export type EntryPreview = Omit<Entry, "content"> & Pick<Journal, "preview">;
 export type SetState<T> = Dispatch<SetStateAction<T>>;
 
 export type DataWithSerializedDate<T> = T & { date: string };
+
+export type ReadonlyPropsWithChildren<P = unknown> = Readonly<
+  PropsWithChildren<P>
+>;

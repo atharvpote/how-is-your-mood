@@ -1,4 +1,4 @@
-import HistoryDateRange from "@/components/HistoryDateRange";
+import HistoryDateRange from "@/components/historyDateRange";
 import { GetStarted } from "@/components/alerts";
 import HistoryChart from "@/components/chart";
 import HistoryContextProvider from "@/contexts/history";

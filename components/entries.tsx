@@ -1,6 +1,6 @@
 "use client";
 
-import { PropsWithChildren, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
@@ -8,14 +8,18 @@ import { formatRelative } from "date-fns";
 import { enIN } from "date-fns/locale";
 import { previewLength, deserializeDate } from "@/utils";
 import { ErrorComponent, GetStarted } from "./alerts";
-import { handleHookError } from "@/utils/error";
-import { EntryPreview, DataWithSerializedDate } from "@/utils/types";
+import { handleSWRError } from "@/utils/error";
+import {
+  EntryPreview,
+  DataWithSerializedDate,
+  ReadonlyPropsWithChildren,
+} from "@/utils/types";
 
 export default function Entries({
   initialEntries,
-}: {
+}: Readonly<{
   initialEntries: EntryPreview[];
-}) {
+}>) {
   const [entries, setEntries] = useState(initialEntries);
 
   const { data: updatedEntries, error } = useEntries();
@@ -49,10 +53,10 @@ export default function Entries({
 function Card({
   entry: { date, id, preview },
   prefetch,
-}: {
+}: Readonly<{
   entry: EntryPreview;
   prefetch: boolean;
-}) {
+}>) {
   const title = formatRelative(date, new Date(), { locale: enIN })
     .split(" at ")[0]
     ?.trim();
@@ -62,7 +66,7 @@ function Card({
       key={id}
       href={`/journal/${id}`}
       prefetch={prefetch}
-      className="card bg-neutral text-neutral-content transition-all hover:bg-neutral-focus focus:bg-neutral-focus"
+      className="card bg-neutral text-neutral-content transition-all hover:bg-neutral-800"
     >
       <article className="prose card-body">
         <div className="card-title">
@@ -76,7 +80,7 @@ function Card({
   );
 }
 
-function HeightFull({ children }: PropsWithChildren) {
+function HeightFull({ children }: ReadonlyPropsWithChildren) {
   return (
     <div className="flex h-[calc(100svh-(var(--dashboard-nav-height)+var(--journal-header-height)))] items-center justify-center sm:h-[calc(100svh-(var(--dashboard-nav-height-sm)+var(--journal-header-height)))]">
       {children}
@@ -105,7 +109,7 @@ function useEntries() {
 
         return entries.map(deserializeDate);
       } catch (error) {
-        handleHookError(error);
+        handleSWRError(error);
       }
     },
   );

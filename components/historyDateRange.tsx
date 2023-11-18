@@ -26,7 +26,7 @@ export default function HistoryDateRange() {
         <span>From</span>
         <input
           type="date"
-          className={`h-12 cursor-pointer rounded-lg bg-neutral p-2 text-center font-semibold text-neutral-content focus:bg-neutral-focus ${
+          className={`h-12 cursor-pointer rounded-lg bg-neutral p-2 text-center font-semibold text-neutral-content focus:bg-neutral-800 ${
             isValidDateRange(start, end) ? "outline outline-error" : ""
           }`}
           value={format(start, "yyyy-MM-dd")}
@@ -40,7 +40,7 @@ export default function HistoryDateRange() {
         <span>To</span>
         <input
           type="date"
-          className={`h-12 cursor-pointer rounded-lg bg-neutral p-2 text-center font-semibold text-neutral-content focus:bg-neutral-focus ${
+          className={`h-12 cursor-pointer rounded-lg bg-neutral p-2 text-center font-semibold text-neutral-content focus:bg-neutral-800 ${
             isValidDateRange(start, end) ? "outline outline-error" : ""
           }`}
           value={format(end, "yyyy-MM-dd")}

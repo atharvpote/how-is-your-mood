@@ -1,8 +1,8 @@
-import { PropsWithChildren } from "react";
 import Link from "next/link";
 import { AiOutlineArrowLeft } from "react-icons/ai";
+import { ReadonlyPropsWithChildren } from "@/utils/types";
 
-export default function SignLayout({ children }: PropsWithChildren) {
+export default function SignLayout({ children }: ReadonlyPropsWithChildren) {
   return (
     <div className="min-h-[100svh]">
       <nav className="flex justify-start p-2">

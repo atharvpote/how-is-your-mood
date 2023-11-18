@@ -1,8 +1,8 @@
-import { PropsWithChildren } from "react";
 import { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { shadesOfPurple } from "@clerk/themes";
+import { ReadonlyPropsWithChildren } from "@/utils/types";
 
 import "./globals.css";
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   icons: "/icon.png",
 };
 
-export default function RootLayout({ children }: PropsWithChildren) {
+export default function RootLayout({ children }: ReadonlyPropsWithChildren) {
   return (
     <ClerkProvider appearance={{ baseTheme: shadesOfPurple }}>
       <html lang="en">

@@ -12,3 +12,10 @@
     --journal-header-height: 4rem;
   }
 }
+
+.datepicker-input::-webkit-calendar-picker-indicator {
+  margin: 0;
+  padding-right: 0.5rem;
+  cursor: pointer;
+  filter: invert(1);
+}

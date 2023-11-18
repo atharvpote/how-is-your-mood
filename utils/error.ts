@@ -34,7 +34,7 @@ export function errorAlert(error: unknown) {
   }
 }
 
-export function handleHookError(error: unknown) {
+export function handleSWRError(error: unknown) {
   if (isAxiosError(error))
     if (error.response) {
       const { status } = error.response;

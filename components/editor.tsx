@@ -8,7 +8,7 @@ import { AnalysisContext } from "@/contexts/analysis";
 import { isTouchDevice, deserializeDate } from "@/utils";
 import { EntryDateContext } from "@/contexts/entryDate";
 import { useParams } from "next/navigation";
-import { errorAlert, handleHookError } from "@/utils/error";
+import { errorAlert, handleSWRError } from "@/utils/error";
 import {
   AnalysisContextInterface,
   DataWithSerializedDate,
@@ -18,7 +18,9 @@ import {
 } from "@/utils/types";
 import { notNullValidator } from "@/utils/validator";
 
-export default function Editor({ entry }: { entry: Omit<Entry, "id"> }) {
+export default function Editor({
+  entry,
+}: Readonly<{ entry: Omit<Entry, "id"> }>) {
   const { id } = useParams();
 
   if (!id || Array.isArray(id)) throw new Error("Entry ID is undefined");
@@ -157,7 +159,7 @@ function useEntry(id: string) {
 
         return deserializeDate({ date, content, analysis });
       } catch (error) {
-        handleHookError(error);
+        handleSWRError(error);
       }
     },
   );

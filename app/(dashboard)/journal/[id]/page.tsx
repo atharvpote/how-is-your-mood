@@ -14,7 +14,7 @@ import {
   zodRequestValidator,
 } from "@/utils/validator";
 
-export default async function EditorPage(context: RequestContext) {
+export default async function EditorPage(context: Readonly<RequestContext>) {
   const validation = contextValidator(context);
 
   const { id } = zodRequestValidator(validation);

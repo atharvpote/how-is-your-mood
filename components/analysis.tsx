@@ -46,7 +46,7 @@ export default function Analysis() {
       td: (
         <td className="basis-full">
           <span className="font-bold">{sentiment}</span>
-          /10
+          <span>/10</span>
         </td>
       ),
     },

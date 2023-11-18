@@ -22,7 +22,7 @@ import { endOfWeek, startOfWeek } from "date-fns";
 import { z } from "zod";
 import { HistoryDateRangeContext } from "@/contexts/history";
 import { deserializeDate, isValidDateRange } from "@/utils";
-import { handleHookError } from "@/utils/error";
+import { handleSWRError } from "@/utils/error";
 import {
   ChartAnalysis,
   DataWithSerializedDate,
@@ -34,9 +34,9 @@ import { HistoryHeightFull } from "./layouts";
 
 export default function HistoryChart({
   initialAnalyses,
-}: {
+}: Readonly<{
   initialAnalyses: ChartAnalysis[];
-}) {
+}>) {
   const historyDateRangeContext = useContext(HistoryDateRangeContext);
 
   notNullValidator<HistoryDateContextInterface>(
@@ -186,7 +186,7 @@ function useMostRecent() {
 
         return mostRecent === null ? mostRecent : new Date(mostRecent);
       } catch (error) {
-        handleHookError(error);
+        handleSWRError(error);
       }
     },
   );
@@ -216,7 +216,7 @@ function useAnalyses(start: Date, end: Date) {
 
         return analyses.map(deserializeDate);
       } catch (error) {
-        handleHookError(error);
+        handleSWRError(error);
       }
     },
   );

@@ -38,7 +38,7 @@ export default function EntryDate() {
       <span className="text-lg font-medium text-neutral-content">
         <input
           type="date"
-          className="h-12 w-36 cursor-pointer rounded-lg bg-neutral p-2 pr-0 font-semibold focus:bg-neutral-focus"
+          className="h-12 w-36 cursor-pointer rounded-lg bg-neutral p-2 pr-0 font-semibold focus:bg-neutral-800 datepicker-input"
           value={format(date, "yyyy-MM-dd")}
           ref={input}
           onClick={showPicker(input)}

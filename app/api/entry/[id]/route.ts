@@ -111,8 +111,6 @@ export async function PUT(request: NextRequest, context: RequestContext) {
 
 export async function DELETE(_: never, context: RequestContext) {
   try {
-    throw new Error("test");
-
     const validation = contextValidator(context);
 
     const { id } = zodRequestValidator(validation);

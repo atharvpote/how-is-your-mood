@@ -26,7 +26,7 @@ export default function DeleteEntry() {
 
           modal.current.showModal();
         }}
-        className="btn btn-error btn-outline hover:btn-error"
+        className="btn btn-outline btn-error hover:btn-error"
       >
         <div className="flex w-20 items-center justify-between">
           <AiOutlineDelete className="text-xl" />
@@ -64,7 +64,7 @@ export default function DeleteEntry() {
                         loading.current.close();
                       });
                   }}
-                  className="btn btn-error btn-outline hover:btn-error"
+                  className="btn btn-outline btn-error hover:btn-error"
                 >
                   Yes
                 </button>

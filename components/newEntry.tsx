@@ -35,7 +35,7 @@ export default function NewEntry() {
               loading.current.close();
             });
         }}
-        className="btn bg-neutral text-neutral-content hover:bg-neutral-focus"
+        className="btn bg-neutral text-neutral-content hover:bg-neutral-800"
       >
         <div className="flex w-16 items-center justify-between">
           <AiOutlinePlus className="text-lg" />
