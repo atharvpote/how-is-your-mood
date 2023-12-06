@@ -1,12 +1,12 @@
 "use client";
 
 import { EntryDateContext } from "@/contexts/entryDate";
-import { isTouchDevice, showPicker } from "@/utils";
+import { isTouchDevice } from "@/utils";
 import { errorAlert } from "@/utils/error";
 import axios from "axios";
-import { format } from "date-fns";
 import { useParams } from "next/navigation";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 export default function EntryDate() {
   const { id } = useParams();
@@ -24,8 +24,6 @@ export default function EntryDate() {
 
   const [touchDevice, setTouchDevice] = useState(false);
 
-  const input = useRef<HTMLInputElement | null>(null);
-
   useEffect(() => {
     isTouchDevice() ? setTouchDevice(true) : setTouchDevice(false);
   }, []);
@@ -36,24 +34,20 @@ export default function EntryDate() {
       data-tip="Date of Entry"
     >
       <span className="text-lg font-medium text-neutral-content">
-        <input
-          type="date"
-          className="h-12 w-36 cursor-pointer rounded-lg bg-neutral p-2 pr-0 font-semibold focus:bg-neutral-800 datepicker-input"
-          value={format(date, "yyyy-MM-dd")}
-          ref={input}
-          onClick={showPicker(input)}
-          onFocus={showPicker(input)}
-          onChange={({ target: { value } }) => {
-            const date = new Date(value);
+        <DatePicker
+          value={date}
+          onChange={(date) => {
+            if (date) {
+              setDate(date);
 
-            setDate(date);
-
-            axios
-              .put(`/api/entry/${id}/update/date`, { date })
-              .catch((error) => {
-                errorAlert(error);
-              });
+              axios
+                .put(`/api/entry/${id}/update/date`, { date })
+                .catch((error) => {
+                  errorAlert(error);
+                });
+            }
           }}
+          format="dd/MM/yyyy"
         />
       </span>
     </div>

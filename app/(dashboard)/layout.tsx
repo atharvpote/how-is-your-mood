@@ -1,4 +1,5 @@
 import Drawer from "@/components/drawer";
+import MUIContext from "@/contexts/mui";
 import { ReadonlyPropsWithChildren } from "@/utils/types";
 
 export default function DashboardLayout({
@@ -6,7 +7,9 @@ export default function DashboardLayout({
 }: ReadonlyPropsWithChildren) {
   return (
     <div className="mx-auto max-w-screen-2xl">
-      <Drawer>{children}</Drawer>
+      <Drawer>
+        <MUIContext>{children}</MUIContext>
+      </Drawer>
     </div>
   );
 }

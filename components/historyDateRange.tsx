@@ -1,11 +1,10 @@
 "use client";
 
 import { HistoryDateRangeContext } from "@/contexts/history";
-import { isValidDateRange, showPicker } from "@/utils";
 import { HistoryDateContextInterface } from "@/utils/types";
 import { notNullValidator } from "@/utils/validator";
-import { format } from "date-fns";
-import { useContext, useRef } from "react";
+import { useContext } from "react";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 export default function HistoryDateRange() {
   const historyDateRangeContext = useContext(HistoryDateRangeContext);
@@ -17,39 +16,24 @@ export default function HistoryDateRange() {
 
   const { start, setStart, end, setEnd } = historyDateRangeContext;
 
-  const startRef = useRef<HTMLInputElement | null>(null);
-  const endRef = useRef<HTMLInputElement | null>(null);
-
   return (
     <div className="form-control">
       <div className="flex flex-col items-center gap-2 sm:flex-row">
         <span>From</span>
-        <input
-          type="date"
-          className={`h-12 cursor-pointer rounded-lg bg-neutral p-2 text-center font-semibold text-neutral-content focus:bg-neutral-800 ${
-            isValidDateRange(start, end) ? "outline outline-error" : ""
-          }`}
-          value={format(start, "yyyy-MM-dd")}
-          ref={startRef}
-          onClick={showPicker(startRef)}
-          onFocus={showPicker(startRef)}
-          onChange={({ target: { value } }) => {
-            setStart(new Date(value));
+        <DatePicker
+          value={start}
+          onChange={(start) => {
+            if (start) setStart(start);
           }}
+          format="dd/MM/yyyy"
         />
         <span>To</span>
-        <input
-          type="date"
-          className={`h-12 cursor-pointer rounded-lg bg-neutral p-2 text-center font-semibold text-neutral-content focus:bg-neutral-800 ${
-            isValidDateRange(start, end) ? "outline outline-error" : ""
-          }`}
-          value={format(end, "yyyy-MM-dd")}
-          ref={endRef}
-          onClick={showPicker(endRef)}
-          onFocus={showPicker(endRef)}
-          onChange={({ target: { value } }) => {
-            setEnd(new Date(value));
+        <DatePicker
+          value={end}
+          onChange={(end) => {
+            if (end) setEnd(end);
           }}
+          format="dd/MM/yyyy"
         />
       </div>
     </div>
