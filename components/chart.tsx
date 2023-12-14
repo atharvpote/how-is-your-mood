@@ -74,13 +74,13 @@ export default function HistoryChart({
   return (
     <>
       {isValidDateRange(start, end) ? (
-        <div className="flex h-[calc(100svh-23.5rem)] items-center justify-center sm:h-[calc(100svh-12.5rem)]">
+        <div className="flex h-[var(--history-page-remaining-space)] items-center justify-center sm:h-[calc(100svh-12.5rem)]">
           <div>
             <AlertError message="Invalid Date Range" />
           </div>
         </div>
       ) : (
-        <div className="h-[calc(100svh-23.5rem)] pr-4 sm:h-[calc(100svh-12.5rem)]">
+        <div className="h-[var(--history-page-remaining-space)] min-h-[30rem] pr-4 sm:h-[var(--history-page-remaining-space-sm)]">
           <ResponsiveContainer width={"100%"} height={"100%"}>
             <LineChart
               width={300}
