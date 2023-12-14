@@ -31,7 +31,11 @@ const parser = StructuredOutputParser.fromZodSchema(
 export async function analyze(content: string) {
   const input = await getPrompt(content);
 
-  const model = new OpenAI({ temperature: 0, modelName: "gpt-3.5-turbo" });
+  const model = new OpenAI({
+    temperature: 0,
+    modelName: "gpt-3.5-turbo",
+    cache: true,
+  });
   const result = await model.call(input);
 
   return await parser.parse(result);

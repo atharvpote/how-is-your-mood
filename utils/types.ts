@@ -55,3 +55,11 @@ export type DataWithSerializedDate<T> = T & { date: string };
 export type ReadonlyPropsWithChildren<P = unknown> = Readonly<
   PropsWithChildren<P>
 >;
+
+export type Role = "user" | "ai";
+
+export interface Message {
+  role: Role;
+  message: string;
+  id: string;
+}

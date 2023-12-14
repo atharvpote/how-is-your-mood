@@ -82,7 +82,7 @@ function Card({
 
 function HeightFull({ children }: ReadonlyPropsWithChildren) {
   return (
-    <div className="flex h-[calc(100svh-(var(--dashboard-nav-height)+var(--journal-header-height)))] items-center justify-center sm:h-[calc(100svh-(var(--dashboard-nav-height-sm)+var(--journal-header-height)))]">
+    <div className="flex h-[var(--journal-page-remaining-space)] items-center justify-center sm:h-[--journal-page-remaining-space-sm]">
       {children}
     </div>
   );

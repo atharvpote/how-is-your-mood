@@ -10,7 +10,7 @@ import { ReadonlyPropsWithChildren } from "@/utils/types";
 
 const links = [
   { href: "/journal", label: "journal" },
-  { href: "/question", label: "question" },
+  { href: "/chat", label: "chat" },
   { href: "/history", label: "history" },
   { href: "/profile", label: "profile" },
 ] as const;
