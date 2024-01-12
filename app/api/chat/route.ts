@@ -1,8 +1,10 @@
-import { chat } from "@/utils/chat";
-import { errorResponse } from "@/utils/error";
-import { zodRequestValidator } from "@/utils/validator";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { getUserIdByClerkId } from "@/utils/auth";
+import { chat } from "@/utils/chat";
+import { prisma } from "@/utils/db";
+import { errorResponse } from "@/utils/error";
+import { zodRequestValidator } from "@/utils/validator";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,8 +22,12 @@ export async function POST(request: NextRequest) {
     const { conversation } = zodRequestValidator(validation);
 
     try {
+      const userId = await getUserIdByClerkId();
+
       try {
-        const reply = await chat(conversation);
+        const entries = await prisma.journal.findMany({ where: { userId } });
+
+        const reply = await chat(conversation, entries);
 
         return NextResponse.json({ reply }, { status: 200 });
       } catch (error) {
