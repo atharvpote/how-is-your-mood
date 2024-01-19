@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
-import { chat } from "@/utils/chat";
+import { chat } from "@/utils/ai";
 import { prisma } from "@/utils/db";
-import { errorResponse } from "@/utils/error";
 import { zodRequestValidator } from "@/utils/validator";
+import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,14 +29,14 @@ export async function POST(request: NextRequest) {
 
         const reply = await chat(conversation, entries);
 
-        return NextResponse.json({ reply }, { status: 200 });
+        return jsonResponse(200, { reply });
       } catch (error) {
-        return errorResponse(error, 500);
+        return jsonResponse(500, new ErrorBody(error));
       }
     } catch (error) {
-      return errorResponse(error, 401);
+      return jsonResponse(401, new ErrorBody(error));
     }
   } catch (error) {
-    errorResponse(error, 400);
+    jsonResponse(400, new ErrorBody(error));
   }
 }

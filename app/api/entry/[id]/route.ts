@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { z } from "zod";
 import { Analysis } from "@prisma/client";
 import { contentPreview } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { analyze } from "@/utils/ai";
 import { prisma } from "@/utils/db";
-import { errorResponse, analysisNotFound } from "@/utils/error";
+import { analysisNotFound } from "@/utils/error";
 import { EntryAnalysis, RequestContext } from "@/utils/types";
 import { fetchEntryAndAnalysis } from "@/utils/fetcher";
 import {
@@ -13,6 +13,7 @@ import {
   notNullValidator,
   zodRequestValidator,
 } from "@/utils/validator";
+import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function GET(_: never, context: RequestContext) {
   try {
@@ -31,15 +32,15 @@ export async function GET(_: never, context: RequestContext) {
 
         notNullValidator<EntryAnalysis>(analysis, analysisNotFound);
 
-        return NextResponse.json({ date, content, analysis }, { status: 200 });
+        return jsonResponse(200, { date, content, analysis });
       } catch (error) {
-        return errorResponse(error, 500);
+        return jsonResponse(500, new ErrorBody(error));
       }
     } catch (error) {
-      return errorResponse(error, 401);
+      return jsonResponse(401, new ErrorBody(error));
     }
   } catch (error) {
-    return errorResponse(error, 400);
+    return jsonResponse(400, new ErrorBody(error));
   }
 }
 
@@ -97,15 +98,15 @@ export async function PUT(request: NextRequest, context: RequestContext) {
             select,
           });
 
-        return NextResponse.json({ analysis }, { status: 200 });
+        return jsonResponse(200, { analysis });
       } catch (error) {
-        return errorResponse(error, 500);
+        return jsonResponse(500, new ErrorBody(error));
       }
     } catch (error) {
-      return errorResponse(error, 401);
+      return jsonResponse(401, new ErrorBody(error));
     }
   } catch (error) {
-    return errorResponse(error, 400);
+    return jsonResponse(400, new ErrorBody(error));
   }
 }
 
@@ -123,14 +124,14 @@ export async function DELETE(_: never, context: RequestContext) {
           where: { userId_id: { userId, id } },
         });
 
-        return NextResponse.json({ status: 200 });
+        return jsonResponse(200);
       } catch (error) {
-        return errorResponse(error, 500);
+        return jsonResponse(500, new ErrorBody(error));
       }
     } catch (error) {
-      return errorResponse(error, 401);
+      return jsonResponse(401, new ErrorBody(error));
     }
   } catch (error) {
-    return errorResponse(error, 400);
+    return jsonResponse(400, new ErrorBody(error));
   }
 }

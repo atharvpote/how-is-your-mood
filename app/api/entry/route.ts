@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
 import { setHours, setMinutes } from "date-fns";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse } from "@/utils/error";
+import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function POST() {
   try {
@@ -29,9 +28,9 @@ export async function POST() {
       },
     });
 
-    return NextResponse.json({ id }, { status: 201 });
+    return jsonResponse(201, { id });
   } catch (error) {
-    return errorResponse(error, 401);
+    return jsonResponse(401, new ErrorBody(error));
   }
 }
 

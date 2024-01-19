@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
-import { errorResponse } from "@/utils/error";
 import { fetchChatAnalysis } from "@/utils/fetcher";
 import { zodRequestValidator } from "@/utils/validator";
+import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
@@ -24,11 +24,11 @@ export async function GET(request: NextRequest) {
         new Date(end),
       );
 
-      return NextResponse.json({ analyses }, { status: 200 });
+      return jsonResponse(200, { analyses });
     } catch (error) {
-      return errorResponse(error, 401);
+      return jsonResponse(401, new ErrorBody(error));
     }
   } catch (error) {
-    return errorResponse(error, 400);
+    return jsonResponse(400, new ErrorBody(error));
   }
 }

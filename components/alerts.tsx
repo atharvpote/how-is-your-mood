@@ -6,7 +6,7 @@ export function GetStarted() {
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
-          className="h-6 w-6 shrink-0 stroke-current"
+          className="size-6 shrink-0 stroke-current"
         >
           <path
             strokeLinecap="round"
@@ -36,7 +36,7 @@ export function AlertError({ message }: Readonly<{ message: string }>) {
     <div className="alert alert-error">
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="h-6 w-6 shrink-0 stroke-current"
+        className="size-6 shrink-0 stroke-current"
         fill="none"
         viewBox="0 0 24 24"
       >

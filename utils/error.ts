@@ -1,18 +1,5 @@
-import { NextResponse } from "next/server";
 import { isAxiosError } from "axios";
 import { z } from "zod";
-
-export function errorResponse(error: unknown, status: number) {
-  return NextResponse.json(
-    error instanceof Error
-      ? { message: error.message }
-      : {
-          message: "Unknown error",
-          error,
-        },
-    { status },
-  );
-}
 
 export function errorAlert(error: unknown) {
   if (isAxiosError(error))

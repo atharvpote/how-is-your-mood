@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
 import { getUserIdByClerkId } from "@/utils/auth";
-import { errorResponse } from "@/utils/error";
 import { fetchEntries } from "@/utils/fetcher";
+import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function GET() {
   try {
@@ -9,8 +8,8 @@ export async function GET() {
 
     const entries = await fetchEntries(userId);
 
-    return NextResponse.json({ entries }, { status: 200 });
+    return jsonResponse(200, { entries });
   } catch (error) {
-    return errorResponse(error, 401);
+    return jsonResponse(401, new ErrorBody(error));
   }
 }

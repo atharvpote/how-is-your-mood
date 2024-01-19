@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
 import { getUserIdByClerkId } from "@/utils/auth";
-import { errorResponse } from "@/utils/error";
 import { fetchMostRecentEntry } from "@/utils/fetcher";
+import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function GET() {
   try {
@@ -10,14 +9,11 @@ export async function GET() {
     try {
       const mostRecent = await fetchMostRecentEntry(userId);
 
-      return NextResponse.json(
-        { mostRecent: mostRecent?.date ?? null },
-        { status: 200 },
-      );
+      return jsonResponse(200, { mostRecent: mostRecent?.date ?? null });
     } catch (error) {
-      return errorResponse(error, 500);
+      return jsonResponse(500, new ErrorBody(error));
     }
   } catch (error) {
-    return errorResponse(error, 401);
+    return jsonResponse(401, new ErrorBody(error));
   }
 }

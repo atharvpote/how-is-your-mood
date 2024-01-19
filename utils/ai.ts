@@ -1,85 +1,90 @@
-import { PromptTemplate } from "langchain/prompts";
-import { OpenAI } from "langchain/llms/openai";
-import { Document } from "langchain/document";
-import { loadQARefineChain } from "langchain/chains";
+import { ChatOpenAI, OpenAIEmbeddings, OpenAI } from "@langchain/openai";
+import { PromptTemplate } from "@langchain/core/prompts";
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+} from "@langchain/core/messages";
 import { StructuredOutputParser } from "langchain/output_parsers";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { Document } from "@langchain/core/documents";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { z } from "zod";
 import { Journal } from "@prisma/client";
-
-const parser = StructuredOutputParser.fromZodSchema(
-  z.object({
-    mood: z
-      .string()
-      .describe("the mood of the person who wrote the journal entry."),
-    subject: z.string().describe("the subject of the journal entry."),
-    summery: z
-      .string()
-      .describe(
-        "quick summary of the entry in the least amount of words possible.",
-      ),
-    emoji: z
-      .string()
-      .describe("an emoji that represents the mood of the entry."),
-    sentiment: z
-      .number()
-      .describe("sentiment of the text and rated on a scale from -10 to 10."),
-  }),
-);
+import { Message } from "./types";
 
 export async function analyze(content: string) {
-  const input = await getPrompt(content);
+  const template = new PromptTemplate({
+    template:
+      "Analyze journal entry, follow instructions and format response to match format instructions.\nInstructions: {format_instructions}\nEntry: {entry}",
+    inputVariables: ["entry"],
+    partialVariables: { format_instructions: parser.getFormatInstructions() },
+  });
+
+  const prompt = await template.format({ entry: content });
 
   const model = new OpenAI({
     temperature: 0,
-    modelName: "gpt-3.5-turbo",
+    modelName: "gpt-3.5-turbo-1106",
     cache: true,
   });
-  const result = await model.call(input);
 
-  return await parser.parse(result);
+  return await parser.parse(await model.invoke(prompt));
 }
 
-async function getPrompt(content: string) {
-  const format_instructions = parser.getFormatInstructions();
+const parser = StructuredOutputParser.fromZodSchema(
+  z.object({
+    mood: z.string().describe("Mood of person who wrote journal"),
+    subject: z.string().describe("Subject of journal"),
+    summery: z.string().describe("Short summary of journal."),
+    emoji: z.string().describe("Emoji that represents mood of journal"),
+    sentiment: z
+      .number()
+      .describe("Sentiment of journal on scale of -10 to 10."),
+  }),
+);
 
-  const prompt = new PromptTemplate({
-    template:
-      "Analyze the following journal entry. Follow the instructions and format your response to match the format instructions, no matter what! \n{format_instructions}\n{entry}",
-    inputVariables: ["entry"],
-    partialVariables: { format_instructions },
+export async function chat(
+  messages: Omit<Message, "id">[],
+  entries: Journal[],
+) {
+  if (!messages.length) throw new Error("Messages is null");
+
+  const chat = new ChatOpenAI({
+    modelName: "gpt-3.5-turbo-1106",
+    temperature: 0,
+    cache: true,
   });
 
-  const input = await prompt.format({ entry: content });
+  const { content: searchTerm } = await chat.invoke(
+    `Summarize conversation between "$$" signs as search term for semantic search. $$
+  ${messages.map(({ role, message }) => role + ": " + message).join("\n")}$$`,
+  );
 
-  return input;
-}
-
-export async function qa(
-  question: string,
-  entries: Pick<Journal, "id" | "createdAt" | "content">[],
-) {
-  const docs = entries.map(
-    ({ content, id, createdAt }) =>
+  const documents = entries.map(
+    ({ content, id, createdAt, date, updatedAt }) =>
       new Document({
         pageContent: content,
-        metadata: { id, createdAt },
+        metadata: { id, createdAt, "entry date": date, updatedAt },
       }),
   );
 
-  const model = new OpenAI({ temperature: 0, modelName: "gpt-3.5-turbo" });
-  const chain = loadQARefineChain(model);
-  const embeddings = new OpenAIEmbeddings();
-  const store = await MemoryVectorStore.fromDocuments(docs, embeddings);
-  const relevantDocs = await store.similaritySearch(question);
+  const store = await MemoryVectorStore.fromDocuments(
+    documents,
+    new OpenAIEmbeddings(),
+  );
 
-  const response = await chain.call({
-    input_documents: relevantDocs,
-    question,
-  });
+  const context = await store.similaritySearch(searchTerm.toString());
 
-  const { output_text } = z.object({ output_text: z.string() }).parse(response);
+  const { content } = await chat.invoke([
+    new SystemMessage(
+      `Respond using provided context. Context: ${context
+        .map(({ pageContent }) => pageContent)
+        .join("\n")}`,
+    ),
+    ...messages.map(({ role, message }) =>
+      role === "ai" ? new AIMessage(message) : new HumanMessage(message),
+    ),
+  ]);
 
-  return output_text;
+  return content.toString();
 }

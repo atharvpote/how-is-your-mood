@@ -126,7 +126,7 @@ export default function Editor({
 
         scrollHeight > clientHeight ? setScroll(true) : setScroll(false);
       }}
-      className={`textarea h-full w-full resize-none rounded-lg bg-neutral px-6 py-4 text-base leading-loose text-neutral-content ${
+      className={`textarea size-full resize-none rounded-lg bg-neutral px-6 py-4 text-base leading-loose text-neutral-content${
         !touchDevice && scroll ? "rounded-r-none" : ""
       }`}
       ref={textarea}

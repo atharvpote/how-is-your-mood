@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { z } from "zod";
 import { contentPreview } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { errorResponse } from "@/utils/error";
 import { RequestContext } from "@/utils/types";
 import { contextValidator, zodRequestValidator } from "@/utils/validator";
+import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function PUT(request: NextRequest, context: RequestContext) {
   try {
@@ -42,14 +42,14 @@ export async function PUT(request: NextRequest, context: RequestContext) {
           data: analysis,
         });
 
-        return NextResponse.json({ status: 200 });
+        return jsonResponse(200);
       } catch (error) {
-        return errorResponse(error, 500);
+        return jsonResponse(500, new ErrorBody(error));
       }
     } catch (error) {
-      return errorResponse(error, 401);
+      return jsonResponse(401, new ErrorBody(error));
     }
   } catch (error) {
-    return errorResponse(error, 400);
+    return jsonResponse(400, new ErrorBody(error));
   }
 }
