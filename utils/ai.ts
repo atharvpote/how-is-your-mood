@@ -47,7 +47,9 @@ export async function chat(
   messages: Omit<Message, "id">[],
   entries: Journal[],
 ) {
-  if (!messages.length) throw new Error("Messages is null");
+  if (!messages.length) {
+    throw new Error("Messages is null");
+  }
 
   const chat = new ChatOpenAI({
     modelName: "gpt-3.5-turbo-1106",
@@ -57,15 +59,20 @@ export async function chat(
 
   const { content: searchTerm } = await chat.invoke(
     `Summarize conversation between "$$" signs as search term for semantic search. $$
-  ${messages.map(({ role, message }) => role + ": " + message).join("\n")}$$`,
+  ${messages
+    .map(({ role, message }) => {
+      return role + ": " + message;
+    })
+    .join("\n")}$$`,
   );
 
   const documents = entries.map(
-    ({ content, id, createdAt, date, updatedAt }) =>
-      new Document({
+    ({ content, id, createdAt, date, updatedAt }) => {
+      return new Document({
         pageContent: content,
         metadata: { id, createdAt, "entry date": date, updatedAt },
-      }),
+      });
+    },
   );
 
   const store = await MemoryVectorStore.fromDocuments(
@@ -78,12 +85,18 @@ export async function chat(
   const { content } = await chat.invoke([
     new SystemMessage(
       `Respond using provided context. Context: ${context
-        .map(({ pageContent }) => pageContent)
+        .map(({ pageContent }) => {
+          return pageContent;
+        })
         .join("\n")}`,
     ),
-    ...messages.map(({ role, message }) =>
-      role === "ai" ? new AIMessage(message) : new HumanMessage(message),
-    ),
+    ...messages.map(({ role, message }) => {
+      if (role === "ai") {
+        return new AIMessage(message);
+      } else {
+        return new HumanMessage(message);
+      }
+    }),
   ]);
 
   return content.toString();

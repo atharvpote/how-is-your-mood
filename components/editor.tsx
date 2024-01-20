@@ -23,7 +23,9 @@ export default function Editor({
 }: Readonly<{ entry: Omit<Entry, "id"> }>) {
   const { id } = useParams();
 
-  if (!id || Array.isArray(id)) throw new Error("Entry ID is undefined");
+  if (!id || Array.isArray(id)) {
+    throw new Error("Entry ID is undefined");
+  }
 
   const analysisContext = useContext(AnalysisContext);
   const entryDateContext = useContext(EntryDateContext);
@@ -66,10 +68,13 @@ export default function Editor({
   useEffect(() => {
     isTouchDevice() ? setTouchDevice(true) : setTouchDevice(false);
 
-    if (textarea.current)
-      if (textarea.current.scrollHeight > textarea.current.clientHeight)
+    if (textarea.current) {
+      if (textarea.current.scrollHeight > textarea.current.clientHeight) {
         setScroll(true);
-      else setScroll(false);
+      } else {
+        setScroll(false);
+      }
+    }
   }, []);
 
   useAutosave({
@@ -85,7 +90,7 @@ export default function Editor({
         if (match) {
           setAnalysis(match);
 
-          if (previous.current !== trimmedContent)
+          if (previous.current !== trimmedContent) {
             axios
               .put(`/api/entry/${id}/update-with-analysis`, {
                 content,
@@ -94,6 +99,7 @@ export default function Editor({
               .catch((error) => {
                 errorAlert(error);
               });
+          }
         } else {
           setLoading(true);
 

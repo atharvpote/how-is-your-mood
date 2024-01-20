@@ -54,8 +54,9 @@ export async function POST(request: NextRequest) {
   const { id } = evt.data;
   const eventType = evt.type;
 
-  if (eventType === "user.deleted")
+  if (eventType === "user.deleted") {
     await prisma.user.delete({ where: { clerkId: id } });
+  }
 
   return new Response("", { status: 201 });
 }

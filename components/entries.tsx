@@ -25,10 +25,12 @@ export default function Entries({
   const { data: updatedEntries, error } = useEntries();
 
   useEffect(() => {
-    if (updatedEntries) setEntries(updatedEntries);
+    if (updatedEntries) {
+      setEntries(updatedEntries);
+    }
   }, [updatedEntries]);
 
-  if (error)
+  if (error) {
     return (
       <HeightFull>
         <div>
@@ -36,6 +38,7 @@ export default function Entries({
         </div>
       </HeightFull>
     );
+  }
 
   return !entries.length ? (
     <HeightFull>

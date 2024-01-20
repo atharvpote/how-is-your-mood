@@ -9,8 +9,9 @@ export class ErrorBody {
   error?: unknown;
 
   constructor(error: unknown) {
-    if (error instanceof Error) this.message = error.message;
-    else {
+    if (error instanceof Error) {
+      this.message = error.message;
+    } else {
       this.message = "Unknown error";
       this.error = error;
     }

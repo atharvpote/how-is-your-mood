@@ -11,14 +11,17 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 export default function EntryDate() {
   const { id } = useParams();
 
-  if (!id || Array.isArray(id)) throw new Error("Entry ID is undefined");
+  if (!id || Array.isArray(id)) {
+    throw new Error("Entry ID is undefined");
+  }
 
   const entryDateContext = useContext(EntryDateContext);
 
-  if (!entryDateContext)
+  if (!entryDateContext) {
     throw new Error(
       "EntryDateContext must be used within EntryDateContextProvider",
     );
+  }
 
   const { date, setDate } = entryDateContext;
 

@@ -15,12 +15,13 @@ export default async function History() {
 
   let analyses: ChartAnalysis[] = [];
 
-  if (mostRecent)
+  if (mostRecent) {
     analyses = await fetchChatAnalysis(
       userId,
       startOfWeek(mostRecent.date),
       endOfWeek(mostRecent.date),
     );
+  }
 
   return (
     <>

@@ -10,7 +10,9 @@ import { errorAlert } from "@/utils/error";
 export default function DeleteEntry() {
   const { id } = useParams();
 
-  if (!id || Array.isArray(id)) throw new Error("Entry ID is undefined");
+  if (!id || Array.isArray(id)) {
+    throw new Error("Entry ID is undefined");
+  }
 
   const modal = useRef<HTMLDialogElement | null>(null);
   const loading = useRef<HTMLDialogElement | null>(null);
@@ -22,7 +24,9 @@ export default function DeleteEntry() {
       <button
         type="button"
         onClick={() => {
-          if (!modal.current) throw new Error("Dialog in null");
+          if (!modal.current) {
+            throw new Error("Dialog in null");
+          }
 
           modal.current.showModal();
         }}
@@ -46,7 +50,9 @@ export default function DeleteEntry() {
               <div className="flex gap-4">
                 <button
                   onClick={() => {
-                    if (!loading.current) throw new Error("Modal is null");
+                    if (!loading.current) {
+                      throw new Error("Modal is null");
+                    }
 
                     loading.current.showModal();
 
@@ -59,7 +65,9 @@ export default function DeleteEntry() {
                         errorAlert(error);
                       })
                       .finally(() => {
-                        if (!loading.current) throw new Error("Modal is null");
+                        if (!loading.current) {
+                          throw new Error("Modal is null");
+                        }
 
                         loading.current.close();
                       });

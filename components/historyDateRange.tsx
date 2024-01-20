@@ -23,7 +23,9 @@ export default function HistoryDateRange() {
         <DatePicker
           value={start}
           onChange={(start) => {
-            if (start) setStart(start);
+            if (start) {
+              setStart(start);
+            }
           }}
           format="dd/MM/yyyy"
         />
@@ -31,7 +33,9 @@ export default function HistoryDateRange() {
         <DatePicker
           value={end}
           onChange={(end) => {
-            if (end) setEnd(end);
+            if (end) {
+              setEnd(end);
+            }
           }}
           format="dd/MM/yyyy"
         />

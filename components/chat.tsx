@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { FaArrowUp } from "react-icons/fa";
@@ -12,14 +12,30 @@ export default function Chat() {
   const [userMessage, setUserMessage] = useState("");
   const [processing, setProcessing] = useState(false);
 
+  const lastMessage = useRef<HTMLLIElement | null>(null);
+
+  useEffect(() => {
+    lastMessage.current?.scrollIntoView({ behavior: "smooth" });
+  }, [conversation]);
+
   return (
     <div className="flex h-[calc(var(--chat-page-remaining-space)-1rem)] flex-col rounded-lg bg-neutral p-4 sm:h-[calc(var(--chat-page-remaining-space-sm)-1rem)]">
       <ul className="h-full overflow-y-auto py-2">
-        {conversation.map(({ role, message, id }) => (
-          <li key={id}>
-            <Message message={message} role={role} />
-          </li>
-        ))}
+        {conversation.map(({ role, message, id }, index) => {
+          if (index === conversation.length - 1) {
+            return (
+              <li key={id} ref={lastMessage}>
+                <Message message={message} role={role} />
+              </li>
+            );
+          } else {
+            return (
+              <li key={id}>
+                <Message message={message} role={role} />
+              </li>
+            );
+          }
+        })}
       </ul>
       <form
         onSubmit={(event) => {
@@ -28,9 +44,14 @@ export default function Chat() {
           if (userMessage) {
             setProcessing(true);
 
+            const conversationWithNewMessage = [
+              ...conversation,
+              message("user", userMessage),
+            ];
+
             void axios
               .post<{ reply: string }>("/api/chat", {
-                conversation: [...conversation, message("user", userMessage)],
+                conversation: conversationWithNewMessage,
               })
               .then(({ data: { reply } }) => {
                 setConversation([
@@ -46,7 +67,7 @@ export default function Chat() {
                 setProcessing(false);
               });
 
-            setConversation([...conversation, message("user", userMessage)]);
+            setConversation(conversationWithNewMessage);
 
             setUserMessage("");
           }

@@ -79,7 +79,7 @@ export async function PUT(request: NextRequest, context: RequestContext) {
           sentiment: true,
         };
 
-        if (!content.trim())
+        if (!content.trim()) {
           analysis = await prisma.analysis.update({
             where,
             data: {
@@ -91,12 +91,13 @@ export async function PUT(request: NextRequest, context: RequestContext) {
             },
             select,
           });
-        else
+        } else {
           analysis = await prisma.analysis.update({
             where,
             data: await analyze(content),
             select,
           });
+        }
 
         return jsonResponse(200, { analysis });
       } catch (error) {

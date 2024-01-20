@@ -59,10 +59,12 @@ export default function HistoryChart({
   }, [setEnd, setStart, updatedMostRecent]);
 
   useEffect(() => {
-    if (updatedAnalyses) setAnalyses(updatedAnalyses);
+    if (updatedAnalyses) {
+      setAnalyses(updatedAnalyses);
+    }
   }, [updatedAnalyses]);
 
-  if (error)
+  if (error) {
     return (
       <HistoryHeightFull>
         <div>
@@ -70,6 +72,7 @@ export default function HistoryChart({
         </div>
       </HistoryHeightFull>
     );
+  }
 
   return (
     <>
