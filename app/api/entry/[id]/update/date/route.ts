@@ -3,20 +3,20 @@ import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 import { RequestContext } from "@/utils/types";
-import { contextValidator, zodRequestValidator } from "@/utils/validator";
+import { contextValidator, zodSafeParseValidator } from "@/utils/validator";
 import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function PUT(request: NextRequest, context: RequestContext) {
   try {
     const contextValidation = contextValidator(context);
 
-    const { id } = zodRequestValidator(contextValidation);
+    const { id } = zodSafeParseValidator(contextValidation);
 
     const requestValidation = z
       .object({ date: z.string().datetime() })
       .safeParse(await request.json());
 
-    const { date } = zodRequestValidator(requestValidation);
+    const { date } = zodSafeParseValidator(requestValidation);
 
     try {
       const userId = await getUserIdByClerkId();

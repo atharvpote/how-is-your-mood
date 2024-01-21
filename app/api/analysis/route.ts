@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { fetchChatAnalysis } from "@/utils/fetcher";
-import { zodRequestValidator } from "@/utils/validator";
+import { zodSafeParseValidator } from "@/utils/validator";
 import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function GET(request: NextRequest) {
@@ -12,8 +12,8 @@ export async function GET(request: NextRequest) {
   const endValidation = z.string().datetime().safeParse(params.get("end"));
 
   try {
-    const start = zodRequestValidator(startValidation);
-    const end = zodRequestValidator(endValidation);
+    const start = zodSafeParseValidator(startValidation);
+    const end = zodSafeParseValidator(endValidation);
 
     try {
       const userId = await getUserIdByClerkId();

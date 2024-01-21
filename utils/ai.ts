@@ -35,7 +35,7 @@ const parser = StructuredOutputParser.fromZodSchema(
   z.object({
     mood: z.string().describe("Mood of person who wrote journal"),
     subject: z.string().describe("Subject of journal"),
-    summery: z.string().describe("Short summary of journal."),
+    summery: z.string().describe("Summarize journal in least amount of words."),
     emoji: z.string().describe("Emoji that represents mood of journal"),
     sentiment: z
       .number()

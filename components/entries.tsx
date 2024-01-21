@@ -9,11 +9,9 @@ import { enIN } from "date-fns/locale";
 import { previewLength, deserializeDate } from "@/utils";
 import { ErrorComponent, GetStarted } from "./alerts";
 import { handleSWRError } from "@/utils/error";
-import {
-  EntryPreview,
-  DataWithSerializedDate,
-  ReadonlyPropsWithChildren,
-} from "@/utils/types";
+import { EntryPreview, ReadonlyPropsWithChildren } from "@/utils/types";
+import { z } from "zod";
+import { zodSafeParseValidator } from "@/utils/validator";
 
 export default function Entries({
   initialEntries,
@@ -104,11 +102,21 @@ function useEntries() {
       }
 
       try {
-        const {
-          data: { entries },
-        } = await axios.get<{
-          entries: DataWithSerializedDate<EntryPreview>[];
-        }>(url);
+        const { data } = await axios.get<unknown>(url);
+
+        const validation = z
+          .object({
+            entries: z
+              .object({
+                id: z.string(),
+                preview: z.string(),
+                date: z.string(),
+              })
+              .array(),
+          })
+          .safeParse(data);
+
+        const { entries } = zodSafeParseValidator(validation);
 
         return entries.map(deserializeDate);
       } catch (error) {

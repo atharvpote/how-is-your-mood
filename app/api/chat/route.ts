@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { chat } from "@/utils/ai";
 import { prisma } from "@/utils/db";
-import { zodRequestValidator } from "@/utils/validator";
+import { zodSafeParseValidator } from "@/utils/validator";
 import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function POST(request: NextRequest) {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       })
       .safeParse(await request.json());
 
-    const { conversation } = zodRequestValidator(validation);
+    const { conversation } = zodSafeParseValidator(validation);
 
     try {
       const userId = await getUserIdByClerkId();

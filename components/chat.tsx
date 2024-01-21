@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 import { FaArrowUp } from "react-icons/fa";
 import { errorAlert } from "@/utils/error";
 import { Message, Role } from "@/utils/types";
+import { z } from "zod";
+import { zodSafeParseValidator } from "@/utils/validator";
 
 export default function Chat() {
   const [conversation, setConversation] = useState<Message[]>([]);
@@ -50,10 +52,19 @@ export default function Chat() {
             ];
 
             void axios
-              .post<{ reply: string }>("/api/chat", {
+              .post<unknown>("/api/chat", {
                 conversation: conversationWithNewMessage,
               })
-              .then(({ data: { reply } }) => {
+              .then((data) => {
+                const validation = z
+                  .object({ reply: z.string() })
+                  .safeParse(data);
+
+                const { reply } = zodSafeParseValidator(validation);
+
+                return reply;
+              })
+              .then((reply) => {
                 setConversation([
                   ...conversation,
                   message("user", userMessage),

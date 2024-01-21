@@ -23,12 +23,8 @@ import { z } from "zod";
 import { HistoryDateRangeContext } from "@/contexts/history";
 import { deserializeDate, isValidDateRange } from "@/utils";
 import { handleSWRError } from "@/utils/error";
-import {
-  ChartAnalysis,
-  DataWithSerializedDate,
-  HistoryDateContextInterface,
-} from "@/utils/types";
-import { notNullValidator, zodRequestValidator } from "@/utils/validator";
+import { ChartAnalysis, HistoryDateContextInterface } from "@/utils/types";
+import { notNullValidator, zodSafeParseValidator } from "@/utils/validator";
 import { AlertError, ErrorComponent } from "./alerts";
 import { HistoryHeightFull } from "./layouts";
 
@@ -149,7 +145,7 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
       })
       .safeParse(data);
 
-    const { mood, date, emoji } = zodRequestValidator(validation);
+    const { mood, date, emoji } = zodSafeParseValidator(validation);
 
     return (
       <article className="prose rounded-lg bg-neutral px-4 py-2 text-neutral-content ">
@@ -183,11 +179,21 @@ function useMostRecent() {
       }
 
       try {
-        const {
-          data: { mostRecent },
-        } = await axios.get<{ mostRecent: string | null }>(url);
+        const { data } = await axios.get<unknown>(url);
 
-        return mostRecent === null ? mostRecent : new Date(mostRecent);
+        const validation = z
+          .object({
+            mostRecent: z.union([z.null(), z.string()]),
+          })
+          .safeParse(data);
+
+        const { mostRecent } = zodSafeParseValidator(validation);
+
+        if (mostRecent === null) {
+          return mostRecent;
+        } else {
+          new Date(mostRecent);
+        }
       } catch (error) {
         handleSWRError(error);
       }
@@ -211,11 +217,22 @@ function useAnalyses(start: Date, end: Date) {
       }
 
       try {
-        const {
-          data: { analyses },
-        } = await axios.get<{
-          analyses: DataWithSerializedDate<ChartAnalysis>[];
-        }>(url);
+        const { data } = await axios.get<unknown>(url);
+
+        const validation = z
+          .object({
+            analyses: z
+              .object({
+                date: z.string(),
+                emoji: z.string(),
+                mood: z.string(),
+                sentiment: z.number(),
+              })
+              .array(),
+          })
+          .safeParse(data);
+
+        const { analyses } = zodSafeParseValidator(validation);
 
         return analyses.map(deserializeDate);
       } catch (error) {

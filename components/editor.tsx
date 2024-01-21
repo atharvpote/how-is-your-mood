@@ -11,12 +11,12 @@ import { useParams } from "next/navigation";
 import { errorAlert, handleSWRError } from "@/utils/error";
 import {
   AnalysisContextInterface,
-  DataWithSerializedDate,
   Entry,
   EntryAnalysis,
   EntryDateContextInterface,
 } from "@/utils/types";
-import { notNullValidator } from "@/utils/validator";
+import { notNullValidator, zodSafeParseValidator } from "@/utils/validator";
+import { z } from "zod";
 
 export default function Editor({
   entry,
@@ -104,10 +104,27 @@ export default function Editor({
           setLoading(true);
 
           axios
-            .put<{ analysis: EntryAnalysis }>(`/api/entry/${id}`, {
+            .put<{ data: unknown }>(`/api/entry/${id}`, {
               content,
             })
-            .then(({ data: { analysis } }) => {
+            .then(({ data }) => {
+              const validation = z
+                .object({
+                  analysis: z.object({
+                    sentiment: z.number(),
+                    mood: z.string(),
+                    emoji: z.string(),
+                    subject: z.string(),
+                    summery: z.string(),
+                  }),
+                })
+                .safeParse(data);
+
+              const { analysis } = zodSafeParseValidator(validation);
+
+              return analysis;
+            })
+            .then((analysis) => {
               setAnalysis(analysis);
 
               cache.set(trimmedContent, analysis);
@@ -159,9 +176,23 @@ function useEntry(id: string) {
       }
 
       try {
-        const {
-          data: { date, content, analysis },
-        } = await axios.get<DataWithSerializedDate<UpdatedEntry>>(url);
+        const { data } = await axios.get<unknown>(url);
+
+        const validation = z
+          .object({
+            date: z.string(),
+            content: z.string(),
+            analysis: z.object({
+              sentiment: z.number(),
+              mood: z.string(),
+              emoji: z.string(),
+              subject: z.string(),
+              summery: z.string(),
+            }),
+          })
+          .safeParse(data);
+
+        const { date, content, analysis } = zodSafeParseValidator(validation);
 
         return deserializeDate({ date, content, analysis });
       } catch (error) {

@@ -84,14 +84,14 @@ dependencies:
     specifier: ^3.14.0
     version: 3.14.0(tailwindcss@3.4.1)
   langchain:
-    specifier: ^0.1.4
-    version: 0.1.4(axios@1.6.5)(encoding@0.1.13)
+    specifier: ^0.1.5
+    version: 0.1.5(axios@1.6.5)(encoding@0.1.13)
   next:
     specifier: ^14.1.0
     version: 14.1.0(react-dom@18.2.0)(react@18.2.0)
   openai:
-    specifier: ^4.24.7
-    version: 4.24.7(encoding@0.1.13)
+    specifier: ^4.25.0
+    version: 4.25.0(encoding@0.1.13)
   postcss:
     specifier: ^8.4.33
     version: 8.4.33
@@ -798,7 +798,7 @@ packages:
       '@langchain/core': 0.1.17
       '@langchain/openai': 0.0.12(encoding@0.1.13)
       flat: 5.0.2
-      langsmith: 0.0.61
+      langsmith: 0.0.62
       uuid: 9.0.1
       zod: 3.22.4
     transitivePeerDependencies:
@@ -813,7 +813,7 @@ packages:
       camelcase: 6.3.0
       decamelize: 1.2.0
       js-tiktoken: 1.0.8
-      langsmith: 0.0.61
+      langsmith: 0.0.62
       ml-distance: 4.0.1
       p-queue: 6.6.2
       p-retry: 4.6.2
@@ -828,7 +828,7 @@ packages:
     dependencies:
       '@langchain/core': 0.1.17
       js-tiktoken: 1.0.8
-      openai: 4.24.7(encoding@0.1.13)
+      openai: 4.25.0(encoding@0.1.13)
       zod: 3.22.4
       zod-to-json-schema: 3.20.3(zod@3.22.4)
     transitivePeerDependencies:
@@ -1905,7 +1905,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001579
-      electron-to-chromium: 1.4.639
+      electron-to-chromium: 1.4.640
       node-releases: 2.0.14
       update-browserslist-db: 1.0.13(browserslist@4.22.2)
     dev: false
@@ -2327,8 +2327,8 @@ packages:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
     dev: false
 
-  /electron-to-chromium@1.4.639:
-    resolution: {integrity: sha512-CkKf3ZUVZchr+zDpAlNLEEy2NJJ9T64ULWaDgy3THXXlPVPkLu3VOs9Bac44nebVtdwl2geSj6AxTtGDOxoXhg==}
+  /electron-to-chromium@1.4.640:
+    resolution: {integrity: sha512-z/6oZ/Muqk4BaE7P69bXhUhpJbUM9ZJeka43ZwxsDshKtePns4mhBlh8bU5+yrnOnz3fhG82XLzGUXazOmsWnA==}
     dev: false
 
   /emoji-regex@8.0.0:
@@ -3434,8 +3434,8 @@ packages:
       json-buffer: 3.0.1
     dev: false
 
-  /langchain@0.1.4(axios@1.6.5)(encoding@0.1.13):
-    resolution: {integrity: sha512-wgYt63JqwCDNrGBXHLD5javroVqCiP/+aYJEHPN+xgchEpcX881HcmhZGmZl8w4tsI0Q4Jy+3mcnV9EJlUD/2w==}
+  /langchain@0.1.5(axios@1.6.5)(encoding@0.1.13):
+    resolution: {integrity: sha512-ku/4cHV+CaAlaTegjsGhsbaDdtFQi6OQW10Gi6JJvbX093XRADLRtIYYR5XLm7eFt6ZgvHszdQ55nSQqAgfjAg==}
     engines: {node: '>=18'}
     peerDependencies:
       '@aws-sdk/client-s3': ^3.310.0
@@ -3607,7 +3607,7 @@ packages:
       js-yaml: 4.1.0
       jsonpointer: 5.0.1
       langchainhub: 0.0.6
-      langsmith: 0.0.61
+      langsmith: 0.0.62
       ml-distance: 4.0.1
       openapi-types: 12.1.3
       p-retry: 4.6.2
@@ -3676,8 +3676,8 @@ packages:
     resolution: {integrity: sha512-SW6105T+YP1cTe0yMf//7kyshCgvCTyFBMTgH2H3s9rTAR4e+78DA/BBrUL/Mt4Q5eMWui7iGuAYb3pgGsdQ9w==}
     dev: false
 
-  /langsmith@0.0.61:
-    resolution: {integrity: sha512-BYf9i0RkOCc4RdtIMGmWV4JBnXYsDYJXSaMuYhRyAEiV0MTw20o6BzP4Gpek1gFYovtC9fSRWqDu2D9xqvnX4w==}
+  /langsmith@0.0.62:
+    resolution: {integrity: sha512-OjjlNbxbfEUSgbBLA7JS7Lwg0M+oMZp4ZSwujR9TZBcSKvpv1f3lE2X9e9vTWe9huoUMlUAvwoaSWdDG6w6QLQ==}
     hasBin: true
     dependencies:
       '@types/uuid': 9.0.7
@@ -4050,8 +4050,8 @@ packages:
       wrappy: 1.0.2
     dev: false
 
-  /openai@4.24.7(encoding@0.1.13):
-    resolution: {integrity: sha512-JUesECWPtsDHO0TlZGb6q73hnAmXUdzj9NrwgZeL4lqlRt/kR1sWrXoy8LocxN/6uOtitywvcJqe0O1PLkG45g==}
+  /openai@4.25.0(encoding@0.1.13):
+    resolution: {integrity: sha512-qLMFOizjxKuDfQkBrczZPYo6XVL4bdcuz9MR11Q+M91kGcs8dQw+O90nRcC+qWuhaGphQkfXQJMn4cd7Yew3Kg==}
     hasBin: true
     dependencies:
       '@types/node': 18.19.8

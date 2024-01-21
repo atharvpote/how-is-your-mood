@@ -11,7 +11,7 @@ import { fetchEntryAndAnalysis } from "@/utils/fetcher";
 import {
   contextValidator,
   notNullValidator,
-  zodRequestValidator,
+  zodSafeParseValidator,
 } from "@/utils/validator";
 import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
@@ -19,7 +19,7 @@ export async function GET(_: never, context: RequestContext) {
   try {
     const validation = contextValidator(context);
 
-    const { id } = zodRequestValidator(validation);
+    const { id } = zodSafeParseValidator(validation);
 
     try {
       const userId = await getUserIdByClerkId();
@@ -48,13 +48,13 @@ export async function PUT(request: NextRequest, context: RequestContext) {
   try {
     const contextValidation = contextValidator(context);
 
-    const { id } = zodRequestValidator(contextValidation);
+    const { id } = zodSafeParseValidator(contextValidation);
 
     const requestValidation = z
       .object({ content: z.string() })
       .safeParse(await request.json());
 
-    const { content } = zodRequestValidator(requestValidation);
+    const { content } = zodSafeParseValidator(requestValidation);
 
     try {
       const userId = await getUserIdByClerkId();
@@ -115,7 +115,7 @@ export async function DELETE(_: never, context: RequestContext) {
   try {
     const validation = contextValidator(context);
 
-    const { id } = zodRequestValidator(validation);
+    const { id } = zodSafeParseValidator(validation);
 
     try {
       const userId = await getUserIdByClerkId();

@@ -11,13 +11,13 @@ import { RequestContext, EntryAnalysis } from "@/utils/types";
 import {
   contextValidator,
   notNullValidator,
-  zodRequestValidator,
+  zodSafeParseValidator,
 } from "@/utils/validator";
 
 export default async function EditorPage(context: Readonly<RequestContext>) {
   const validation = contextValidator(context);
 
-  const { id } = zodRequestValidator(validation);
+  const { id } = zodSafeParseValidator(validation);
 
   const userId = await getUserIdByClerkId();
 

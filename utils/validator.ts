@@ -5,7 +5,9 @@ export function contextValidator({ params }: RequestContext) {
   return z.object({ id: z.string().uuid() }).safeParse(params);
 }
 
-export function zodRequestValidator<T>(validation: SafeParseReturnType<T, T>) {
+export function zodSafeParseValidator<T>(
+  validation: SafeParseReturnType<T, T>,
+) {
   if (!validation.success) throw new Error(formatErrors(validation.error));
 
   return validation.data;
