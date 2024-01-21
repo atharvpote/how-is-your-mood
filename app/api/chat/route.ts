@@ -7,6 +7,8 @@ import { zodSafeParseValidator } from "@/utils/validator";
 import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function POST(request: NextRequest) {
+  const data: unknown = await request.json();
+
   try {
     const validation = z
       .object({
@@ -17,7 +19,7 @@ export async function POST(request: NextRequest) {
           })
           .array(),
       })
-      .safeParse(await request.json());
+      .safeParse(data);
 
     const { conversation } = zodSafeParseValidator(validation);
 

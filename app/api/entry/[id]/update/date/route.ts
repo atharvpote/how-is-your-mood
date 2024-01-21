@@ -7,6 +7,8 @@ import { contextValidator, zodSafeParseValidator } from "@/utils/validator";
 import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function PUT(request: NextRequest, context: RequestContext) {
+  const data: unknown = await request.json();
+
   try {
     const contextValidation = contextValidator(context);
 
@@ -14,7 +16,7 @@ export async function PUT(request: NextRequest, context: RequestContext) {
 
     const requestValidation = z
       .object({ date: z.string().datetime() })
-      .safeParse(await request.json());
+      .safeParse(data);
 
     const { date } = zodSafeParseValidator(requestValidation);
 

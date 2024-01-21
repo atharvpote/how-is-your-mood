@@ -45,14 +45,14 @@ export async function GET(_: never, context: RequestContext) {
 }
 
 export async function PUT(request: NextRequest, context: RequestContext) {
+  const data: unknown = await request.json();
+
   try {
     const contextValidation = contextValidator(context);
 
     const { id } = zodSafeParseValidator(contextValidation);
 
-    const requestValidation = z
-      .object({ content: z.string() })
-      .safeParse(await request.json());
+    const requestValidation = z.object({ content: z.string() }).safeParse(data);
 
     const { content } = zodSafeParseValidator(requestValidation);
 

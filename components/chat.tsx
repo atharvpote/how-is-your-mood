@@ -10,7 +10,13 @@ import { z } from "zod";
 import { zodSafeParseValidator } from "@/utils/validator";
 
 export default function Chat() {
-  const [conversation, setConversation] = useState<Message[]>([]);
+  const [conversation, setConversation] = useState<Message[]>([
+    {
+      id: "1",
+      message: "Hello, I'm your assistant. How may I help you?",
+      role: "ai",
+    },
+  ]);
   const [userMessage, setUserMessage] = useState("");
   const [processing, setProcessing] = useState(false);
 
@@ -55,7 +61,7 @@ export default function Chat() {
               .post<unknown>("/api/chat", {
                 conversation: conversationWithNewMessage,
               })
-              .then((data) => {
+              .then(({ data }) => {
                 const validation = z
                   .object({ reply: z.string() })
                   .safeParse(data);
@@ -78,7 +84,10 @@ export default function Chat() {
                 setProcessing(false);
               });
 
-            setConversation(conversationWithNewMessage);
+            setConversation([
+              ...conversationWithNewMessage,
+              message("system", "Processing"),
+            ]);
 
             setUserMessage("");
           }
@@ -116,13 +125,16 @@ export default function Chat() {
 
 function Message({ role, message }: Readonly<{ role: Role; message: string }>) {
   return (
-    <div className={`chat ${role === "ai" ? "chat-start" : "chat-end"}`}>
+    <div className={`chat ${role === "user" ? "chat-end" : "chat-start"}`}>
       <div
-        className={`chat-bubble ${
-          role === "ai" ? "chat-bubble-primary" : "chat-bubble-success"
+        className={`chat-bubble flex items-center gap-2 ${
+          role === "user" ? "chat-bubble-success" : "chat-bubble-primary"
         }`}
       >
-        {message}
+        <span>{message}</span>
+        {role === "system" ? (
+          <span className="loading loading-infinity py-4 text-neutral"></span>
+        ) : undefined}
       </div>
     </div>
   );

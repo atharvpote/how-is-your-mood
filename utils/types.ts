@@ -56,7 +56,7 @@ export type ReadonlyPropsWithChildren<P = unknown> = Readonly<
   PropsWithChildren<P>
 >;
 
-export type Role = "user" | "ai";
+export type Role = "user" | "ai" | "system";
 
 export interface Message {
   role: Role;
