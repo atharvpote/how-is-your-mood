@@ -28,12 +28,16 @@ export default function EntryDate() {
   const [touchDevice, setTouchDevice] = useState(false);
 
   useEffect(() => {
-    isTouchDevice() ? setTouchDevice(true) : setTouchDevice(false);
+    if (isTouchDevice()) {
+      setTouchDevice(true);
+    } else {
+      setTouchDevice(false);
+    }
   }, []);
 
   return (
     <div
-      className={!touchDevice ? "tooltip tooltip-right" : ""}
+      className={!touchDevice ? "tooltip tooltip-right" : undefined}
       data-tip="Date of Entry"
     >
       <span className="text-lg font-medium text-neutral-content">

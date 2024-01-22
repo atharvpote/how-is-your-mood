@@ -38,11 +38,15 @@ export default function Entries({
     );
   }
 
-  return !entries.length ? (
-    <HeightFull>
-      <GetStarted />
-    </HeightFull>
-  ) : (
+  if (!entries.length) {
+    return (
+      <HeightFull>
+        <GetStarted />
+      </HeightFull>
+    );
+  }
+
+  return (
     <div className="grid grid-cols-1 gap-4 py-8 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
       {entries.map((entry, index) => (
         <Card key={entry.id} entry={entry} prefetch={index < 4} />
@@ -74,11 +78,15 @@ function Card({
           <h3 className="capitalize text-neutral-content">{title}</h3>
         </div>
         <p className="overflow-hidden text-neutral-content/75">
-          {preview.trim() + (preview.length < previewLength ? "" : "...")}
+          {preview.trim() + ellipsis(preview, previewLength)}
         </p>
       </article>
     </Link>
   );
+}
+
+function ellipsis(str: string, length: number) {
+  if (str.length > length) return "...";
 }
 
 function HeightFull({ children }: ReadonlyPropsWithChildren) {

@@ -68,7 +68,7 @@ export default function Drawer({ children }: ReadonlyPropsWithChildren) {
           {/* Logout */}
           <div className="flex flex-none basis-12 items-center justify-center">
             <div
-              className={!isTouchDevice() ? "tooltip tooltip-left" : ""}
+              className={!isTouchDevice() ? "tooltip tooltip-left" : undefined}
               data-tip="Log Out"
             >
               <button
@@ -127,9 +127,7 @@ export default function Drawer({ children }: ReadonlyPropsWithChildren) {
                 <Link
                   href={href}
                   prefetch
-                  className={`btn btn-ghost flex items-center justify-center text-xl capitalize ${
-                    label === section ? "active" : ""
-                  }`}
+                  className={`btn btn-ghost flex items-center justify-center text-xl capitalize ${label === section ? "active" : undefined}`}
                   onClick={() => {
                     if (!input.current) {
                       throw new Error("Input checkbox is null");

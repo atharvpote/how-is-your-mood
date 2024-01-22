@@ -28,20 +28,34 @@ export default async function History() {
       <div className="prose h-12 px-4 pt-4 md:prose-lg xl:pl-8">
         <h2>History</h2>
       </div>
-      {mostRecent ? (
-        <HistoryContextProvider initialMostRecent={mostRecent.date}>
-          <div className="flex justify-center py-4">
-            <div className="flex flex-col gap-2">
-              <HistoryDateRange />
-            </div>
-          </div>
-          <HistoryChart initialAnalyses={analyses} />
-        </HistoryContextProvider>
-      ) : (
-        <HistoryHeightFull>
-          <GetStarted />
-        </HistoryHeightFull>
-      )}
+      <Content analyses={analyses} mostRecent={mostRecent} />
     </>
+  );
+}
+
+function Content({
+  mostRecent,
+  analyses,
+}: Readonly<{
+  mostRecent: { date: Date } | null;
+  analyses: ChartAnalysis[];
+}>) {
+  if (mostRecent) {
+    return (
+      <HistoryContextProvider initialMostRecent={mostRecent.date}>
+        <div className="flex justify-center py-4">
+          <div className="flex flex-col gap-2">
+            <HistoryDateRange />
+          </div>
+        </div>
+        <HistoryChart initialAnalyses={analyses} />
+      </HistoryContextProvider>
+    );
+  }
+
+  return (
+    <HistoryHeightFull>
+      <GetStarted />
+    </HistoryHeightFull>
   );
 }

@@ -70,65 +70,73 @@ export default function HistoryChart({
     );
   }
 
+  return <Content analyses={analyses} start={start} end={end} />;
+}
+
+function Content({
+  start,
+  end,
+  analyses,
+}: Readonly<{
+  start: Date;
+  end: Date;
+  analyses: ChartAnalysis[];
+}>) {
+  if (!isValidDateRange(start, end)) {
+    return (
+      <div className="flex h-[var(--history-page-remaining-space)] items-center justify-center sm:h-[calc(100svh-12.5rem)]">
+        <div>
+          <AlertError message="Invalid Date Range" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <>
-      {isValidDateRange(start, end) ? (
-        <div className="flex h-[var(--history-page-remaining-space)] items-center justify-center sm:h-[calc(100svh-12.5rem)]">
-          <div>
-            <AlertError message="Invalid Date Range" />
-          </div>
-        </div>
-      ) : (
-        <div className="h-[var(--history-page-remaining-space)] min-h-[30rem] pr-4 sm:h-[var(--history-page-remaining-space-sm)]">
-          <ResponsiveContainer width={"100%"} height={"100%"}>
-            <LineChart
-              width={300}
-              height={100}
-              data={analyses}
-              margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
-            >
-              <CartesianGrid strokeOpacity={0.25} />
-              <Line
-                dataKey="sentiment"
-                type="monotone"
-                stroke="#570df8"
-                strokeWidth={2}
-                activeDot={{ r: 8 }}
-                dot={{ r: 4 }}
-              />
-              <XAxis
-                dataKey="date"
-                tickMargin={8}
-                domain={[
-                  start.toLocaleDateString("en-us", {
-                    month: "short",
-                    day: "numeric",
-                  }),
-                  end.toLocaleDateString("en-us", {
-                    month: "short",
-                    day: "numeric",
-                  }),
-                ]}
-                tickFormatter={(label: string) =>
-                  new Date(label).toLocaleDateString("en-us", {
-                    month: "short",
-                    day: "numeric",
-                  })
-                }
-                minTickGap={16}
-              />
-              <YAxis dataKey="sentiment" domain={[-10, 10]} tickMargin={8} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                verticalAlign="top"
-                height={36}
-                formatter={() => "Mood"}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-    </>
+    <div className="h-[var(--history-page-remaining-space)] min-h-[30rem] pr-4 sm:h-[var(--history-page-remaining-space-sm)]">
+      <ResponsiveContainer width={"100%"} height={"100%"}>
+        <LineChart
+          width={300}
+          height={100}
+          data={analyses}
+          margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
+        >
+          <CartesianGrid strokeOpacity={0.25} />
+          <Line
+            dataKey="sentiment"
+            type="monotone"
+            stroke="#570df8"
+            strokeWidth={2}
+            activeDot={{ r: 8 }}
+            dot={{ r: 4 }}
+          />
+          <XAxis
+            dataKey="date"
+            tickMargin={8}
+            domain={[
+              start.toLocaleDateString("en-us", {
+                month: "short",
+                day: "numeric",
+              }),
+              end.toLocaleDateString("en-us", {
+                month: "short",
+                day: "numeric",
+              }),
+            ]}
+            tickFormatter={(label: string) =>
+              new Date(label).toLocaleDateString("en-us", {
+                month: "short",
+                day: "numeric",
+              })
+            }
+            minTickGap={16}
+          />
+          <YAxis dataKey="sentiment" domain={[-10, 10]} tickMargin={8} />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend verticalAlign="top" height={36} formatter={() => "Mood"} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 

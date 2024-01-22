@@ -127,14 +127,10 @@ function Message({ role, message }: Readonly<{ role: Role; message: string }>) {
   return (
     <div className={`chat ${role === "user" ? "chat-end" : "chat-start"}`}>
       <div
-        className={`chat-bubble flex items-center gap-2 ${
-          role === "user" ? "chat-bubble-success" : "chat-bubble-primary"
-        }`}
+        className={`chat-bubble flex items-center gap-2 ${role === "user" ? "chat-bubble-success" : "chat-bubble-primary"}`}
       >
         <span>{message}</span>
-        {role === "system" ? (
-          <span className="loading loading-infinity py-4 text-neutral"></span>
-        ) : undefined}
+        <LoadingSpinnerWhenProcessing role={role} />
       </div>
     </div>
   );
@@ -146,4 +142,9 @@ function message(role: Role, message: string) {
     role,
     message,
   };
+}
+
+function LoadingSpinnerWhenProcessing({ role }: Readonly<{ role: Role }>) {
+  if (role === "system")
+    return <span className="loading loading-infinity py-4 text-neutral"></span>;
 }

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ErrorComponent } from "@/components/alerts";
 import { ErrorBoundaryProps } from "@/utils/types";
 
-export default function Error({ error }: ErrorBoundaryProps) {
+export default function ErrorBoundary({ error }: ErrorBoundaryProps) {
   const router = useRouter();
 
   setTimeout(() => {

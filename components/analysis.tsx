@@ -35,11 +35,7 @@ export default function Analysis() {
     },
     {
       name: "Summery",
-      td: (
-        <td className="basis-full">
-          {summery[0] ? summery[0].toUpperCase() + summery.slice(1) : ""}
-        </td>
-      ),
+      td: <td className="basis-full">{capitalize(summery)}</td>,
     },
     {
       name: "Sentiment Score",
@@ -52,11 +48,15 @@ export default function Analysis() {
     },
   ] as const;
 
-  return loading ? (
-    <div className="flex h-full items-center justify-center">
-      <LoadingSpinner />
-    </div>
-  ) : (
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  return (
     <table className="table">
       <tbody>
         {table.map(({ name, td }) => (
@@ -70,4 +70,10 @@ export default function Analysis() {
       </tbody>
     </table>
   );
+}
+
+function capitalize(str: string) {
+  if (str[0]) return str[0].toUpperCase() + str.slice(1);
+
+  return str;
 }

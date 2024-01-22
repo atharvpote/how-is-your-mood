@@ -66,7 +66,11 @@ export default function Editor({
   }, [setAnalysis, setDate, updatedEntry]);
 
   useEffect(() => {
-    isTouchDevice() ? setTouchDevice(true) : setTouchDevice(false);
+    if (isTouchDevice()) {
+      setTouchDevice(true);
+    } else {
+      setTouchDevice(false);
+    }
 
     if (textarea.current) {
       if (textarea.current.scrollHeight > textarea.current.clientHeight) {
@@ -147,11 +151,13 @@ export default function Editor({
       onChange={({ target: { value, clientHeight, scrollHeight } }) => {
         setContent(value);
 
-        scrollHeight > clientHeight ? setScroll(true) : setScroll(false);
+        if (scrollHeight > clientHeight) {
+          setScroll(true);
+        } else {
+          setScroll(false);
+        }
       }}
-      className={`textarea size-full resize-none rounded-lg bg-neutral px-6 py-4 text-base leading-loose text-neutral-content${
-        !touchDevice && scroll ? "rounded-r-none" : ""
-      }`}
+      className={`textarea size-full resize-none rounded-lg bg-neutral px-6 py-4 text-base leading-loose text-neutral-content ${!touchDevice && scroll ? "rounded-r-none" : undefined}`}
       ref={textarea}
     />
   );

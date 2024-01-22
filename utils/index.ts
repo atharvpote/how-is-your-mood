@@ -9,9 +9,11 @@ export function showPicker(element: RefObject<HTMLInputElement | null>) {
 }
 
 export function isTouchDevice() {
-  return typeof window !== "undefined"
-    ? window.matchMedia("(any-pointer: coarse)").matches
-    : false;
+  if (typeof window !== "undefined") {
+    return window.matchMedia("(any-pointer: coarse)").matches;
+  }
+
+  return false;
 }
 
 export function contentPreview(content: string) {
@@ -19,7 +21,7 @@ export function contentPreview(content: string) {
 }
 
 export function isValidDateRange(start: Date, end: Date) {
-  return start.getTime() >= end.getTime();
+  return start.getTime() <= end.getTime();
 }
 
 export function deserializeDate<T extends { date: string }>(data: T) {
