@@ -18,13 +18,17 @@ export async function GET(request: NextRequest) {
     try {
       const userId = await getUserIdByClerkId();
 
-      const analyses = await fetchChatAnalysis(
-        userId,
-        new Date(start),
-        new Date(end),
-      );
+      try {
+        const analyses = await fetchChatAnalysis(
+          userId,
+          new Date(start),
+          new Date(end),
+        );
 
-      return jsonResponse(200, { analyses });
+        return jsonResponse(200, { analyses });
+      } catch (error) {
+        return jsonResponse(500, new ErrorBody(error));
+      }
     } catch (error) {
       return jsonResponse(401, new ErrorBody(error));
     }

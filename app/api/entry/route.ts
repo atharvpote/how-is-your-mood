@@ -7,28 +7,32 @@ export async function POST() {
   try {
     const userId = await getUserIdByClerkId();
 
-    const { id, date } = await prisma.journal.create({
-      data: {
-        userId,
-        content: "",
-        date: normalizeTime(new Date()),
-      },
-      select: { id: true, date: true },
-    });
+    try {
+      const { id, date } = await prisma.journal.create({
+        data: {
+          userId,
+          content: "",
+          date: normalizeTime(new Date()),
+        },
+        select: { id: true, date: true },
+      });
 
-    await prisma.analysis.create({
-      data: {
-        emoji: "",
-        mood: "",
-        subject: "",
-        summery: "",
-        entryId: id,
-        date,
-        userId,
-      },
-    });
+      await prisma.analysis.create({
+        data: {
+          emoji: "",
+          mood: "",
+          subject: "",
+          summery: "",
+          entryId: id,
+          date,
+          userId,
+        },
+      });
 
-    return jsonResponse(201, { id });
+      return jsonResponse(201, { id });
+    } catch (error) {
+      return jsonResponse(500, new ErrorBody(error));
+    }
   } catch (error) {
     return jsonResponse(401, new ErrorBody(error));
   }
