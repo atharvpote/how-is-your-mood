@@ -1,17 +1,6 @@
-import { RefObject } from "react";
-
-export function showPicker(element: RefObject<HTMLInputElement | null>) {
-  return () => {
-    if (!element.current) throw new Error("Input date is null");
-
-    element.current.showPicker();
-  };
-}
-
 export function isTouchDevice() {
-  if (typeof window !== "undefined") {
+  if (typeof window !== "undefined")
     return window.matchMedia("(any-pointer: coarse)").matches;
-  }
 
   return false;
 }

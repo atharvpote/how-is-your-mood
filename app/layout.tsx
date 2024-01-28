@@ -5,6 +5,7 @@ import { shadesOfPurple } from "@clerk/themes";
 import { ReadonlyPropsWithChildren } from "@/utils/types";
 
 import "./globals.css";
+import { ReactQueryContext } from "@/contexts/reactQuery";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,9 +18,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: ReadonlyPropsWithChildren) {
   return (
     <ClerkProvider appearance={{ baseTheme: shadesOfPurple }}>
-      <html lang="en">
-        <body className={`bg-base-100 ${inter.className}`}>{children}</body>
-      </html>
+      <ReactQueryContext>
+        <html lang="en">
+          <body className={`bg-base-100 ${inter.className}`}>{children}</body>
+        </html>
+      </ReactQueryContext>
     </ClerkProvider>
   );
 }

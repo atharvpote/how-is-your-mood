@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import useSWR from "swr";
-import axios, { AxiosError } from "axios";
+import axios, { isAxiosError } from "axios";
 import { formatRelative } from "date-fns";
 import { enIN } from "date-fns/locale";
 import { previewLength, deserializeDate } from "@/utils";
 import { ErrorComponent, GetStarted } from "./alerts";
-import { handleSWRError } from "@/utils/error";
+import { handleAxiosError } from "@/utils/error";
 import { EntryPreview, ReadonlyPropsWithChildren } from "@/utils/types";
 import { z } from "zod";
 import { zodSafeParseValidator } from "@/utils/validator";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Entries({
   initialEntries,
@@ -20,31 +20,27 @@ export default function Entries({
 }>) {
   const [entries, setEntries] = useState(initialEntries);
 
-  const { data: updatedEntries, error } = useEntries();
+  const { data: updatedEntries, error: updatedEntriesError } = useEntries();
 
   useEffect(() => {
-    if (updatedEntries) {
-      setEntries(updatedEntries);
-    }
+    if (updatedEntries) setEntries(updatedEntries);
   }, [updatedEntries]);
 
-  if (error) {
+  if (updatedEntriesError)
     return (
       <HeightFull>
         <div>
-          <ErrorComponent error={error} />
+          <ErrorComponent error={updatedEntriesError} />
         </div>
       </HeightFull>
     );
-  }
 
-  if (!entries.length) {
+  if (!entries.length)
     return (
       <HeightFull>
         <GetStarted />
       </HeightFull>
     );
-  }
 
   return (
     <div className="grid grid-cols-1 gap-4 py-8 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
@@ -85,10 +81,6 @@ function Card({
   );
 }
 
-function ellipsis(str: string, length: number) {
-  if (str.length > length) return "...";
-}
-
 function HeightFull({ children }: ReadonlyPropsWithChildren) {
   return (
     <div className="flex h-[var(--journal-page-remaining-space)] items-center justify-center sm:h-[--journal-page-remaining-space-sm]">
@@ -97,20 +89,20 @@ function HeightFull({ children }: ReadonlyPropsWithChildren) {
   );
 }
 
-let firstLoad = true;
+let useInitialEntries = true;
 
 function useEntries() {
-  return useSWR<EntryPreview[] | undefined, AxiosError>(
-    "/api/entries",
-    async (url: string) => {
-      if (firstLoad) {
-        firstLoad = false;
+  return useQuery({
+    queryKey: ["entries"],
+    queryFn: async () => {
+      if (useInitialEntries) {
+        useInitialEntries = false;
 
-        return undefined;
+        return null;
       }
 
       try {
-        const { data } = await axios.get<unknown>(url);
+        const { data } = await axios.get<unknown>("/api/entries");
 
         const validation = z
           .object({
@@ -128,8 +120,13 @@ function useEntries() {
 
         return entries.map(deserializeDate);
       } catch (error) {
-        handleSWRError(error);
+        if (isAxiosError(error)) handleAxiosError(error);
+        else throw new Error(`Unknown Error: ${Object(error)}`);
       }
     },
-  );
+  });
+}
+
+function ellipsis(str: string, length: number) {
+  return str.length >= length ? "..." : "";
 }

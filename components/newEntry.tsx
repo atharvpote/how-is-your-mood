@@ -17,9 +17,7 @@ export default function NewEntry() {
       <button
         aria-label="new entry"
         onClick={() => {
-          if (!loading.current) {
-            throw new Error("Modal is null");
-          }
+          if (!loading.current) throw new Error("Modal is null");
 
           loading.current.showModal();
 
@@ -32,9 +30,7 @@ export default function NewEntry() {
               errorAlert(error);
             })
             .finally(() => {
-              if (!loading.current) {
-                throw new Error("Modal is null");
-              }
+              if (!loading.current) throw new Error("Modal is null");
 
               loading.current.close();
             });

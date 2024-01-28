@@ -1,24 +1,15 @@
 "use client";
 
-import { useContext } from "react";
-import { AnalysisContext } from "@/contexts/analysis";
 import { LoadingSpinner } from "./loading";
-import { AnalysisContextInterface } from "@/utils/types";
-import { notNullValidator } from "@/utils/validator";
+import { EntryAnalysis } from "@/utils/types";
 
-export default function Analysis() {
-  const context = useContext(AnalysisContext);
-
-  notNullValidator<AnalysisContextInterface>(
-    context,
-    "AnalysisContext must be used within AnalysisContextProvider",
-  );
-
-  const {
-    analysis: { emoji, mood, sentiment, subject, summery },
-    loading,
-  } = context;
-
+export default function Analysis({
+  analysis: { emoji, mood, sentiment, subject, summery },
+  loading,
+}: Readonly<{
+  analysis: EntryAnalysis;
+  loading: boolean;
+}>) {
   const table = [
     {
       name: "Mood",
@@ -48,13 +39,12 @@ export default function Analysis() {
     },
   ] as const;
 
-  if (loading) {
+  if (loading)
     return (
       <div className="flex h-full items-center justify-center">
         <LoadingSpinner />
       </div>
     );
-  }
 
   return (
     <table className="table">
@@ -73,7 +63,5 @@ export default function Analysis() {
 }
 
 function capitalize(str: string) {
-  if (str[0]) return str[0].toUpperCase() + str.slice(1);
-
-  return str;
+  return str[0] ? str[0].toUpperCase() + str.slice(1) : str;
 }

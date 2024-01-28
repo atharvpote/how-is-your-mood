@@ -1,84 +1,65 @@
 "use client";
 
-import { useContext, useEffect, useRef, useState } from "react";
-import useSWR from "swr";
-import axios, { AxiosError } from "axios";
-import { useAutosave } from "react-autosave";
-import { AnalysisContext } from "@/contexts/analysis";
-import { isTouchDevice, deserializeDate } from "@/utils";
-import { EntryDateContext } from "@/contexts/entryDate";
-import { useParams } from "next/navigation";
-import { errorAlert, handleSWRError } from "@/utils/error";
+import { useEffect, useRef, useState } from "react";
 import {
-  AnalysisContextInterface,
-  Entry,
-  EntryAnalysis,
-  EntryDateContextInterface,
-} from "@/utils/types";
-import { notNullValidator, zodSafeParseValidator } from "@/utils/validator";
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import axios from "axios";
+import { useAutosave } from "react-autosave";
 import { z } from "zod";
+import { isTouchDevice, deserializeDate } from "@/utils";
+import { errorAlert } from "@/utils/error";
+import { EntryAnalysis, EntryWithAnalysis } from "@/utils/types";
+import { zodSafeParseValidator } from "@/utils/validator";
+import EntryDate from "./entryDate";
+import Analysis from "./analysis";
+import DeleteEntry from "./deleteEntry";
 
 export default function Editor({
-  entry,
-}: Readonly<{ entry: Omit<Entry, "id"> }>) {
-  const { id } = useParams();
+  entry: {
+    analysis: initialAnalysis,
+    content: initialContent,
+    date: initialDate,
+    id,
+  },
+}: Readonly<{ entry: EntryWithAnalysis }>) {
+  const { data: updatedEntry } = useEntry(id);
 
-  if (!id || Array.isArray(id)) {
-    throw new Error("Entry ID is undefined");
-  }
-
-  const analysisContext = useContext(AnalysisContext);
-  const entryDateContext = useContext(EntryDateContext);
-
-  notNullValidator<AnalysisContextInterface>(
-    analysisContext,
-    "AnalysisContext must be used within AnalysisContextProvider",
+  const [content, setContent] = useState(
+    updatedEntry?.content ?? initialContent,
   );
 
-  notNullValidator<EntryDateContextInterface>(
-    entryDateContext,
-    "EntryDateContext must be used within EntryDateContextProvider",
+  const previous = useRef(content.trim());
+  const cache = useRef(
+    new Map([[content.trim(), updatedEntry?.analysis ?? initialAnalysis]]),
   );
+
+  const [date, setDate] = useState(updatedEntry?.date ?? initialDate);
+
+  const queryClient = useQueryClient();
 
   const {
-    cache: { current: cache },
-    setAnalysis,
-    setLoading,
-  } = analysisContext;
+    data: updatedAnalysis,
+    mutate: mutateEntry,
+    isPending,
+  } = useMutateEntry(queryClient);
+  const { mutate: mutateDate } = useMutateDate(queryClient);
 
-  const { setDate } = entryDateContext;
-
-  const [content, setContent] = useState(entry.content);
   const [touchDevice, setTouchDevice] = useState(false);
   const [scroll, setScroll] = useState(false);
 
   const textarea = useRef<HTMLTextAreaElement | null>(null);
-  const previous = useRef(content.trim());
-
-  const { data: updatedEntry } = useEntry(id);
 
   useEffect(() => {
-    if (updatedEntry) {
-      setAnalysis(updatedEntry.analysis);
-      setContent(updatedEntry.content);
-      setDate(updatedEntry.date);
-    }
-  }, [setAnalysis, setDate, updatedEntry]);
+    isTouchDevice() ? setTouchDevice(true) : setTouchDevice(false);
 
-  useEffect(() => {
-    if (isTouchDevice()) {
-      setTouchDevice(true);
-    } else {
-      setTouchDevice(false);
-    }
-
-    if (textarea.current) {
-      if (textarea.current.scrollHeight > textarea.current.clientHeight) {
-        setScroll(true);
-      } else {
-        setScroll(false);
-      }
-    }
+    if (textarea.current)
+      textarea.current.scrollHeight > textarea.current.clientHeight
+        ? setScroll(true)
+        : setScroll(false);
   }, []);
 
   useAutosave({
@@ -89,105 +70,116 @@ export default function Editor({
       if (previous.current !== trimmedContent) {
         previous.current = trimmedContent;
 
-        const match = cache.get(trimmedContent);
-
-        if (match) {
-          setAnalysis(match);
-
-          if (previous.current !== trimmedContent) {
-            axios
-              .put(`/api/entry/${id}/update-with-analysis`, {
-                content,
-                analysis: match,
-              })
-              .catch((error) => {
-                errorAlert(error);
-              });
-          }
-        } else {
-          setLoading(true);
-
-          axios
-            .put<{ data: unknown }>(`/api/entry/${id}`, {
-              content,
-            })
-            .then(({ data }) => {
-              const validation = z
-                .object({
-                  analysis: z.object({
-                    sentiment: z.number(),
-                    mood: z.string(),
-                    emoji: z.string(),
-                    subject: z.string(),
-                    summery: z.string(),
-                  }),
-                })
-                .safeParse(data);
-
-              const { analysis } = zodSafeParseValidator(validation);
-
-              return analysis;
-            })
-            .then((analysis) => {
-              setAnalysis(analysis);
-
-              cache.set(trimmedContent, analysis);
-            })
-            .catch((error) => {
-              errorAlert(error);
-            })
-            .finally(() => {
-              setLoading(false);
-            });
-        }
+        mutateEntry({
+          analysis:
+            updatedAnalysis ?? updatedEntry?.analysis ?? initialAnalysis,
+          cache: cache.current,
+          content,
+          id,
+          date,
+        });
       }
     },
   });
 
   return (
-    <textarea
-      value={content}
-      spellCheck={true}
-      onChange={({ target: { value, clientHeight, scrollHeight } }) => {
-        setContent(value);
+    <div className="px-4 md:flex md:h-[calc(100svh-var(--dashboard-nav-height-sm))] lg:pl-8">
+      <div className="h-[calc(100svh-11rem)] sm:h-[calc(100svh-7rem)] md:h-[calc(100%-1rem)] md:grow md:basis-full">
+        <div className="flex items-center justify-between py-4">
+          <EntryDate date={date} setDate={setDate} mutateDate={mutateDate} />
+          <DeleteEntry />
+        </div>
+        <div className="h-[calc(100%-5rem)]">
+          <textarea
+            value={content}
+            spellCheck={true}
+            onChange={({ target: { value, clientHeight, scrollHeight } }) => {
+              setContent(value);
 
-        if (scrollHeight > clientHeight) {
-          setScroll(true);
-        } else {
-          setScroll(false);
-        }
-      }}
-      className={`textarea size-full resize-none rounded-lg bg-neutral px-6 py-4 text-base leading-loose text-neutral-content ${!touchDevice && scroll ? "rounded-r-none" : undefined}`}
-      ref={textarea}
-    />
+              scrollHeight > clientHeight ? setScroll(true) : setScroll(false);
+            }}
+            className={`textarea size-full resize-none rounded-lg bg-neutral px-6 py-4 text-base leading-loose text-neutral-content ${!touchDevice && scroll ? "rounded-r-none" : undefined}`}
+            ref={textarea}
+          />
+        </div>
+      </div>
+      <div className="divider md:divider-horizontal md:grow-0" />
+      <section className="prose sm:mx-auto sm:max-w-2xl md:h-full md:grow-0 md:basis-96 md:self-start">
+        <h2 className="font-bold md:mt-6">Analysis</h2>
+        <div className="pb-4 md:relative md:h-[calc(100%-5.3rem)]">
+          <Analysis
+            analysis={
+              updatedAnalysis ?? updatedEntry?.analysis ?? initialAnalysis
+            }
+            loading={isPending}
+          />
+        </div>
+      </section>
+    </div>
   );
 }
 
-interface UpdatedEntry {
-  date: Date;
-  content: string;
-  analysis: EntryAnalysis;
-}
-
-let firstLoad = true;
+let useInitialEntry = true;
 
 function useEntry(id: string) {
-  return useSWR<UpdatedEntry | undefined, AxiosError>(
-    `/api/entry/${id}`,
-    async (url: string) => {
-      if (firstLoad) {
-        firstLoad = false;
+  return useQuery({
+    queryKey: ["entry", id],
+    queryFn: async () => {
+      if (useInitialEntry) {
+        useInitialEntry = false;
 
-        return undefined;
+        return null;
       }
 
-      try {
-        const { data } = await axios.get<unknown>(url);
+      const { data } = await axios.get<unknown>(`/api/entry/${id}`);
+
+      const validation = z
+        .object({
+          date: z.string(),
+          content: z.string(),
+          analysis: z.object({
+            sentiment: z.number(),
+            mood: z.string(),
+            emoji: z.string(),
+            subject: z.string(),
+            summery: z.string(),
+          }),
+        })
+        .safeParse(data);
+
+      const { date, content, analysis } = zodSafeParseValidator(validation);
+
+      return deserializeDate({ date, content, analysis });
+    },
+  });
+}
+
+function useMutateEntry(queryClient: QueryClient) {
+  return useMutation({
+    mutationFn: async ({
+      id,
+      content,
+      cache,
+    }: EntryWithAnalysis & {
+      cache: Map<string, EntryAnalysis>;
+    }) => {
+      if (cache.has(content)) {
+        const analysis = cache.get(content);
+
+        await axios.put(`/api/entry/${id}/update-with-analysis`, {
+          content,
+          analysis: cache.get(content),
+        });
+
+        return analysis;
+      } else {
+        const { data } = await axios.put<{ data: unknown }>(
+          `/api/entry/${id}`,
+          { content },
+        );
 
         const validation = z
           .object({
-            date: z.string(),
-            content: z.string(),
             analysis: z.object({
               sentiment: z.number(),
               mood: z.string(),
@@ -198,12 +190,36 @@ function useEntry(id: string) {
           })
           .safeParse(data);
 
-        const { date, content, analysis } = zodSafeParseValidator(validation);
+        const { analysis } = zodSafeParseValidator(validation);
 
-        return deserializeDate({ date, content, analysis });
-      } catch (error) {
-        handleSWRError(error);
+        return analysis;
       }
     },
-  );
+    onSuccess: (data, { id, content, date }) => {
+      queryClient.setQueryData(["entry", id], (oldData?: EntryWithAnalysis) =>
+        oldData
+          ? { ...oldData, content, analysis: data }
+          : { id, content, date, analysis: data },
+      );
+    },
+    onError: (error) => {
+      errorAlert(error);
+    },
+  });
+}
+
+function useMutateDate(queryClient: QueryClient) {
+  return useMutation({
+    mutationFn: async ({ id, date }: { id: string; date: Date }) => {
+      await axios.put(`/api/entry/${id}/update/date`, { date });
+
+      return date;
+    },
+    onSuccess: async (_, { id }) => {
+      await queryClient.invalidateQueries({ queryKey: ["entry", id] });
+    },
+    onError: (error) => {
+      errorAlert(error);
+    },
+  });
 }

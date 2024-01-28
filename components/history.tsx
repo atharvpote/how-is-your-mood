@@ -1,47 +1,42 @@
 "use client";
 
-import { useContext, useEffect, useState } from "react";
-import useSWR from "swr";
-import axios, { AxiosError } from "axios";
-import {
-  ResponsiveContainer,
-  Line,
-  LineChart,
-  XAxis,
-  Tooltip,
-  YAxis,
-  TooltipProps,
-  CartesianGrid,
-  Legend,
-} from "recharts";
-import {
-  NameType,
-  ValueType,
-} from "recharts/types/component/DefaultTooltipContent";
-import { endOfWeek, startOfWeek } from "date-fns";
-import { z } from "zod";
-import { HistoryDateRangeContext } from "@/contexts/history";
+import { startOfWeek, endOfWeek } from "date-fns";
+import { useEffect, useState } from "react";
+import { DatePicker } from "@mui/x-date-pickers";
+import { ChartAnalysis } from "@/utils/types";
 import { deserializeDate, isValidDateRange } from "@/utils";
-import { handleSWRError } from "@/utils/error";
-import { ChartAnalysis, HistoryDateContextInterface } from "@/utils/types";
-import { notNullValidator, zodSafeParseValidator } from "@/utils/validator";
+import { handleAxiosError } from "@/utils/error";
+import { zodSafeParseValidator } from "@/utils/validator";
+import { useQuery } from "@tanstack/react-query";
+import axios, { isAxiosError } from "axios";
+import { z } from "zod";
 import { AlertError, ErrorComponent } from "./alerts";
 import { HistoryHeightFull } from "./layouts";
+import {
+  ResponsiveContainer,
+  LineChart,
+  CartesianGrid,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  TooltipProps,
+} from "recharts";
+import {
+  ValueType,
+  NameType,
+} from "recharts/types/component/DefaultTooltipContent";
 
-export default function HistoryChart({
+export default function History({
+  initialMostRecent,
   initialAnalyses,
 }: Readonly<{
+  initialMostRecent: Date;
   initialAnalyses: ChartAnalysis[];
 }>) {
-  const historyDateRangeContext = useContext(HistoryDateRangeContext);
-
-  notNullValidator<HistoryDateContextInterface>(
-    historyDateRangeContext,
-    "HistoryContext must be used within HistoryContextProvider",
-  );
-
-  const { start, end, setStart, setEnd } = historyDateRangeContext;
-
+  const [start, setStart] = useState(startOfWeek(initialMostRecent));
+  const [end, setEnd] = useState(endOfWeek(initialMostRecent));
   const [analyses, setAnalyses] = useState(initialAnalyses);
 
   const { data: updatedMostRecent } = useMostRecent();
@@ -55,12 +50,52 @@ export default function HistoryChart({
   }, [setEnd, setStart, updatedMostRecent]);
 
   useEffect(() => {
-    if (updatedAnalyses) {
-      setAnalyses(updatedAnalyses);
-    }
+    if (updatedAnalyses) setAnalyses(updatedAnalyses);
   }, [updatedAnalyses]);
 
-  if (error) {
+  return (
+    <>
+      <div className="flex justify-center py-4">
+        <div className="flex flex-col gap-2">
+          <div className="form-control">
+            <div className="flex flex-col items-center gap-2 sm:flex-row">
+              <span>From</span>
+              <DatePicker
+                value={start}
+                onChange={(start) => {
+                  if (start) setStart(start);
+                }}
+                format="dd/MM/yyyy"
+              />
+              <span>To</span>
+              <DatePicker
+                value={end}
+                onChange={(end) => {
+                  if (end) setEnd(end);
+                }}
+                format="dd/MM/yyyy"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <HistoryChart analyses={analyses} error={error} start={start} end={end} />
+    </>
+  );
+}
+
+function HistoryChart({
+  analyses,
+  error,
+  start,
+  end,
+}: Readonly<{
+  analyses: ChartAnalysis[];
+  error: Error | null;
+  start: Date;
+  end: Date;
+}>) {
+  if (error)
     return (
       <HistoryHeightFull>
         <div>
@@ -68,21 +103,8 @@ export default function HistoryChart({
         </div>
       </HistoryHeightFull>
     );
-  }
 
-  return <Content analyses={analyses} start={start} end={end} />;
-}
-
-function Content({
-  start,
-  end,
-  analyses,
-}: Readonly<{
-  start: Date;
-  end: Date;
-  analyses: ChartAnalysis[];
-}>) {
-  if (!isValidDateRange(start, end)) {
+  if (!isValidDateRange(start, end))
     return (
       <div className="flex h-[var(--history-page-remaining-space)] items-center justify-center sm:h-[calc(100svh-12.5rem)]">
         <div>
@@ -90,7 +112,6 @@ function Content({
         </div>
       </div>
     );
-  }
 
   return (
     <div className="h-[var(--history-page-remaining-space)] min-h-[30rem] pr-4 sm:h-[var(--history-page-remaining-space-sm)]">
@@ -174,20 +195,20 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   return null;
 }
 
-let firstLoad = true;
+let useInitialMostRecent = true;
 
 function useMostRecent() {
-  return useSWR<(Date | null) | undefined, AxiosError>(
-    "/api/analysis/most-recent",
-    async (url: string) => {
-      if (firstLoad) {
-        firstLoad = false;
+  return useQuery({
+    queryKey: ["most-recent"],
+    queryFn: async () => {
+      if (useInitialMostRecent) {
+        useInitialMostRecent = false;
 
         return null;
       }
 
       try {
-        const { data } = await axios.get<unknown>(url);
+        const { data } = await axios.get<unknown>("/api/analysis/most-recent");
 
         const validation = z
           .object({
@@ -197,35 +218,38 @@ function useMostRecent() {
 
         const { mostRecent } = zodSafeParseValidator(validation);
 
-        if (mostRecent === null) {
-          return mostRecent;
-        } else {
-          new Date(mostRecent);
-        }
+        if (mostRecent === null) return mostRecent;
+
+        return new Date(mostRecent);
       } catch (error) {
-        handleSWRError(error);
+        if (isAxiosError(error)) handleAxiosError(error);
+        else throw new Error(`Unknown Error: ${Object(error)}`);
       }
     },
-  );
+  });
 }
 
+let useInitialAnalyses = true;
+
 function useAnalyses(start: Date, end: Date) {
-  const params = new URLSearchParams({
-    start: start.toISOString(),
-    end: end.toISOString(),
-  });
+  return useQuery({
+    queryKey: ["analyses-period", { start, end }],
+    queryFn: async () => {
+      if (useInitialAnalyses) {
+        useInitialAnalyses = false;
 
-  return useSWR<ChartAnalysis[] | undefined, AxiosError>(
-    `/api/analysis?${params.toString()}`,
-    async (url: string) => {
-      if (firstLoad) {
-        firstLoad = false;
-
-        return undefined;
+        return null;
       }
 
+      const params = new URLSearchParams({
+        start: start.toISOString(),
+        end: end.toISOString(),
+      });
+
       try {
-        const { data } = await axios.get<unknown>(url);
+        const { data } = await axios.get<unknown>(
+          `/api/analysis?${params.toString()}`,
+        );
 
         const validation = z
           .object({
@@ -244,8 +268,9 @@ function useAnalyses(start: Date, end: Date) {
 
         return analyses.map(deserializeDate);
       } catch (error) {
-        handleSWRError(error);
+        if (isAxiosError(error)) handleAxiosError(error);
+        else throw new Error(`Unknown Error: ${Object(error)}`);
       }
     },
-  );
+  });
 }

@@ -47,9 +47,7 @@ export async function chat(
   messages: Omit<Message, "id">[],
   entries: Journal[],
 ) {
-  if (!messages.length) {
-    throw new Error("Messages is null");
-  }
+  if (!messages.length) throw new Error("Messages is null");
 
   const chat = new ChatOpenAI({
     modelName: "gpt-3.5-turbo-1106",
@@ -90,13 +88,9 @@ export async function chat(
         })
         .join("\n")}`,
     ),
-    ...messages.map(({ role, message }) => {
-      if (role === "ai") {
-        return new AIMessage(message);
-      } else {
-        return new HumanMessage(message);
-      }
-    }),
+    ...messages.map(({ role, message }) =>
+      role === "ai" ? new AIMessage(message) : new HumanMessage(message),
+    ),
   ]);
 
   return content.toString();

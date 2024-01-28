@@ -1,38 +1,36 @@
 "use client";
 
-import { EntryDateContext } from "@/contexts/entryDate";
 import { isTouchDevice } from "@/utils";
-import { errorAlert } from "@/utils/error";
-import axios from "axios";
 import { useParams } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { SetState } from "@/utils/types";
+import { UseMutateFunction } from "@tanstack/react-query";
 
-export default function EntryDate() {
+export default function EntryDate({
+  date,
+  setDate,
+  mutateDate,
+}: Readonly<{
+  date: Date;
+  setDate: SetState<Date>;
+  mutateDate: UseMutateFunction<
+    Date,
+    Error,
+    {
+      id: string;
+      date: Date;
+    }
+  >;
+}>) {
   const { id } = useParams();
 
-  if (!id || Array.isArray(id)) {
-    throw new Error("Entry ID is undefined");
-  }
-
-  const entryDateContext = useContext(EntryDateContext);
-
-  if (!entryDateContext) {
-    throw new Error(
-      "EntryDateContext must be used within EntryDateContextProvider",
-    );
-  }
-
-  const { date, setDate } = entryDateContext;
+  if (!id || Array.isArray(id)) throw new Error("Entry ID is undefined");
 
   const [touchDevice, setTouchDevice] = useState(false);
 
   useEffect(() => {
-    if (isTouchDevice()) {
-      setTouchDevice(true);
-    } else {
-      setTouchDevice(false);
-    }
+    isTouchDevice() ? setTouchDevice(true) : setTouchDevice(false);
   }, []);
 
   return (
@@ -47,11 +45,7 @@ export default function EntryDate() {
             if (date) {
               setDate(date);
 
-              axios
-                .put(`/api/entry/${id}/update/date`, { date })
-                .catch((error) => {
-                  errorAlert(error);
-                });
+              mutateDate({ date, id });
             }
           }}
           format="dd/MM/yyyy"

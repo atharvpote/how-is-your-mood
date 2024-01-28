@@ -75,9 +75,7 @@ export default function Drawer({ children }: ReadonlyPropsWithChildren) {
                 aria-label="logout"
                 className="btn btn-square btn-ghost text-2xl"
                 onClick={() => {
-                  if (!dialog.current) {
-                    throw new Error("Dialog is null");
-                  }
+                  if (!dialog.current) throw new Error("Dialog is null");
 
                   dialog.current.showModal();
                 }}
@@ -129,9 +127,8 @@ export default function Drawer({ children }: ReadonlyPropsWithChildren) {
                   prefetch
                   className={`btn btn-ghost flex items-center justify-center text-xl capitalize ${label === section ? "active" : undefined}`}
                   onClick={() => {
-                    if (!input.current) {
+                    if (!input.current)
                       throw new Error("Input checkbox is null");
-                    }
 
                     input.current.click();
                   }}

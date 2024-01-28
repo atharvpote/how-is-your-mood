@@ -2,31 +2,40 @@
 
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { LoadingSpinner } from "./loading";
 import { errorAlert } from "@/utils/error";
+import {
+  QueryClient,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export default function DeleteEntry() {
   const { id } = useParams();
 
-  if (!id || Array.isArray(id)) {
-    throw new Error("Entry ID is undefined");
-  }
+  if (!id || Array.isArray(id)) throw new Error("Entry ID is undefined");
 
   const modal = useRef<HTMLDialogElement | null>(null);
   const loading = useRef<HTMLDialogElement | null>(null);
 
   const router = useRouter();
 
+  const { mutate: deleteEntry, isPending } = useDeleteEntry(useQueryClient());
+
+  useEffect(() => {
+    if (loading.current)
+      isPending ? loading.current.showModal() : loading.current.close();
+  }, [isPending]);
+
   return (
     <>
       <button
         type="button"
         onClick={() => {
-          if (!modal.current) {
-            throw new Error("Dialog in null");
-          }
+          if (!modal.current) throw new Error("Dialog in null");
 
           modal.current.showModal();
         }}
@@ -50,27 +59,7 @@ export default function DeleteEntry() {
               <div className="flex gap-4">
                 <button
                   onClick={() => {
-                    if (!loading.current) {
-                      throw new Error("Modal is null");
-                    }
-
-                    loading.current.showModal();
-
-                    axios
-                      .delete(`/api/entry/${id}`)
-                      .then(() => {
-                        router.replace("/journal/");
-                      })
-                      .catch((error) => {
-                        errorAlert(error);
-                      })
-                      .finally(() => {
-                        if (!loading.current) {
-                          throw new Error("Modal is null");
-                        }
-
-                        loading.current.close();
-                      });
+                    deleteEntry({ id, router });
                   }}
                   className="btn btn-outline btn-error hover:btn-error"
                 >
@@ -93,4 +82,28 @@ export default function DeleteEntry() {
       </dialog>
     </>
   );
+}
+
+function useDeleteEntry(queryClient: QueryClient) {
+  return useMutation({
+    mutationFn: async ({
+      id,
+      router,
+    }: {
+      id: string;
+      router: AppRouterInstance;
+    }) => {
+      return axios.delete(`/api/entry/${id}`).then(() => {
+        router.replace("/journal/");
+      });
+    },
+    onSuccess: async (_, { router, id }) => {
+      await queryClient.invalidateQueries({ queryKey: [`/api/entry/${id}`] });
+
+      router.replace("/journal/");
+    },
+    onError: (error) => {
+      errorAlert(error);
+    },
+  });
 }
