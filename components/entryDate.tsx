@@ -1,7 +1,6 @@
 "use client";
 
 import { isTouchDevice } from "@/utils";
-import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { SetState } from "@/utils/types";
@@ -11,6 +10,7 @@ export default function EntryDate({
   date,
   setDate,
   mutateDate,
+  id,
 }: Readonly<{
   date: Date;
   setDate: SetState<Date>;
@@ -22,11 +22,8 @@ export default function EntryDate({
       date: Date;
     }
   >;
+  id: string;
 }>) {
-  const { id } = useParams();
-
-  if (!id || Array.isArray(id)) throw new Error("Entry ID is undefined");
-
   const [touchDevice, setTouchDevice] = useState(false);
 
   useEffect(() => {

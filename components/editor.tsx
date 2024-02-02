@@ -45,7 +45,7 @@ export default function Editor({
     data: updatedAnalysis,
     mutate: mutateEntry,
     isPending,
-  } = useMutateEntry(queryClient);
+  } = useMutateEntry(queryClient, cache.current);
   const { mutate: mutateDate } = useMutateDate(queryClient);
 
   const [touchDevice, setTouchDevice] = useState(false);
@@ -73,7 +73,6 @@ export default function Editor({
         mutateEntry({
           analysis:
             updatedAnalysis ?? updatedEntry?.analysis ?? initialAnalysis,
-          cache: cache.current,
           content,
           id,
           date,
@@ -86,8 +85,13 @@ export default function Editor({
     <div className="px-4 md:flex md:h-[calc(100svh-var(--dashboard-nav-height-sm))] lg:pl-8">
       <div className="h-[calc(100svh-11rem)] sm:h-[calc(100svh-7rem)] md:h-[calc(100%-1rem)] md:grow md:basis-full">
         <div className="flex items-center justify-between py-4">
-          <EntryDate date={date} setDate={setDate} mutateDate={mutateDate} />
-          <DeleteEntry />
+          <EntryDate
+            date={date}
+            setDate={setDate}
+            mutateDate={mutateDate}
+            id={id}
+          />
+          <DeleteEntry id={id} />
         </div>
         <div className="h-[calc(100%-5rem)]">
           <textarea
@@ -154,15 +158,12 @@ function useEntry(id: string) {
   });
 }
 
-function useMutateEntry(queryClient: QueryClient) {
+function useMutateEntry(
+  queryClient: QueryClient,
+  cache: Map<string, EntryAnalysis>,
+) {
   return useMutation({
-    mutationFn: async ({
-      id,
-      content,
-      cache,
-    }: EntryWithAnalysis & {
-      cache: Map<string, EntryAnalysis>;
-    }) => {
+    mutationFn: async ({ id, content }: EntryWithAnalysis) => {
       if (cache.has(content)) {
         const analysis = cache.get(content);
 
@@ -196,11 +197,12 @@ function useMutateEntry(queryClient: QueryClient) {
       }
     },
     onSuccess: (data, { id, content, date }) => {
-      queryClient.setQueryData(["entry", id], (oldData?: EntryWithAnalysis) =>
-        oldData
-          ? { ...oldData, content, analysis: data }
-          : { id, content, date, analysis: data },
-      );
+      queryClient.setQueryData(["entry", id], () => ({
+        id,
+        content,
+        date,
+        analysis: data,
+      }));
     },
     onError: (error) => {
       errorAlert(error);

@@ -1,39 +1,39 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { AiOutlinePlus } from "react-icons/ai";
 import { errorAlert } from "@/utils/error";
 import { LoadingSpinner } from "./loading";
+import {
+  QueryClient,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { z } from "zod";
+import { zodSafeParseValidator } from "@/utils/validator";
 
 export default function NewEntry() {
   const loading = useRef<HTMLDialogElement | null>(null);
 
-  const router = useRouter();
+  const { mutate: createNewEntry, isPending } = useNewEntry(
+    useQueryClient(),
+    useRouter(),
+  );
+
+  useEffect(() => {
+    if (loading.current)
+      isPending ? loading.current.showModal() : loading.current.close();
+  }, [isPending]);
 
   return (
     <>
       <button
         aria-label="new entry"
         onClick={() => {
-          if (!loading.current) throw new Error("Modal is null");
-
-          loading.current.showModal();
-
-          axios
-            .post<{ id: string }>("/api/entry")
-            .then(({ data: { id } }) => {
-              router.push(`/journal/${id}`);
-            })
-            .catch((error) => {
-              errorAlert(error);
-            })
-            .finally(() => {
-              if (!loading.current) throw new Error("Modal is null");
-
-              loading.current.close();
-            });
+          createNewEntry();
         }}
         className="btn bg-neutral text-neutral-content hover:bg-neutral-800"
       >
@@ -50,4 +50,26 @@ export default function NewEntry() {
       </dialog>
     </>
   );
+}
+
+function useNewEntry(queryClient: QueryClient, router: AppRouterInstance) {
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await axios.post<unknown>("/api/entry");
+
+      const validation = z.object({ id: z.string() }).safeParse(data);
+
+      const { id } = zodSafeParseValidator(validation);
+
+      return id;
+    },
+    onSuccess: async (data) => {
+      router.push(`/journal/${data}`);
+
+      await queryClient.invalidateQueries({ queryKey: ["entries"] });
+    },
+    onError(error) {
+      errorAlert(error);
+    },
+  });
 }

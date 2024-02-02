@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useEffect, useRef } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
@@ -13,17 +13,14 @@ import {
 } from "@tanstack/react-query";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
-export default function DeleteEntry() {
-  const { id } = useParams();
-
-  if (!id || Array.isArray(id)) throw new Error("Entry ID is undefined");
-
+export default function DeleteEntry({ id }: { id: string }) {
   const modal = useRef<HTMLDialogElement | null>(null);
   const loading = useRef<HTMLDialogElement | null>(null);
 
-  const router = useRouter();
-
-  const { mutate: deleteEntry, isPending } = useDeleteEntry(useQueryClient());
+  const { mutate: deleteEntry, isPending } = useDeleteEntry(
+    useQueryClient(),
+    useRouter(),
+  );
 
   useEffect(() => {
     if (loading.current)
@@ -59,7 +56,7 @@ export default function DeleteEntry() {
               <div className="flex gap-4">
                 <button
                   onClick={() => {
-                    deleteEntry({ id, router });
+                    deleteEntry({ id });
                   }}
                   className="btn btn-outline btn-error hover:btn-error"
                 >
@@ -84,23 +81,16 @@ export default function DeleteEntry() {
   );
 }
 
-function useDeleteEntry(queryClient: QueryClient) {
+function useDeleteEntry(queryClient: QueryClient, router: AppRouterInstance) {
   return useMutation({
-    mutationFn: async ({
-      id,
-      router,
-    }: {
-      id: string;
-      router: AppRouterInstance;
-    }) => {
-      return axios.delete(`/api/entry/${id}`).then(() => {
-        router.replace("/journal/");
-      });
+    mutationFn: async ({ id }: { id: string }) => {
+      await axios.delete(`/api/entry/${id}`);
     },
-    onSuccess: async (_, { router, id }) => {
-      await queryClient.invalidateQueries({ queryKey: [`/api/entry/${id}`] });
-
+    onSuccess: async (_, { id }) => {
       router.replace("/journal/");
+
+      await queryClient.invalidateQueries({ queryKey: [`/api/entry/${id}`] });
+      await queryClient.invalidateQueries({ queryKey: ["entries"] });
     },
     onError: (error) => {
       errorAlert(error);
