@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ErrorComponent } from "@/components/alerts";
+import { ErrorComponent } from "@/components/server/alerts";
 import { ErrorBoundaryProps } from "@/utils/types";
 
 export default function ErrorBoundary({ error }: ErrorBoundaryProps) {

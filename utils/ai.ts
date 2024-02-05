@@ -24,7 +24,7 @@ export async function analyze(content: string) {
   );
 
   return PromptTemplate.fromTemplate(
-    "Analyze journal entry, follow instructions and format response to match format instructions.\n\nInstructions: {format_instructions}\n\nEntry: {entry}",
+    "Analyze journal entry and format response to match format instructions.\n\nInstructions: {format_instructions}\n\nEntry: {entry}",
   )
     .pipe(
       new OpenAI({
@@ -80,7 +80,7 @@ export async function chat(
     new OpenAIEmbeddings(),
   );
 
-  const documents = await store.similaritySearch(searchTerm.toString(), 1);
+  const documents = await store.similaritySearch(searchTerm.toString());
 
   const context = documents
     .map(({ pageContent, metadata }) => {
@@ -91,7 +91,7 @@ export async function chat(
     .join("\n");
 
   return PromptTemplate.fromTemplate(
-    "You're a helpful assistant. Use chat history and context to respond.\n\nChat history: {chat_history}\n\nCurrent message : {current_message}\n\nContext: {context}",
+    "You're a helpful assistant. Use chat history and context to respond to current message.\n\nChat history: {chat_history}\n\nCurrent message : {current_message}\n\nContext: {context}",
   )
     .pipe(model)
     .pipe(new BytesOutputParser())

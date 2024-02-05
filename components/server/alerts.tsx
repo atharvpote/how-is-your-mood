@@ -1,3 +1,5 @@
+import { errorMessage } from "@/utils/error";
+
 export function GetStarted() {
   return (
     <div className="p-4">
@@ -21,12 +23,10 @@ export function GetStarted() {
   );
 }
 
-export function ErrorComponent({
-  error: { message },
-}: Readonly<{ error: Error }>) {
+export function ErrorComponent({ error }: Readonly<{ error: Error }>) {
   return (
     <div className="p-4">
-      <AlertError message={message} />
+      <AlertError message={errorMessage(error)} />
     </div>
   );
 }

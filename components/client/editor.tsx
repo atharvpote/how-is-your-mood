@@ -11,42 +11,35 @@ import axios from "axios";
 import { useAutosave } from "react-autosave";
 import { z } from "zod";
 import { isTouchDevice, deserializeDate } from "@/utils";
-import { errorAlert } from "@/utils/error";
 import { EntryAnalysis, EntryWithAnalysis } from "@/utils/types";
-import { zodSafeParseValidator } from "@/utils/validator";
+import { parseValidatedData } from "@/utils/validator";
 import EntryDate from "./entryDate";
 import Analysis from "./analysis";
 import DeleteEntry from "./deleteEntry";
+import { ErrorAlert } from "./modal";
 
 export default function Editor({
-  entry: {
-    analysis: initialAnalysis,
-    content: initialContent,
-    date: initialDate,
-    id,
-  },
-}: Readonly<{ entry: EntryWithAnalysis }>) {
-  const { data: updatedEntry } = useEntry(id);
+  initialEntry,
+}: Readonly<{ initialEntry: EntryWithAnalysis }>) {
+  const { data: updatedEntry } = useEntry(initialEntry.id);
 
   const [content, setContent] = useState(
-    updatedEntry?.content ?? initialContent,
+    updatedEntry?.content ?? initialEntry.content,
   );
 
   const previous = useRef(content.trim());
   const cache = useRef(
-    new Map([[content.trim(), updatedEntry?.analysis ?? initialAnalysis]]),
+    new Map([
+      [content.trim(), updatedEntry?.analysis ?? initialEntry.analysis],
+    ]),
   );
 
-  const [date, setDate] = useState(updatedEntry?.date ?? initialDate);
+  const [date, setDate] = useState(updatedEntry?.date ?? initialEntry.date);
 
   const queryClient = useQueryClient();
 
-  const {
-    data: updatedAnalysis,
-    mutate: mutateEntry,
-    isPending,
-  } = useMutateEntry(queryClient, cache.current);
-  const { mutate: mutateDate } = useMutateDate(queryClient);
+  const entryMutation = useMutateEntry(queryClient, cache.current);
+  const dateMutation = useMutateDate(queryClient);
 
   const [touchDevice, setTouchDevice] = useState(false);
   const [scroll, setScroll] = useState(false);
@@ -70,11 +63,13 @@ export default function Editor({
       if (previous.current !== trimmedContent) {
         previous.current = trimmedContent;
 
-        mutateEntry({
+        entryMutation.mutate({
           analysis:
-            updatedAnalysis ?? updatedEntry?.analysis ?? initialAnalysis,
+            entryMutation.data ??
+            updatedEntry?.analysis ??
+            initialEntry.analysis,
           content,
-          id,
+          id: initialEntry.id,
           date,
         });
       }
@@ -82,16 +77,16 @@ export default function Editor({
   });
 
   return (
-    <div className="px-4 md:flex md:h-[calc(100svh-var(--dashboard-nav-height-sm))] lg:pl-8">
+    <div className="px-4 md:flex md:h-[calc(100svh-var(--dashboard-navbar-height-sm-breakpoint))] lg:pl-8">
       <div className="h-[calc(100svh-11rem)] sm:h-[calc(100svh-7rem)] md:h-[calc(100%-1rem)] md:grow md:basis-full">
         <div className="flex items-center justify-between py-4">
           <EntryDate
             date={date}
             setDate={setDate}
-            mutateDate={mutateDate}
-            id={id}
+            mutateDate={dateMutation.mutate}
+            id={initialEntry.id}
           />
-          <DeleteEntry id={id} />
+          <DeleteEntry id={initialEntry.id} />
         </div>
         <div className="h-[calc(100%-5rem)]">
           <textarea
@@ -102,7 +97,7 @@ export default function Editor({
 
               scrollHeight > clientHeight ? setScroll(true) : setScroll(false);
             }}
-            className={`textarea size-full resize-none rounded-lg bg-neutral px-6 py-4 text-base leading-loose text-neutral-content ${!touchDevice && scroll ? "rounded-r-none" : undefined}`}
+            className={`textarea size-full resize-none rounded-lg bg-neutral px-6 py-4 text-base leading-loose text-neutral-content ${!touchDevice && scroll ? "rounded-r-none" : ""}`}
             ref={textarea}
           />
         </div>
@@ -113,31 +108,34 @@ export default function Editor({
         <div className="pb-4 md:relative md:h-[calc(100%-5.3rem)]">
           <Analysis
             analysis={
-              updatedAnalysis ?? updatedEntry?.analysis ?? initialAnalysis
+              entryMutation.data ??
+              updatedEntry?.analysis ??
+              initialEntry.analysis
             }
-            loading={isPending}
+            loading={entryMutation.isPending}
           />
         </div>
       </section>
+      <ErrorAlert isError={entryMutation.isError} error={entryMutation.error} />
     </div>
   );
 }
 
-let useInitialEntry = true;
+let FIRST_RENDER = true;
 
 function useEntry(id: string) {
   return useQuery({
     queryKey: ["entry", id],
     queryFn: async () => {
-      if (useInitialEntry) {
-        useInitialEntry = false;
+      if (FIRST_RENDER) {
+        FIRST_RENDER = false;
 
         return null;
       }
 
       const { data } = await axios.get<unknown>(`/api/entry/${id}`);
 
-      const { date, content, analysis } = zodSafeParseValidator(
+      const { date, content, analysis } = parseValidatedData(
         z
           .object({
             date: z.string(),
@@ -179,7 +177,7 @@ function useMutateEntry(
           { content },
         );
 
-        const { analysis } = zodSafeParseValidator(
+        const { analysis } = parseValidatedData(
           z
             .object({
               analysis: z.object({
@@ -204,9 +202,6 @@ function useMutateEntry(
         analysis: data,
       }));
     },
-    onError: (error) => {
-      errorAlert(error);
-    },
   });
 }
 
@@ -219,9 +214,6 @@ function useMutateDate(queryClient: QueryClient) {
     },
     onSuccess: async (_, { id }) => {
       await queryClient.invalidateQueries({ queryKey: ["entry", id] });
-    },
-    onError: (error) => {
-      errorAlert(error);
     },
   });
 }

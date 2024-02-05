@@ -6,7 +6,7 @@ export function isTouchDevice() {
 }
 
 export function contentPreview(content: string) {
-  return content.substring(0, previewLength);
+  return content.substring(0, PREVIEW_LENGTH);
 }
 
 export function isValidDateRange(start: Date, end: Date) {
@@ -17,4 +17,4 @@ export function deserializeDate<T extends { date: string }>(data: T) {
   return { ...data, date: new Date(data.date) };
 }
 
-export const previewLength = 100;
+export const PREVIEW_LENGTH = 100;

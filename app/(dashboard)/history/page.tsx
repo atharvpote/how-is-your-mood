@@ -1,6 +1,6 @@
-import History from "@/components/history";
-import { GetStarted } from "@/components/alerts";
-import { HistoryHeightFull } from "@/components/layouts";
+import History from "@/components/client/history";
+import { GetStarted } from "@/components/server/alerts";
+import { HistoryHeightFull } from "@/components/server/layouts";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { fetchChatAnalysis, fetchMostRecentEntry } from "@/utils/fetcher";
 import { endOfWeek, startOfWeek } from "date-fns";

@@ -4,39 +4,50 @@
 
 @layer base {
   :root {
-    --global-nav-height: 4rem;
+    --home-navbar-height: 4rem;
 
-    --dashboard-nav-height: 8rem;
-    --dashboard-nav-height-sm: 4rem;
+    --dashboard-navbar-height: 8rem;
+    --dashboard-navbar-height-sm-breakpoint: 4rem;
 
     --journal-header-height: 4rem;
 
     --journal-page-remaining-space: calc(
-      100svh - (var(--dashboard-nav-height) + var(--journal-header-height))
+      100svh - (var(--dashboard-navbar-height) + var(--journal-header-height))
     );
-    --journal-page-remaining-space-sm: calc(
-      100svh - (var(--dashboard-nav-height-sm) + var(--journal-header-height))
+    --journal-page-remaining-space-sm-breakpoint: calc(
+      100svh -
+        (
+          var(--dashboard-navbar-height-sm-breakpoint) +
+            var(--journal-header-height)
+        )
     );
 
     --chat-header-height: 4rem;
-    --chat-header-height-sm: 4.5rem;
+    --chat-header-height-sm-breakpoint: 4.5rem;
 
     --chat-page-remaining-space: calc(
-      100svh - (var(--dashboard-nav-height) + var(--chat-header-height))
+      100svh - (var(--dashboard-navbar-height) + var(--chat-header-height))
     );
     --chat-page-remaining-space-sm: calc(
-      100svh - (var(--dashboard-nav-height-sm) + var(--chat-header-height-sm))
+      100svh -
+        (
+          var(--dashboard-navbar-height-sm-breakpoint) +
+            var(--chat-header-height-sm-breakpoint)
+        )
     );
 
     --history-header-height: 16.5rem;
-    --history-header-height-sm: 8.5rem;
+    --history-header-height-sm-breakpoint: 8.5rem;
 
     --history-page-remaining-space: calc(
-      100svh - (var(--dashboard-nav-height) + var(--history-header-height))
+      100svh - (var(--dashboard-navbar-height) + var(--history-header-height))
     );
     --history-page-remaining-space-sm: calc(
       100svh -
-        (var(--dashboard-nav-height-sm) + var(--history-header-height-sm))
+        (
+          var(--dashboard-navbar-height-sm-breakpoint) +
+            var(--history-header-height-sm-breakpoint)
+        )
     );
   }
 }

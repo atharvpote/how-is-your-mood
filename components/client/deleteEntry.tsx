@@ -4,27 +4,28 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useEffect, useRef } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
-import { LoadingSpinner } from "./loading";
-import { errorAlert } from "@/utils/error";
+import { LoadingSpinner } from "../server/loading";
 import {
   QueryClient,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { ErrorAlert } from "./modal";
 
 export default function DeleteEntry({ id }: Readonly<{ id: string }>) {
   const modal = useRef<HTMLDialogElement | null>(null);
   const loading = useRef<HTMLDialogElement | null>(null);
 
-  const { mutate: deleteEntry, isPending } = useDeleteEntry(
-    useQueryClient(),
-    useRouter(),
-  );
+  const {
+    mutate: deleteEntry,
+    isPending,
+    isError,
+    error,
+  } = useDeleteEntry(useQueryClient(), useRouter());
 
   useEffect(() => {
-    if (loading.current)
-      isPending ? loading.current.showModal() : loading.current.close();
+    isPending ? loading.current?.showModal() : loading.current?.close();
   }, [isPending]);
 
   return (
@@ -77,6 +78,7 @@ export default function DeleteEntry({ id }: Readonly<{ id: string }>) {
           <button>close</button>
         </form>
       </dialog>
+      <ErrorAlert isError={isError} error={error} />
     </>
   );
 }
@@ -91,9 +93,6 @@ function useDeleteEntry(queryClient: QueryClient, router: AppRouterInstance) {
 
       await queryClient.invalidateQueries({ queryKey: [`/api/entry/${id}`] });
       await queryClient.invalidateQueries({ queryKey: ["entries"] });
-    },
-    onError: (error) => {
-      errorAlert(error);
     },
   });
 }

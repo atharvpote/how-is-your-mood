@@ -1,40 +1,26 @@
-import { AxiosError, isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { z } from "zod";
 
-export function errorAlert(error: unknown) {
-  if (isAxiosError(error))
+export function errorMessage(error: unknown) {
+  if (process.env.NODE_ENV === "production")
+    return isAxiosError(error) && error.request
+      ? "You're offline"
+      : "Something went wrong, please try again later.";
+  else if (isAxiosError(error))
     if (error.response) {
-      const { status } = error.response;
-      const data: unknown = error.response.data;
+      const errorData: unknown = error.response.data;
 
-      const validation = z.object({ message: z.string() }).safeParse(data);
+      const validation = z.object({ message: z.string() }).safeParse(errorData);
 
-      validation.success
-        ? alert(`${status}: ${validation.data.message}`)
-        : console.error("Unknown error", data);
-    } else if (error.request) alert("You're offline");
-    else alert(error.message);
-  else {
-    alert("Unknown error");
-
-    console.error(error);
-  }
+      return validation.success
+        ? `${error.response.status}: ${validation.data.message}`
+        : `"Unknown error", ${JSON.stringify(Object(errorData))}`;
+    } else if (error.request) {
+      return "You're offline";
+    } else {
+      return error.message;
+    }
+  else return `"Unknown error", ${JSON.stringify(Object(error))}`;
 }
 
-export function handleAxiosError(error: AxiosError) {
-  if (error.response) {
-    const { status, data } = error.response;
-
-    const validation = z.object({ message: z.string() }).safeParse(data);
-
-    if (validation.success)
-      throw new Error(`${status}: ${validation.data.message}`);
-
-    throw new Error(`Unknown error: ${Object(data)}`);
-  } else if (error.request) throw new Error("You're offline");
-  else throw new Error(error.message);
-}
-
-export const analysisNotFound = "NotFoundError: No Analysis found.";
-
-
+export const ANALYSIS_NOT_FOUND = "NotFoundError: No Analysis found.";

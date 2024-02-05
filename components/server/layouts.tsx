@@ -7,3 +7,11 @@ export function HistoryHeightFull({ children }: ReadonlyPropsWithChildren) {
     </div>
   );
 }
+
+export function JournalFullHeight({ children }: ReadonlyPropsWithChildren) {
+  return (
+    <div className="flex h-[var(--journal-page-remaining-space)] items-center justify-center sm:h-[--journal-page-remaining-space-sm-breakpoint]">
+      {children}
+    </div>
+  );
+}

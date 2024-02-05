@@ -10,7 +10,7 @@ export default function SignLayout({ children }: ReadonlyPropsWithChildren) {
           <AiOutlineArrowLeft /> Back
         </Link>
       </nav>
-      <div className="flex min-h-[calc(100svh-var(--global-nav-height))] items-center justify-center">
+      <div className="flex min-h-[calc(100svh-var(--home-navbar-height))] items-center justify-center">
         {children}
       </div>
     </div>

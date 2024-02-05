@@ -32,7 +32,7 @@ export default function EntryDate({
 
   return (
     <div
-      className={!touchDevice ? "tooltip tooltip-right" : undefined}
+      className={!touchDevice ? "tooltip tooltip-right" : ""}
       data-tip="Date of Entry"
     >
       <span className="text-lg font-medium text-neutral-content">

@@ -1,7 +1,6 @@
 "use client";
 
 import { FaArrowUp } from "react-icons/fa";
-import { Role } from "@/utils/types";
 import { useChat } from "ai/react";
 
 export default function Chat() {
@@ -13,7 +12,16 @@ export default function Chat() {
     <div className="flex h-[calc(var(--chat-page-remaining-space)-1rem)] flex-col rounded-lg bg-neutral p-4 sm:h-[calc(var(--chat-page-remaining-space-sm)-1rem)]">
       <ul className="h-full overflow-y-auto py-2">
         {messages.map(({ content, id, role }) => (
-          <Message key={id} role={role} message={content} />
+          <div
+            key={id}
+            className={`chat ${role === "user" ? "chat-end" : "chat-start"}`}
+          >
+            <div
+              className={`chat-bubble flex items-center gap-2 ${role === "user" ? "chat-bubble-success" : "chat-bubble-primary"}`}
+            >
+              <span>{content}</span>
+            </div>
+          </div>
         ))}
       </ul>
       <form onSubmit={handleSubmit}>
@@ -39,22 +47,4 @@ export default function Chat() {
       </form>
     </div>
   );
-}
-
-function Message({ role, message }: Readonly<{ role: Role; message: string }>) {
-  return (
-    <div className={`chat ${role === "user" ? "chat-end" : "chat-start"}`}>
-      <div
-        className={`chat-bubble flex items-center gap-2 ${role === "user" ? "chat-bubble-success" : "chat-bubble-primary"}`}
-      >
-        <span>{message}</span>
-        <LoadingSpinnerWhenProcessing role={role} />
-      </div>
-    </div>
-  );
-}
-
-function LoadingSpinnerWhenProcessing({ role }: Readonly<{ role: Role }>) {
-  if (role === "system")
-    return <span className="loading loading-infinity py-4 text-neutral"></span>;
 }

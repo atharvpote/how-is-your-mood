@@ -1,4 +1,4 @@
-import Drawer from "@/components/drawer";
+import Drawer from "@/components/client/drawer";
 import MUIContext from "@/contexts/mui";
 import { ReadonlyPropsWithChildren } from "@/utils/types";
 

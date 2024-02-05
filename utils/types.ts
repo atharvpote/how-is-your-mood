@@ -30,12 +30,3 @@ export type SetState<T> = Dispatch<SetStateAction<T>>;
 export type ReadonlyPropsWithChildren<P = unknown> = Readonly<
   PropsWithChildren<P>
 >;
-
-export type Role =
-  | "function"
-  | "user"
-  | "system"
-  | "assistant"
-  | "data"
-  | "tool";
-

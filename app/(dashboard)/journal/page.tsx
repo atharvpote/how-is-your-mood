@@ -1,5 +1,5 @@
-import Entries from "@/components/entries";
-import NewEntry from "@/components/newEntry";
+import Entries from "@/components/client/entries";
+import NewEntry from "@/components/client/newEntry";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { fetchEntries } from "@/utils/fetcher";
 

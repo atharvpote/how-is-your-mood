@@ -4,8 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { AiOutlinePlus } from "react-icons/ai";
-import { errorAlert } from "@/utils/error";
-import { LoadingSpinner } from "./loading";
+import { LoadingSpinner } from "../server/loading";
 import {
   QueryClient,
   useMutation,
@@ -13,19 +12,21 @@ import {
 } from "@tanstack/react-query";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { z } from "zod";
-import { zodSafeParseValidator } from "@/utils/validator";
+import { parseValidatedData } from "@/utils/validator";
+import { ErrorAlert } from "./modal";
 
 export default function NewEntry() {
   const loading = useRef<HTMLDialogElement | null>(null);
 
-  const { mutate: create, isPending } = useNewEntry(
-    useQueryClient(),
-    useRouter(),
-  );
+  const {
+    mutate: create,
+    isPending,
+    isError,
+    error,
+  } = useNewEntry(useQueryClient(), useRouter());
 
   useEffect(() => {
-    if (loading.current)
-      isPending ? loading.current.showModal() : loading.current.close();
+    isPending ? loading.current?.showModal() : loading.current?.close();
   }, [isPending]);
 
   return (
@@ -35,7 +36,7 @@ export default function NewEntry() {
         onClick={() => {
           create();
         }}
-        className="btn bg-neutral text-neutral-content hover:bg-neutral-800"
+        className="btn bg-neutral text-neutral-content hover:scale-105 hover:bg-neutral-800"
       >
         <div className="flex w-16 items-center justify-between">
           <AiOutlinePlus className="text-lg" />
@@ -48,6 +49,7 @@ export default function NewEntry() {
       >
         <LoadingSpinner />
       </dialog>
+      <ErrorAlert isError={isError} error={error} />
     </>
   );
 }
@@ -57,19 +59,16 @@ function useNewEntry(queryClient: QueryClient, router: AppRouterInstance) {
     mutationFn: async () => {
       const { data } = await axios.post<unknown>("/api/entry");
 
-      const { id } = zodSafeParseValidator(
+      const { id } = parseValidatedData(
         z.object({ id: z.string() }).safeParse(data),
       );
 
-      return id;
+      return { id };
     },
-    onSuccess: async (data) => {
-      router.push(`/journal/${data}`);
+    onSuccess: async ({ id }) => {
+      router.push(`/journal/${id}`);
 
       await queryClient.invalidateQueries({ queryKey: ["entries"] });
-    },
-    onError(error) {
-      errorAlert(error);
     },
   });
 }

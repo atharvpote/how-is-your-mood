@@ -11,7 +11,7 @@ export default function Home() {
           Sign In
         </Link>
       </nav>
-      <div className="hero min-h-[calc(100svh-var(--global-nav-height))]">
+      <div className="hero min-h-[calc(100svh-var(--home-navbar-height))]">
         <div className="hero-content text-center">
           <header className="prose max-w-md">
             <h1 className="capitalize">The best Journal app</h1>

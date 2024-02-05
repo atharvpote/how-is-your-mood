@@ -4,14 +4,14 @@ import { contentPreview } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 import { RequestContext } from "@/utils/types";
-import { contextValidator, zodSafeParseValidator } from "@/utils/validator";
+import { contextValidator, parseValidatedData } from "@/utils/validator";
 import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function PUT(request: NextRequest, context: RequestContext) {
   try {
-    const { id } = zodSafeParseValidator(contextValidator(context));
+    const { id } = parseValidatedData(contextValidator(context));
 
-    const { content, analysis } = zodSafeParseValidator(
+    const { content, analysis } = parseValidatedData(
       z
         .object({
           content: z.string(),

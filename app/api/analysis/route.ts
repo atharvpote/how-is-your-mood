@@ -2,17 +2,17 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { fetchChatAnalysis } from "@/utils/fetcher";
-import { zodSafeParseValidator } from "@/utils/validator";
+import { parseValidatedData } from "@/utils/validator";
 import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
 
   try {
-    const start = zodSafeParseValidator(
+    const start = parseValidatedData(
       z.string().datetime().safeParse(params.get("start")),
     );
-    const end = zodSafeParseValidator(
+    const end = parseValidatedData(
       z.string().datetime().safeParse(params.get("end")),
     );
 

@@ -4,12 +4,12 @@ import { z } from "zod";
 import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { zodSafeParseValidator } from "@/utils/validator";
+import { parseValidatedData } from "@/utils/validator";
 import { chat } from "@/utils/ai";
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages } = zodSafeParseValidator(
+    const { messages } = parseValidatedData(
       z
         .object({
           messages: z.array(

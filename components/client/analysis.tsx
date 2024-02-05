@@ -1,6 +1,6 @@
 "use client";
 
-import { LoadingSpinner } from "./loading";
+import { LoadingSpinner } from "../server/loading";
 import { EntryAnalysis } from "@/utils/types";
 
 export default function Analysis({

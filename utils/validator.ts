@@ -5,21 +5,19 @@ export function contextValidator({ params }: RequestContext) {
   return z.object({ id: z.string().uuid() }).safeParse(params);
 }
 
-export function zodSafeParseValidator<T>(
-  validation: SafeParseReturnType<T, T>,
-) {
-  if (!validation.success) throw new Error(formatErrors(validation.error));
+export function parseValidatedData<T>(result: SafeParseReturnType<T, T>) {
+  if (!result.success) throw new Error(formatZodErrors(result.error));
 
-  return validation.data;
+  return result.data;
 }
 
-export function notNullValidator<T>(
-  value: unknown,
-  error: string,
-): asserts value is T {
-  if (!value) throw new Error(error);
+export function validateNotNull<T>(
+  input: unknown,
+  errorMessage: string,
+): asserts input is T {
+  if (!input) throw new Error(errorMessage);
 }
 
-function formatErrors(error: ZodError) {
-  return error.format()._errors.join(", ");
+function formatZodErrors(zodError: ZodError) {
+  return zodError.format()._errors.join(", ");
 }

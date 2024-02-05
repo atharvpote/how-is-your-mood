@@ -5,13 +5,13 @@ import { contentPreview } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { analyze } from "@/utils/ai";
 import { prisma } from "@/utils/db";
-import { analysisNotFound } from "@/utils/error";
+import { ANALYSIS_NOT_FOUND } from "@/utils/error";
 import { EntryAnalysis, RequestContext } from "@/utils/types";
 import { fetchEntryAndAnalysis } from "@/utils/fetcher";
 import {
   contextValidator,
-  notNullValidator,
-  zodSafeParseValidator,
+  validateNotNull,
+  parseValidatedData,
 } from "@/utils/validator";
 import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
@@ -19,7 +19,7 @@ export async function GET(_: never, context: RequestContext) {
   try {
     const validation = contextValidator(context);
 
-    const { id } = zodSafeParseValidator(validation);
+    const { id } = parseValidatedData(validation);
 
     try {
       const userId = await getUserIdByClerkId();
@@ -30,7 +30,7 @@ export async function GET(_: never, context: RequestContext) {
           id,
         );
 
-        notNullValidator<EntryAnalysis>(analysis, analysisNotFound);
+        validateNotNull<EntryAnalysis>(analysis, ANALYSIS_NOT_FOUND);
 
         return jsonResponse(200, { date, content, analysis });
       } catch (error) {
@@ -50,13 +50,13 @@ export async function PUT(request: NextRequest, context: RequestContext) {
   try {
     const contextValidation = contextValidator(context);
 
-    const { id } = zodSafeParseValidator(contextValidation);
+    const { id } = parseValidatedData(contextValidation);
 
     const requestValidation = z
       .object({ content: z.string() })
       .safeParse(payload);
 
-    const { content } = zodSafeParseValidator(requestValidation);
+    const { content } = parseValidatedData(requestValidation);
 
     try {
       const userId = await getUserIdByClerkId();
@@ -116,7 +116,7 @@ export async function DELETE(_: never, context: RequestContext) {
   try {
     const validation = contextValidator(context);
 
-    const { id } = zodSafeParseValidator(validation);
+    const { id } = parseValidatedData(validation);
 
     try {
       const userId = await getUserIdByClerkId();
