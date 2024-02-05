@@ -7,9 +7,7 @@ export async function GET() {
     const userId = await getUserIdByClerkId();
 
     try {
-      const entries = await fetchEntries(userId);
-
-      return jsonResponse(200, { entries });
+      return jsonResponse(200, { entries: await fetchEntries(userId) });
     } catch (error) {
       return jsonResponse(500, new ErrorBody(error));
     }

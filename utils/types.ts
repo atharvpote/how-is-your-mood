@@ -31,10 +31,11 @@ export type ReadonlyPropsWithChildren<P = unknown> = Readonly<
   PropsWithChildren<P>
 >;
 
-export type Role = "user" | "ai" | "system";
+export type Role =
+  | "function"
+  | "user"
+  | "system"
+  | "assistant"
+  | "data"
+  | "tool";
 
-export interface Message {
-  role: Role;
-  message: string;
-  id: string;
-}

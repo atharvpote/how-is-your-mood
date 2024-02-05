@@ -163,18 +163,16 @@ function HistoryChart({
 
 function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (active && payload?.[0]?.payload) {
-    const data: unknown = payload[0].payload;
-
-    const validation = z
-      .object({
-        sentiment: z.number(),
-        date: z.date(),
-        mood: z.string(),
-        emoji: z.string(),
-      })
-      .safeParse(data);
-
-    const { mood, date, emoji } = zodSafeParseValidator(validation);
+    const { mood, date, emoji } = zodSafeParseValidator(
+      z
+        .object({
+          sentiment: z.number(),
+          date: z.date(),
+          mood: z.string(),
+          emoji: z.string(),
+        })
+        .safeParse(payload[0].payload),
+    );
 
     return (
       <article className="prose rounded-lg bg-neutral px-4 py-2 text-neutral-content ">
@@ -210,17 +208,15 @@ function useMostRecent() {
       try {
         const { data } = await axios.get<unknown>("/api/analysis/most-recent");
 
-        const validation = z
-          .object({
-            mostRecent: z.union([z.null(), z.string()]),
-          })
-          .safeParse(data);
+        const { mostRecent } = zodSafeParseValidator(
+          z
+            .object({
+              mostRecent: z.union([z.null(), z.string()]),
+            })
+            .safeParse(data),
+        );
 
-        const { mostRecent } = zodSafeParseValidator(validation);
-
-        if (mostRecent === null) return mostRecent;
-
-        return new Date(mostRecent);
+        return mostRecent === null ? mostRecent : new Date(mostRecent);
       } catch (error) {
         if (isAxiosError(error)) handleAxiosError(error);
         else throw new Error(`Unknown Error: ${Object(error)}`);
@@ -241,30 +237,28 @@ function useAnalyses(start: Date, end: Date) {
         return null;
       }
 
-      const params = new URLSearchParams({
-        start: start.toISOString(),
-        end: end.toISOString(),
-      });
-
       try {
         const { data } = await axios.get<unknown>(
-          `/api/analysis?${params.toString()}`,
+          `/api/analysis?${new URLSearchParams({
+            start: start.toISOString(),
+            end: end.toISOString(),
+          }).toString()}`,
         );
 
-        const validation = z
-          .object({
-            analyses: z
-              .object({
-                date: z.string(),
-                emoji: z.string(),
-                mood: z.string(),
-                sentiment: z.number(),
-              })
-              .array(),
-          })
-          .safeParse(data);
-
-        const { analyses } = zodSafeParseValidator(validation);
+        const { analyses } = zodSafeParseValidator(
+          z
+            .object({
+              analyses: z
+                .object({
+                  date: z.string(),
+                  emoji: z.string(),
+                  mood: z.string(),
+                  sentiment: z.number(),
+                })
+                .array(),
+            })
+            .safeParse(data),
+        );
 
         return analyses.map(deserializeDate);
       } catch (error) {

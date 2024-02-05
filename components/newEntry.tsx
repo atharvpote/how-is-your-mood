@@ -18,7 +18,7 @@ import { zodSafeParseValidator } from "@/utils/validator";
 export default function NewEntry() {
   const loading = useRef<HTMLDialogElement | null>(null);
 
-  const { mutate: createNewEntry, isPending } = useNewEntry(
+  const { mutate: create, isPending } = useNewEntry(
     useQueryClient(),
     useRouter(),
   );
@@ -33,7 +33,7 @@ export default function NewEntry() {
       <button
         aria-label="new entry"
         onClick={() => {
-          createNewEntry();
+          create();
         }}
         className="btn bg-neutral text-neutral-content hover:bg-neutral-800"
       >
@@ -57,9 +57,9 @@ function useNewEntry(queryClient: QueryClient, router: AppRouterInstance) {
     mutationFn: async () => {
       const { data } = await axios.post<unknown>("/api/entry");
 
-      const validation = z.object({ id: z.string() }).safeParse(data);
-
-      const { id } = zodSafeParseValidator(validation);
+      const { id } = zodSafeParseValidator(
+        z.object({ id: z.string() }).safeParse(data),
+      );
 
       return id;
     },

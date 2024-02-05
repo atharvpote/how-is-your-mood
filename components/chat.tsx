@@ -1,93 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import axios from "axios";
-import { v4 as uuidv4 } from "uuid";
 import { FaArrowUp } from "react-icons/fa";
-import { errorAlert } from "@/utils/error";
-import { Message, Role } from "@/utils/types";
-import { z } from "zod";
-import { zodSafeParseValidator } from "@/utils/validator";
+import { Role } from "@/utils/types";
+import { useChat } from "ai/react";
 
 export default function Chat() {
-  const [conversation, setConversation] = useState<Message[]>([
-    {
-      id: "1",
-      message: "Hello, I'm your assistant. How may I help you?",
-      role: "ai",
-    },
-  ]);
-  const [userMessage, setUserMessage] = useState("");
-  const [processing, setProcessing] = useState(false);
-
-  const lastMessage = useRef<HTMLLIElement | null>(null);
-
-  useEffect(() => {
-    lastMessage.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conversation]);
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    api: "/api/chat",
+  });
 
   return (
     <div className="flex h-[calc(var(--chat-page-remaining-space)-1rem)] flex-col rounded-lg bg-neutral p-4 sm:h-[calc(var(--chat-page-remaining-space-sm)-1rem)]">
       <ul className="h-full overflow-y-auto py-2">
-        {conversation.map(({ role, message, id }, index) => {
-          return (
-            <li
-              key={id}
-              ref={index === conversation.length - 1 ? lastMessage : undefined}
-            >
-              <Message message={message} role={role} />
-            </li>
-          );
-        })}
+        {messages.map(({ content, id, role }) => (
+          <Message key={id} role={role} message={content} />
+        ))}
       </ul>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-
-          if (userMessage) {
-            setProcessing(true);
-
-            const conversationWithNewMessage = [
-              ...conversation,
-              message("user", userMessage),
-            ];
-
-            void axios
-              .post<unknown>("/api/chat", {
-                conversation: conversationWithNewMessage,
-              })
-              .then(({ data }) => {
-                const validation = z
-                  .object({ reply: z.string() })
-                  .safeParse(data);
-
-                const { reply } = zodSafeParseValidator(validation);
-
-                return reply;
-              })
-              .then((reply) => {
-                setConversation([
-                  ...conversation,
-                  message("user", userMessage),
-                  message("ai", reply),
-                ]);
-              })
-              .catch((error) => {
-                errorAlert(error);
-              })
-              .finally(() => {
-                setProcessing(false);
-              });
-
-            setConversation([
-              ...conversationWithNewMessage,
-              message("system", "Processing"),
-            ]);
-
-            setUserMessage("");
-          }
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <label htmlFor="message" className="hidden">
           Message
         </label>
@@ -98,17 +27,11 @@ export default function Chat() {
             className="input w-full rounded-l-lg rounded-r-none px-4 py-2 focus:outline-none"
             placeholder="Message..."
             autoComplete="off"
-            value={userMessage}
-            onChange={({ target: { value } }) => {
-              setUserMessage(value);
-            }}
-            disabled={processing}
+            value={input}
+            onChange={handleInputChange}
           />
           <div className="rounded-r-lg bg-base-100">
-            <button
-              className="btn btn-square rounded-l-none border-none bg-accent text-accent-content"
-              disabled={processing || !userMessage}
-            >
+            <button className="btn btn-square rounded-l-none border-none bg-accent text-accent-content">
               <FaArrowUp />
             </button>
           </div>
@@ -129,14 +52,6 @@ function Message({ role, message }: Readonly<{ role: Role; message: string }>) {
       </div>
     </div>
   );
-}
-
-function message(role: Role, message: string) {
-  return {
-    id: uuidv4(),
-    role,
-    message,
-  };
 }
 
 function LoadingSpinnerWhenProcessing({ role }: Readonly<{ role: Role }>) {

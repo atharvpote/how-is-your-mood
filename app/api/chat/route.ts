@@ -1,37 +1,45 @@
 import { NextRequest } from "next/server";
+import { StreamingTextResponse } from "ai";
 import { z } from "zod";
+import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 import { getUserIdByClerkId } from "@/utils/auth";
-import { chat } from "@/utils/ai";
 import { prisma } from "@/utils/db";
 import { zodSafeParseValidator } from "@/utils/validator";
-import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
+import { chat } from "@/utils/ai";
 
 export async function POST(request: NextRequest) {
-  const data: unknown = await request.json();
-
   try {
-    const validation = z
-      .object({
-        conversation: z
-          .object({
-            role: z.union([z.literal("user"), z.literal("ai")]),
-            message: z.string(),
-          })
-          .array(),
-      })
-      .safeParse(data);
-
-    const { conversation } = zodSafeParseValidator(validation);
-
+    const { messages } = zodSafeParseValidator(
+      z
+        .object({
+          messages: z.array(
+            z.object({
+              role: z.enum([
+                "user",
+                "assistant",
+                "system",
+                "data",
+                "tool",
+                "function",
+              ]),
+              content: z.string(),
+            }),
+          ),
+        })
+        .safeParse(await request.json()),
+    );
     try {
       const userId = await getUserIdByClerkId();
 
       try {
-        const entries = await prisma.journal.findMany({ where: { userId } });
-
-        const reply = await chat(conversation, entries);
-
-        return jsonResponse(200, { reply });
+        return new StreamingTextResponse(
+          await chat(
+            messages,
+            await prisma.journal.findMany({
+              where: { userId },
+            }),
+          ),
+        );
       } catch (error) {
         return jsonResponse(500, new ErrorBody(error));
       }
@@ -39,6 +47,6 @@ export async function POST(request: NextRequest) {
       return jsonResponse(401, new ErrorBody(error));
     }
   } catch (error) {
-    jsonResponse(400, new ErrorBody(error));
+    return jsonResponse(400, new ErrorBody(error));
   }
 }

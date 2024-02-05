@@ -1,97 +1,103 @@
 import { ChatOpenAI, OpenAIEmbeddings, OpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
-import {
-  AIMessage,
-  HumanMessage,
-  SystemMessage,
-} from "@langchain/core/messages";
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { Document } from "@langchain/core/documents";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
+import { BytesOutputParser } from "@langchain/core/output_parsers";
+import { Message } from "ai/react";
 import { z } from "zod";
 import { Journal } from "@prisma/client";
-import { Message } from "./types";
 
 export async function analyze(content: string) {
-  const template = new PromptTemplate({
-    template:
-      "Analyze journal entry, follow instructions and format response to match format instructions.\nInstructions: {format_instructions}\nEntry: {entry}",
-    inputVariables: ["entry"],
-    partialVariables: { format_instructions: parser.getFormatInstructions() },
-  });
+  const parser = StructuredOutputParser.fromZodSchema(
+    z.object({
+      mood: z.string().describe("Mood of person who wrote journal"),
+      subject: z.string().describe("Subject of journal"),
+      summery: z
+        .string()
+        .describe("Summarize journal in least amount of words."),
+      emoji: z.string().describe("Emoji that represents mood of journal"),
+      sentiment: z
+        .number()
+        .describe("Sentiment of journal on scale of -10 to 10."),
+    }),
+  );
 
-  const prompt = await template.format({ entry: content });
-
-  const model = new OpenAI({
-    temperature: 0,
-    modelName: "gpt-3.5-turbo-1106",
-    cache: true,
-  });
-
-  return await parser.parse(await model.invoke(prompt));
+  return PromptTemplate.fromTemplate(
+    "Analyze journal entry, follow instructions and format response to match format instructions.\n\nInstructions: {format_instructions}\n\nEntry: {entry}",
+  )
+    .pipe(
+      new OpenAI({
+        temperature: 0,
+        modelName: "gpt-3.5-turbo-1106",
+        cache: true,
+      }),
+    )
+    .pipe(parser)
+    .invoke({
+      entry: content,
+      format_instructions: parser.getFormatInstructions(),
+    });
 }
-
-const parser = StructuredOutputParser.fromZodSchema(
-  z.object({
-    mood: z.string().describe("Mood of person who wrote journal"),
-    subject: z.string().describe("Subject of journal"),
-    summery: z.string().describe("Summarize journal in least amount of words."),
-    emoji: z.string().describe("Emoji that represents mood of journal"),
-    sentiment: z
-      .number()
-      .describe("Sentiment of journal on scale of -10 to 10."),
-  }),
-);
 
 export async function chat(
   messages: Omit<Message, "id">[],
   entries: Journal[],
 ) {
-  if (!messages.length) throw new Error("Messages is null");
+  const currentMessage = messages[messages.length - 1];
 
-  const chat = new ChatOpenAI({
-    modelName: "gpt-3.5-turbo-1106",
+  if (!currentMessage) throw new Error("Chat is empty");
+
+  const previousChatHistory = messages
+    .slice(0, -1)
+    .map(({ content, role }) => `${role}:${content}`)
+    .join("\n");
+
+  const model = new ChatOpenAI({
     temperature: 0,
+    modelName: "gpt-3.5-turbo-1106",
     cache: true,
   });
 
-  const { content: searchTerm } = await chat.invoke(
-    `Summarize conversation between "$$" signs as search term for semantic search. $$
-  ${messages
-    .map(({ role, message }) => {
-      return role + ": " + message;
-    })
-    .join("\n")}$$`,
-  );
-
-  const documents = entries.map(
-    ({ content, id, createdAt, date, updatedAt }) => {
-      return new Document({
-        pageContent: content,
-        metadata: { id, createdAt, "entry date": date, updatedAt },
-      });
-    },
-  );
+  const { content: searchTerm } = await PromptTemplate.fromTemplate(
+    "Summarize current conversation as search term for semantic search.\n\nCurrent conversation:{chat_history}",
+  )
+    .pipe(model)
+    .invoke({
+      chat_history:
+        previousChatHistory +
+        `\n${currentMessage.role}:${currentMessage.content}`,
+    });
 
   const store = await MemoryVectorStore.fromDocuments(
-    documents,
+    entries.map(
+      ({ content, id, createdAt, date, updatedAt }) =>
+        new Document({
+          pageContent: content,
+          metadata: { id, createdAt, "entry date": date, updatedAt },
+        }),
+    ),
     new OpenAIEmbeddings(),
   );
 
-  const context = await store.similaritySearch(searchTerm.toString());
+  const documents = await store.similaritySearch(searchTerm.toString(), 1);
 
-  const { content } = await chat.invoke([
-    new SystemMessage(
-      `Respond using provided context. Context: ${context
-        .map(({ pageContent }) => {
-          return pageContent;
-        })
-        .join("\n")}`,
-    ),
-    ...messages.map(({ role, message }) =>
-      role === "ai" ? new AIMessage(message) : new HumanMessage(message),
-    ),
-  ]);
+  const context = documents
+    .map(({ pageContent, metadata }) => {
+      const date = metadata["entry date"] as Date;
 
-  return content.toString();
+      return `Date: ${date.toDateString()}\nContent: ${pageContent}`;
+    })
+    .join("\n");
+
+  return PromptTemplate.fromTemplate(
+    "You're a helpful assistant. Use chat history and context to respond.\n\nChat history: {chat_history}\n\nCurrent message : {current_message}\n\nContext: {context}",
+  )
+    .pipe(model)
+    .pipe(new BytesOutputParser())
+    .stream({
+      chat_history: previousChatHistory,
+      current_message: currentMessage.content,
+      context,
+    });
 }

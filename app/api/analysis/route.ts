@@ -8,12 +8,13 @@ import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
 
-  const startValidation = z.string().datetime().safeParse(params.get("start"));
-  const endValidation = z.string().datetime().safeParse(params.get("end"));
-
   try {
-    const start = zodSafeParseValidator(startValidation);
-    const end = zodSafeParseValidator(endValidation);
+    const start = zodSafeParseValidator(
+      z.string().datetime().safeParse(params.get("start")),
+    );
+    const end = zodSafeParseValidator(
+      z.string().datetime().safeParse(params.get("end")),
+    );
 
     try {
       const userId = await getUserIdByClerkId();

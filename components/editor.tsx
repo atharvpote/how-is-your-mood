@@ -137,21 +137,21 @@ function useEntry(id: string) {
 
       const { data } = await axios.get<unknown>(`/api/entry/${id}`);
 
-      const validation = z
-        .object({
-          date: z.string(),
-          content: z.string(),
-          analysis: z.object({
-            sentiment: z.number(),
-            mood: z.string(),
-            emoji: z.string(),
-            subject: z.string(),
-            summery: z.string(),
-          }),
-        })
-        .safeParse(data);
-
-      const { date, content, analysis } = zodSafeParseValidator(validation);
+      const { date, content, analysis } = zodSafeParseValidator(
+        z
+          .object({
+            date: z.string(),
+            content: z.string(),
+            analysis: z.object({
+              sentiment: z.number(),
+              mood: z.string(),
+              emoji: z.string(),
+              subject: z.string(),
+              summery: z.string(),
+            }),
+          })
+          .safeParse(data),
+      );
 
       return deserializeDate({ date, content, analysis });
     },
@@ -169,7 +169,7 @@ function useMutateEntry(
 
         await axios.put(`/api/entry/${id}/update-with-analysis`, {
           content,
-          analysis: cache.get(content),
+          analysis,
         });
 
         return analysis;
@@ -179,19 +179,19 @@ function useMutateEntry(
           { content },
         );
 
-        const validation = z
-          .object({
-            analysis: z.object({
-              sentiment: z.number(),
-              mood: z.string(),
-              emoji: z.string(),
-              subject: z.string(),
-              summery: z.string(),
-            }),
-          })
-          .safeParse(data);
-
-        const { analysis } = zodSafeParseValidator(validation);
+        const { analysis } = zodSafeParseValidator(
+          z
+            .object({
+              analysis: z.object({
+                sentiment: z.number(),
+                mood: z.string(),
+                emoji: z.string(),
+                subject: z.string(),
+                summery: z.string(),
+              }),
+            })
+            .safeParse(data),
+        );
 
         return analysis;
       }

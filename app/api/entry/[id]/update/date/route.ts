@@ -7,18 +7,12 @@ import { contextValidator, zodSafeParseValidator } from "@/utils/validator";
 import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
 
 export async function PUT(request: NextRequest, context: RequestContext) {
-  const data: unknown = await request.json();
-
   try {
-    const contextValidation = contextValidator(context);
+    const { id } = zodSafeParseValidator(contextValidator(context));
 
-    const { id } = zodSafeParseValidator(contextValidation);
-
-    const requestValidation = z
-      .object({ date: z.string().datetime() })
-      .safeParse(data);
-
-    const { date } = zodSafeParseValidator(requestValidation);
+    const { date } = zodSafeParseValidator(
+      z.object({ date: z.string().datetime() }).safeParse(await request.json()),
+    );
 
     try {
       const userId = await getUserIdByClerkId();

@@ -36,3 +36,5 @@ export function handleAxiosError(error: AxiosError) {
 }
 
 export const analysisNotFound = "NotFoundError: No Analysis found.";
+
+

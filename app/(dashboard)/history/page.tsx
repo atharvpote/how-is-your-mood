@@ -7,14 +7,16 @@ import { endOfWeek, startOfWeek } from "date-fns";
 
 export default async function HistoryPage() {
   const userId = await getUserIdByClerkId();
-  const mostRecent = await fetchMostRecentEntry(userId);
 
   return (
     <>
       <div className="prose h-12 px-4 pt-4 md:prose-lg xl:pl-8">
         <h2>History</h2>
       </div>
-      <Content userId={userId} mostRecent={mostRecent} />
+      <Content
+        userId={userId}
+        mostRecent={await fetchMostRecentEntry(userId)}
+      />
     </>
   );
 }
@@ -33,13 +35,14 @@ async function Content({
       </HistoryHeightFull>
     );
 
-  const analyses = await fetchChatAnalysis(
-    userId,
-    startOfWeek(mostRecent.date),
-    endOfWeek(mostRecent.date),
-  );
-
   return (
-    <History initialAnalyses={analyses} initialMostRecent={mostRecent.date} />
+    <History
+      initialAnalyses={await fetchChatAnalysis(
+        userId,
+        startOfWeek(mostRecent.date),
+        endOfWeek(mostRecent.date),
+      )}
+      initialMostRecent={mostRecent.date}
+    />
   );
 }

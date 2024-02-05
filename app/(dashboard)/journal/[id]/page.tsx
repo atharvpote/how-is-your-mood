@@ -9,14 +9,10 @@ import {
   zodSafeParseValidator,
 } from "@/utils/validator";
 
-export default async function EditorPage(context: Readonly<RequestContext>) {
-  const validation = contextValidator(context);
+export default async function EntryPage(context: Readonly<RequestContext>) {
+  const { id } = zodSafeParseValidator(contextValidator(context));
 
-  const { id } = zodSafeParseValidator(validation);
-
-  const userId = await getUserIdByClerkId();
-
-  const entry = await fetchEntryAndAnalysis(userId, id);
+  const entry = await fetchEntryAndAnalysis(await getUserIdByClerkId(), id);
 
   notNullValidator<EntryWithAnalysis>(entry, analysisNotFound);
 

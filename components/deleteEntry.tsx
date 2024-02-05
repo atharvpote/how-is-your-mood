@@ -13,7 +13,7 @@ import {
 } from "@tanstack/react-query";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
-export default function DeleteEntry({ id }: { id: string }) {
+export default function DeleteEntry({ id }: Readonly<{ id: string }>) {
   const modal = useRef<HTMLDialogElement | null>(null);
   const loading = useRef<HTMLDialogElement | null>(null);
 
