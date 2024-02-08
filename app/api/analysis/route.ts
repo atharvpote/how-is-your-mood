@@ -2,19 +2,16 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { fetchChatAnalysis } from "@/utils/fetcher";
-import { parseValidatedData } from "@/utils/validator";
+import { validatedData } from "@/utils/validator";
 import { createErrorResponse, createJsonResponse } from "@/utils/response";
 
-export async function GET(request: NextRequest) {
-  const params = request.nextUrl.searchParams;
-
+export async function GET({ nextUrl: { searchParams } }: NextRequest) {
   try {
-    const start = parseValidatedData(
-      z.string().datetime().safeParse(params.get("start")),
+    const start = validatedData(
+      z.string().datetime(),
+      searchParams.get("start"),
     );
-    const end = parseValidatedData(
-      z.string().datetime().safeParse(params.get("end")),
-    );
+    const end = validatedData(z.string().datetime(), searchParams.get("end"));
 
     try {
       const userId = await getUserIdByClerkId();

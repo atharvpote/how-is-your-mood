@@ -6,20 +6,18 @@ import { getUserIdByClerkId } from "@/utils/auth";
 import { analyze } from "@/utils/ai";
 import { prisma } from "@/utils/db";
 import { ANALYSIS_NOT_FOUND } from "@/utils/error";
-import { EntryAnalysis, RequestContext } from "@/utils/types";
+import { EntryAnalysis, IdParams } from "@/utils/types";
 import { fetchEntryAndAnalysis } from "@/utils/fetcher";
 import {
-  contextValidator,
+  validateUrlIdParam,
   validateNotNull,
-  parseValidatedData,
+  validatedData,
 } from "@/utils/validator";
 import { createErrorResponse, createJsonResponse } from "@/utils/response";
 
-export async function GET(_: never, context: RequestContext) {
+export async function GET(_: never, { params }: { params: IdParams }) {
   try {
-    const validation = contextValidator(context);
-
-    const { id } = parseValidatedData(validation);
+    const { id } = validateUrlIdParam(params);
 
     try {
       const userId = await getUserIdByClerkId();
@@ -40,19 +38,17 @@ export async function GET(_: never, context: RequestContext) {
   }
 }
 
-export async function PUT(request: NextRequest, context: RequestContext) {
-  const payload: unknown = await request.json();
-
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: IdParams },
+) {
   try {
-    const contextValidation = contextValidator(context);
+    const { id } = validateUrlIdParam(params);
 
-    const { id } = parseValidatedData(contextValidation);
-
-    const requestValidation = z
-      .object({ content: z.string() })
-      .safeParse(payload);
-
-    const { content } = parseValidatedData(requestValidation);
+    const { content } = validatedData(
+      z.object({ content: z.string() }),
+      await request.json(),
+    );
 
     try {
       const userId = await getUserIdByClerkId();
@@ -104,11 +100,9 @@ export async function PUT(request: NextRequest, context: RequestContext) {
   }
 }
 
-export async function DELETE(_: never, context: RequestContext) {
+export async function DELETE(_: never, { params }: { params: IdParams }) {
   try {
-    const validation = contextValidator(context);
-
-    const { id } = parseValidatedData(validation);
+    const { id } = validateUrlIdParam(params);
 
     try {
       const userId = await getUserIdByClerkId();

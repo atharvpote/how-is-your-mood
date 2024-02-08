@@ -9,7 +9,7 @@ import { PREVIEW_LENGTH, deserializeDate } from "@/utils";
 import { ErrorComponent, GetStarted } from "../server/alerts";
 import { EntryPreview } from "@/utils/types";
 import { z } from "zod";
-import { parseValidatedData } from "@/utils/validator";
+import { validatedData } from "@/utils/validator";
 import { useQuery } from "@tanstack/react-query";
 import { JournalFullHeight } from "../server/layouts";
 
@@ -83,8 +83,8 @@ function useEntries() {
 
       const { data } = await axios.get<unknown>("/api/entries");
 
-      const validation = z
-        .object({
+      const { entries } = validatedData(
+        z.object({
           entries: z
             .object({
               id: z.string(),
@@ -92,10 +92,9 @@ function useEntries() {
               date: z.string(),
             })
             .array(),
-        })
-        .safeParse(data);
-
-      const { entries } = parseValidatedData(validation);
+        }),
+        data,
+      );
 
       return entries.map(deserializeDate);
     },

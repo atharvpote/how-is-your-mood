@@ -4,29 +4,28 @@ import { z } from "zod";
 import { createErrorResponse } from "@/utils/response";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { parseValidatedData } from "@/utils/validator";
+import { validatedData } from "@/utils/validator";
 import { chat } from "@/utils/ai";
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages } = parseValidatedData(
-      z
-        .object({
-          messages: z.array(
-            z.object({
-              role: z.enum([
-                "user",
-                "assistant",
-                "system",
-                "data",
-                "tool",
-                "function",
-              ]),
-              content: z.string(),
-            }),
-          ),
-        })
-        .safeParse(await request.json()),
+    const { messages } = validatedData(
+      z.object({
+        messages: z.array(
+          z.object({
+            role: z.enum([
+              "user",
+              "assistant",
+              "system",
+              "data",
+              "tool",
+              "function",
+            ]),
+            content: z.string(),
+          }),
+        ),
+      }),
+      await request.json(),
     );
 
     try {

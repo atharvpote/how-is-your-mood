@@ -1,11 +1,13 @@
-import { z, SafeParseReturnType, ZodError } from "zod";
-import { RequestContext } from "./types";
+import { z, ZodError, ZodSchema } from "zod";
+import { IdParams } from "./types";
 
-export function contextValidator({ params }: RequestContext) {
-  return z.object({ id: z.string().uuid() }).safeParse(params);
+export function validateUrlIdParam(params: IdParams) {
+  return validatedData(z.object({ id: z.string().uuid() }), params);
 }
 
-export function parseValidatedData<T>(result: SafeParseReturnType<T, T>) {
+export function validatedData<T>(schema: ZodSchema<T>, data: unknown) {
+  const result = schema.safeParse(data);
+
   if (!result.success) throw new Error(formatZodErrors(result.error));
 
   return result.data;

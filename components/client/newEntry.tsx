@@ -12,7 +12,7 @@ import {
 } from "@tanstack/react-query";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { z } from "zod";
-import { parseValidatedData } from "@/utils/validator";
+import { validatedData } from "@/utils/validator";
 import { ErrorAlert } from "./modal";
 
 export default function NewEntry() {
@@ -59,9 +59,7 @@ function useNewEntry(queryClient: QueryClient, router: AppRouterInstance) {
     mutationFn: async () => {
       const { data } = await axios.post<unknown>("/api/entry");
 
-      const { id } = parseValidatedData(
-        z.object({ id: z.string() }).safeParse(data),
-      );
+      const { id } = validatedData(z.object({ id: z.string() }), data);
 
       return { id };
     },

@@ -1,8 +1,8 @@
 import { Dispatch, PropsWithChildren, SetStateAction } from "react";
 import { Analysis, Journal } from "@prisma/client";
 
-export interface RequestContext {
-  params: { id?: string };
+export interface IdParams {
+  id?: string;
 }
 
 export type ErrorBoundaryProps = Readonly<{

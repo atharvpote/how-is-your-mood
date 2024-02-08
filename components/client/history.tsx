@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { DatePicker } from "@mui/x-date-pickers";
 import { ChartAnalysis } from "@/utils/types";
 import { deserializeDate } from "@/utils";
-import { parseValidatedData } from "@/utils/validator";
+import { validatedData } from "@/utils/validator";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { z } from "zod";
@@ -81,12 +81,11 @@ function useMostRecent() {
 
       const { data } = await axios.get<unknown>("/api/analysis/most-recent");
 
-      const { mostRecent } = parseValidatedData(
-        z
-          .object({
-            mostRecent: z.union([z.null(), z.string()]),
-          })
-          .safeParse(data),
+      const { mostRecent } = validatedData(
+        z.object({
+          mostRecent: z.union([z.null(), z.string()]),
+        }),
+        data,
       );
 
       return mostRecent === null ? mostRecent : new Date(mostRecent);
@@ -113,19 +112,18 @@ function useAnalyses(start: Date, end: Date) {
         }).toString()}`,
       );
 
-      const { analyses } = parseValidatedData(
-        z
-          .object({
-            analyses: z
-              .object({
-                date: z.string(),
-                emoji: z.string(),
-                mood: z.string(),
-                sentiment: z.number(),
-              })
-              .array(),
-          })
-          .safeParse(data),
+      const { analyses } = validatedData(
+        z.object({
+          analyses: z
+            .object({
+              date: z.string(),
+              emoji: z.string(),
+              mood: z.string(),
+              sentiment: z.number(),
+            })
+            .array(),
+        }),
+        data,
       );
 
       return analyses.map(deserializeDate);

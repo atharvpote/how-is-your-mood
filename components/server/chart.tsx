@@ -1,6 +1,6 @@
 import { isValidDateRange } from "@/utils";
 import { ChartAnalysis } from "@/utils/types";
-import { parseValidatedData } from "@/utils/validator";
+import { validatedData } from "@/utils/validator";
 import {
   ResponsiveContainer,
   LineChart,
@@ -99,15 +99,14 @@ export default function HistoryChart({
 
 function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (active && payload?.[0]?.payload) {
-    const { mood, date, emoji } = parseValidatedData(
-      z
-        .object({
-          sentiment: z.number(),
-          date: z.date(),
-          mood: z.string(),
-          emoji: z.string(),
-        })
-        .safeParse(payload[0].payload),
+    const { mood, date, emoji } = validatedData(
+      z.object({
+        sentiment: z.number(),
+        date: z.date(),
+        mood: z.string(),
+        emoji: z.string(),
+      }),
+      payload[0].payload,
     );
 
     return (

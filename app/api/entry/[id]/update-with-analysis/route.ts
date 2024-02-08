@@ -3,27 +3,29 @@ import { z } from "zod";
 import { contentPreview } from "@/utils";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { RequestContext } from "@/utils/types";
-import { contextValidator, parseValidatedData } from "@/utils/validator";
+import { IdParams } from "@/utils/types";
+import { validateUrlIdParam, validatedData } from "@/utils/validator";
 import { createErrorResponse, createJsonResponse } from "@/utils/response";
 
-export async function PUT(request: NextRequest, context: RequestContext) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: IdParams },
+) {
   try {
-    const { id } = parseValidatedData(contextValidator(context));
+    const { id } = validateUrlIdParam(params);
 
-    const { content, analysis } = parseValidatedData(
-      z
-        .object({
-          content: z.string(),
-          analysis: z.object({
-            sentiment: z.number(),
-            mood: z.string(),
-            emoji: z.string(),
-            subject: z.string(),
-            summery: z.string(),
-          }),
-        })
-        .safeParse(await request.json()),
+    const { content, analysis } = validatedData(
+      z.object({
+        content: z.string(),
+        analysis: z.object({
+          sentiment: z.number(),
+          mood: z.string(),
+          emoji: z.string(),
+          subject: z.string(),
+          summery: z.string(),
+        }),
+      }),
+      await request.json(),
     );
 
     try {

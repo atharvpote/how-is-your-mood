@@ -12,7 +12,7 @@ import { useAutosave } from "react-autosave";
 import { z } from "zod";
 import { isTouchDevice, deserializeDate } from "@/utils";
 import { EntryAnalysis, EntryWithAnalysis } from "@/utils/types";
-import { parseValidatedData } from "@/utils/validator";
+import { validatedData } from "@/utils/validator";
 import EntryDate from "./entryDate";
 import Analysis from "./analysis";
 import DeleteEntry from "./deleteEntry";
@@ -135,20 +135,19 @@ function useEntry(id: string) {
 
       const { data } = await axios.get<unknown>(`/api/entry/${id}`);
 
-      const { date, content, analysis } = parseValidatedData(
-        z
-          .object({
-            date: z.string(),
-            content: z.string(),
-            analysis: z.object({
-              sentiment: z.number(),
-              mood: z.string(),
-              emoji: z.string(),
-              subject: z.string(),
-              summery: z.string(),
-            }),
-          })
-          .safeParse(data),
+      const { date, content, analysis } = validatedData(
+        z.object({
+          date: z.string(),
+          content: z.string(),
+          analysis: z.object({
+            sentiment: z.number(),
+            mood: z.string(),
+            emoji: z.string(),
+            subject: z.string(),
+            summery: z.string(),
+          }),
+        }),
+        data,
       );
 
       return deserializeDate({ date, content, analysis });
@@ -177,18 +176,17 @@ function useMutateEntry(
           { content },
         );
 
-        const { analysis } = parseValidatedData(
-          z
-            .object({
-              analysis: z.object({
-                sentiment: z.number(),
-                mood: z.string(),
-                emoji: z.string(),
-                subject: z.string(),
-                summery: z.string(),
-              }),
-            })
-            .safeParse(data),
+        const { analysis } = validatedData(
+          z.object({
+            analysis: z.object({
+              sentiment: z.number(),
+              mood: z.string(),
+              emoji: z.string(),
+              subject: z.string(),
+              summery: z.string(),
+            }),
+          }),
+          data,
         );
 
         return analysis;
