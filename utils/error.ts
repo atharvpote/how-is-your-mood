@@ -14,13 +14,13 @@ export function errorMessage(error: unknown) {
 
       return validation.success
         ? `${error.response.status}: ${validation.data.message}`
-        : `"Unknown error", ${JSON.stringify(Object(errorData))}`;
+        : `"Unknown error", ${String(errorData)}`;
     } else if (error.request) {
       return "You're offline";
     } else {
       return error.message;
     }
-  else return `"Unknown error", ${JSON.stringify(Object(error))}`;
+  else return `"Unknown error", ${String(error)}`;
 }
 
 export const ANALYSIS_NOT_FOUND = "NotFoundError: No Analysis found.";

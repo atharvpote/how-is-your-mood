@@ -1,7 +1,7 @@
 import { setHours, setMinutes } from "date-fns";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
-import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
+import { createErrorResponse, createJsonResponse } from "@/utils/response";
 
 export async function POST() {
   try {
@@ -29,12 +29,12 @@ export async function POST() {
         },
       });
 
-      return jsonResponse(201, { id });
+      return createJsonResponse(201, { id });
     } catch (error) {
-      return jsonResponse(500, new ErrorBody(error));
+      return createErrorResponse(500, error);
     }
   } catch (error) {
-    return jsonResponse(401, new ErrorBody(error));
+    return createErrorResponse(401, error);
   }
 }
 

@@ -13,7 +13,7 @@ import {
   validateNotNull,
   parseValidatedData,
 } from "@/utils/validator";
-import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
+import { createErrorResponse, createJsonResponse } from "@/utils/response";
 
 export async function GET(_: never, context: RequestContext) {
   try {
@@ -32,15 +32,15 @@ export async function GET(_: never, context: RequestContext) {
 
         validateNotNull<EntryAnalysis>(analysis, ANALYSIS_NOT_FOUND);
 
-        return jsonResponse(200, { date, content, analysis });
+        return createJsonResponse(200, { date, content, analysis });
       } catch (error) {
-        return jsonResponse(500, new ErrorBody(error));
+        return createErrorResponse(500, error);
       }
     } catch (error) {
-      return jsonResponse(401, new ErrorBody(error));
+      return createErrorResponse(401, error);
     }
   } catch (error) {
-    return jsonResponse(400, new ErrorBody(error));
+    return createErrorResponse(400, error);
   }
 }
 
@@ -100,15 +100,15 @@ export async function PUT(request: NextRequest, context: RequestContext) {
             select,
           });
 
-        return jsonResponse(200, { analysis });
+        return createJsonResponse(200, { analysis });
       } catch (error) {
-        return jsonResponse(500, new ErrorBody(error));
+        return createErrorResponse(500, error);
       }
     } catch (error) {
-      return jsonResponse(401, new ErrorBody(error));
+      return createErrorResponse(401, error);
     }
   } catch (error) {
-    return jsonResponse(400, new ErrorBody(error));
+    return createErrorResponse(400, error);
   }
 }
 
@@ -126,14 +126,14 @@ export async function DELETE(_: never, context: RequestContext) {
           where: { userId_id: { userId, id } },
         });
 
-        return jsonResponse(200);
+        return createJsonResponse(200);
       } catch (error) {
-        return jsonResponse(500, new ErrorBody(error));
+        return createErrorResponse(500, error);
       }
     } catch (error) {
-      return jsonResponse(401, new ErrorBody(error));
+      return createErrorResponse(401, error);
     }
   } catch (error) {
-    return jsonResponse(400, new ErrorBody(error));
+    return createErrorResponse(400, error);
   }
 }

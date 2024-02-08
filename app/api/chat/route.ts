@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { StreamingTextResponse } from "ai";
 import { z } from "zod";
-import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
+import { createErrorResponse } from "@/utils/response";
 import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 import { parseValidatedData } from "@/utils/validator";
@@ -41,12 +41,12 @@ export async function POST(request: NextRequest) {
           ),
         );
       } catch (error) {
-        return jsonResponse(500, new ErrorBody(error));
+        return createErrorResponse(500, error);
       }
     } catch (error) {
-      return jsonResponse(401, new ErrorBody(error));
+      return createErrorResponse(401, error);
     }
   } catch (error) {
-    return jsonResponse(400, new ErrorBody(error));
+    return createErrorResponse(400, error);
   }
 }

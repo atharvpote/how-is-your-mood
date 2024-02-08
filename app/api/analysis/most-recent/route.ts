@@ -1,6 +1,6 @@
 import { getUserIdByClerkId } from "@/utils/auth";
 import { fetchMostRecentEntry } from "@/utils/fetcher";
-import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
+import { createErrorResponse, createJsonResponse } from "@/utils/response";
 
 export async function GET() {
   try {
@@ -9,11 +9,11 @@ export async function GET() {
     try {
       const mostRecent = await fetchMostRecentEntry(userId);
 
-      return jsonResponse(200, { mostRecent: mostRecent?.date ?? null });
+      return createJsonResponse(200, { mostRecent: mostRecent?.date ?? null });
     } catch (error) {
-      return jsonResponse(500, new ErrorBody(error));
+      return createErrorResponse(500, error);
     }
   } catch (error) {
-    return jsonResponse(401, new ErrorBody(error));
+    return createErrorResponse(401, error);
   }
 }

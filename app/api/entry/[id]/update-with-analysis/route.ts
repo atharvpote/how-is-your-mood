@@ -5,7 +5,7 @@ import { getUserIdByClerkId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 import { RequestContext } from "@/utils/types";
 import { contextValidator, parseValidatedData } from "@/utils/validator";
-import { ErrorBody, jsonResponse } from "@/utils/apiResponse";
+import { createErrorResponse, createJsonResponse } from "@/utils/response";
 
 export async function PUT(request: NextRequest, context: RequestContext) {
   try {
@@ -40,14 +40,14 @@ export async function PUT(request: NextRequest, context: RequestContext) {
           data: analysis,
         });
 
-        return jsonResponse(200);
+        return createJsonResponse(200);
       } catch (error) {
-        return jsonResponse(500, new ErrorBody(error));
+        return createErrorResponse(500, error);
       }
     } catch (error) {
-      return jsonResponse(401, new ErrorBody(error));
+      return createErrorResponse(401, error);
     }
   } catch (error) {
-    return jsonResponse(400, new ErrorBody(error));
+    return createErrorResponse(400, error);
   }
 }
