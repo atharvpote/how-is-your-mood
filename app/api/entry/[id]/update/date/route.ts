@@ -17,18 +17,14 @@ export async function PUT(request: NextRequest, context: RequestContext) {
     try {
       const userId = await getUserIdByClerkId();
 
-      try {
-        await prisma.journal.update({
-          where: { userId_id: { userId, id } },
-          data: { date: new Date(date) },
-        });
+      await prisma.journal.update({
+        where: { userId_id: { userId, id } },
+        data: { date: new Date(date) },
+      });
 
-        return createJsonResponse(200);
-      } catch (error) {
-        return createErrorResponse(500, error);
-      }
+      return createJsonResponse(200);
     } catch (error) {
-      return createErrorResponse(401, error);
+      return createErrorResponse(500, error);
     }
   } catch (error) {
     return createErrorResponse(400, error);

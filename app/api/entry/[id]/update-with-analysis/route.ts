@@ -29,23 +29,19 @@ export async function PUT(request: NextRequest, context: RequestContext) {
     try {
       const userId = await getUserIdByClerkId();
 
-      try {
-        await prisma.journal.update({
-          where: { userId_id: { userId, id } },
-          data: { content, preview: contentPreview(content) },
-        });
+      await prisma.journal.update({
+        where: { userId_id: { userId, id } },
+        data: { content, preview: contentPreview(content) },
+      });
 
-        await prisma.analysis.update({
-          where: { entryId_userId: { entryId: id, userId } },
-          data: analysis,
-        });
+      await prisma.analysis.update({
+        where: { entryId_userId: { entryId: id, userId } },
+        data: analysis,
+      });
 
-        return createJsonResponse(200);
-      } catch (error) {
-        return createErrorResponse(500, error);
-      }
+      return createJsonResponse(200);
     } catch (error) {
-      return createErrorResponse(401, error);
+      return createErrorResponse(500, error);
     }
   } catch (error) {
     return createErrorResponse(400, error);

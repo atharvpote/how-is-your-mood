@@ -6,14 +6,10 @@ export async function GET() {
   try {
     const userId = await getUserIdByClerkId();
 
-    try {
-      const mostRecent = await fetchMostRecentEntry(userId);
+    const mostRecent = await fetchMostRecentEntry(userId);
 
-      return createJsonResponse(200, { mostRecent: mostRecent?.date ?? null });
-    } catch (error) {
-      return createErrorResponse(500, error);
-    }
+    return createJsonResponse(200, { mostRecent: mostRecent?.date ?? null });
   } catch (error) {
-    return createErrorResponse(401, error);
+    return createErrorResponse(500, error);
   }
 }

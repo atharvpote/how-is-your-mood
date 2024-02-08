@@ -6,12 +6,8 @@ export async function GET() {
   try {
     const userId = await getUserIdByClerkId();
 
-    try {
-      return createJsonResponse(200, { entries: await fetchEntries(userId) });
-    } catch (error) {
-      return createErrorResponse(500, error);
-    }
+    return createJsonResponse(200, { entries: await fetchEntries(userId) });
   } catch (error) {
-    return createErrorResponse(401, error);
+    return createErrorResponse(500, error);
   }
 }

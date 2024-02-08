@@ -6,6 +6,5 @@ export function createJsonResponse(status: number, body = {}) {
 }
 
 export function createErrorResponse(status: number, error: unknown) {
-  if (error instanceof Error)
-    return NextResponse.json({ message: errorMessage(error) }, { status });
+  return NextResponse.json({ message: errorMessage(error) }, { status });
 }

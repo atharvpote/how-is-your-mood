@@ -19,19 +19,15 @@ export async function GET(request: NextRequest) {
     try {
       const userId = await getUserIdByClerkId();
 
-      try {
-        const analyses = await fetchChatAnalysis(
-          userId,
-          new Date(start),
-          new Date(end),
-        );
+      const analyses = await fetchChatAnalysis(
+        userId,
+        new Date(start),
+        new Date(end),
+      );
 
-        return createJsonResponse(200, { analyses });
-      } catch (error) {
-        return createErrorResponse(500, error);
-      }
+      return createJsonResponse(200, { analyses });
     } catch (error) {
-      return createErrorResponse(401, error);
+      return createErrorResponse(500, error);
     }
   } catch (error) {
     return createErrorResponse(400, error);

@@ -28,23 +28,20 @@ export async function POST(request: NextRequest) {
         })
         .safeParse(await request.json()),
     );
+
     try {
       const userId = await getUserIdByClerkId();
 
-      try {
-        return new StreamingTextResponse(
-          await chat(
-            messages,
-            await prisma.journal.findMany({
-              where: { userId },
-            }),
-          ),
-        );
-      } catch (error) {
-        return createErrorResponse(500, error);
-      }
+      return new StreamingTextResponse(
+        await chat(
+          messages,
+          await prisma.journal.findMany({
+            where: { userId },
+          }),
+        ),
+      );
     } catch (error) {
-      return createErrorResponse(401, error);
+      return createErrorResponse(500, error);
     }
   } catch (error) {
     return createErrorResponse(400, error);
