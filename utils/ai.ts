@@ -6,9 +6,9 @@ import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { BytesOutputParser } from "@langchain/core/output_parsers";
 import { Message } from "ai/react";
 import { z } from "zod";
-import { Journal } from "@prisma/client";
+import { Journal as PrismaJournal } from "@prisma/client";
 
-export async function analyze(content: string) {
+export async function getAnalysis(content: string) {
   const parser = StructuredOutputParser.fromZodSchema(
     z.object({
       mood: z.string().describe("Mood of person who wrote journal"),
@@ -40,9 +40,9 @@ export async function analyze(content: string) {
     });
 }
 
-export async function chat(
+export async function getChatResponse(
   messages: Omit<Message, "id">[],
-  entries: Journal[],
+  entries: PrismaJournal[],
 ) {
   const currentMessage = messages[messages.length - 1];
 

@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-query";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { ErrorAlert } from "./modal";
+import { handleModal } from "@/utils";
 
 export default function DeleteEntry({ id }: Readonly<{ id: string }>) {
   const modal = useRef<HTMLDialogElement | null>(null);
@@ -25,7 +26,7 @@ export default function DeleteEntry({ id }: Readonly<{ id: string }>) {
   } = useDeleteEntry(useQueryClient(), useRouter());
 
   useEffect(() => {
-    isPending ? loading.current?.showModal() : loading.current?.close();
+    handleModal(loading, isPending);
   }, [isPending]);
 
   return (

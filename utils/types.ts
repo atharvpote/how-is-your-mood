@@ -1,8 +1,11 @@
 import { Dispatch, PropsWithChildren, SetStateAction } from "react";
-import { Analysis, Journal } from "@prisma/client";
+import {
+  Analysis as PrismaAnalysis,
+  Journal as PrismaJournal,
+} from "@prisma/client";
 
-export interface IdParams {
-  id?: string;
+export interface RequestContext {
+  params: { id?: string };
 }
 
 export type ErrorBoundaryProps = Readonly<{
@@ -10,20 +13,20 @@ export type ErrorBoundaryProps = Readonly<{
 }>;
 
 export type ChartAnalysis = Pick<
-  Analysis,
+  PrismaAnalysis,
   "sentiment" | "date" | "mood" | "emoji"
 >;
 
-export type EntryWithAnalysis = Entry & { analysis: EntryAnalysis };
-
-export type EntryAnalysis = Pick<
-  Analysis,
+export type Analysis = Pick<
+  PrismaAnalysis,
   "sentiment" | "mood" | "emoji" | "subject" | "summery"
 >;
 
-export type Entry = Pick<Journal, "content" | "date" | "id">;
+export type Entry = Pick<PrismaJournal, "content" | "date" | "id">;
 
-export type EntryPreview = Omit<Entry, "content"> & Pick<Journal, "preview">;
+export type EntryAndAnalysis = Entry & { analysis: Analysis };
+
+export type Preview = Omit<Entry, "content"> & Pick<PrismaJournal, "preview">;
 
 export type SetState<T> = Dispatch<SetStateAction<T>>;
 

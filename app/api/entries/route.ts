@@ -1,12 +1,12 @@
-import { getUserIdByClerkId } from "@/utils/auth";
-import { fetchEntries } from "@/utils/fetcher";
+import { getCurrentUserId } from "@/utils/auth";
+import { getEntryList } from "@/utils/fetchers";
 import { createErrorResponse, createJsonResponse } from "@/utils/response";
 
 export async function GET() {
   try {
-    const userId = await getUserIdByClerkId();
-
-    return createJsonResponse(200, { entries: await fetchEntries(userId) });
+    return createJsonResponse(200, {
+      entries: await getEntryList(await getCurrentUserId()),
+    });
   } catch (error) {
     return createErrorResponse(500, error);
   }

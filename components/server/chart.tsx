@@ -18,7 +18,7 @@ import {
 } from "recharts/types/component/DefaultTooltipContent";
 import { z } from "zod";
 import { ErrorComponent, AlertError } from "./alerts";
-import { HistoryHeightFull } from "./layouts";
+import { HistoryFullHeight } from "./layouts";
 
 export default function HistoryChart({
   analyses,
@@ -33,11 +33,11 @@ export default function HistoryChart({
 }>) {
   if (error)
     return (
-      <HistoryHeightFull>
+      <HistoryFullHeight>
         <div>
           <ErrorComponent error={error} />
         </div>
-      </HistoryHeightFull>
+      </HistoryFullHeight>
     );
 
   if (!isValidDateRange(start, end))
@@ -99,13 +99,15 @@ export default function HistoryChart({
 
 function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (active && payload?.[0]?.payload) {
+    const chartAnalysisSchema = z.object({
+      sentiment: z.number(),
+      date: z.date(),
+      mood: z.string(),
+      emoji: z.string(),
+    });
+
     const { mood, date, emoji } = validatedData(
-      z.object({
-        sentiment: z.number(),
-        date: z.date(),
-        mood: z.string(),
-        emoji: z.string(),
-      }),
+      chartAnalysisSchema,
       payload[0].payload,
     );
 

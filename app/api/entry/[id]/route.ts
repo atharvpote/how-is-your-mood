@@ -1,33 +1,32 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { Analysis } from "@prisma/client";
-import { contentPreview } from "@/utils";
-import { getUserIdByClerkId } from "@/utils/auth";
-import { analyze } from "@/utils/ai";
+import { createPreview, getRequestData } from "@/utils";
+import { getCurrentUserId } from "@/utils/auth";
+import { getAnalysis } from "@/utils/ai";
 import { prisma } from "@/utils/db";
 import { ANALYSIS_NOT_FOUND } from "@/utils/error";
-import { EntryAnalysis, IdParams } from "@/utils/types";
-import { fetchEntryAndAnalysis } from "@/utils/fetcher";
+import { Analysis, RequestContext } from "@/utils/types";
+import { getEntryAndAnalysis } from "@/utils/fetchers";
 import {
-  validateUrlIdParam,
+  validateRequestContext,
   validateNotNull,
   validatedData,
 } from "@/utils/validator";
 import { createErrorResponse, createJsonResponse } from "@/utils/response";
 
-export async function GET(_: never, { params }: { params: IdParams }) {
+export async function GET(_: never, context: RequestContext) {
   try {
-    const { id } = validateUrlIdParam(params);
+    const {
+      params: { id },
+    } = validateRequestContext(context);
 
     try {
-      const userId = await getUserIdByClerkId();
-
-      const { date, content, analysis } = await fetchEntryAndAnalysis(
-        userId,
+      const { date, content, analysis } = await getEntryAndAnalysis({
+        userId: await getCurrentUserId(),
         id,
-      );
+      });
 
-      validateNotNull<EntryAnalysis>(analysis, ANALYSIS_NOT_FOUND);
+      validateNotNull<Analysis>(analysis, ANALYSIS_NOT_FOUND);
 
       return createJsonResponse(200, { date, content, analysis });
     } catch (error) {
@@ -38,60 +37,24 @@ export async function GET(_: never, { params }: { params: IdParams }) {
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: IdParams },
-) {
+export async function PUT(request: NextRequest, context: RequestContext) {
   try {
-    const { id } = validateUrlIdParam(params);
+    const {
+      params: { id },
+    } = validateRequestContext(context);
+    const requestSchema = z.object({ content: z.string() });
 
     const { content } = validatedData(
-      z.object({ content: z.string() }),
-      await request.json(),
+      requestSchema,
+      await getRequestData(request),
     );
 
     try {
-      const userId = await getUserIdByClerkId();
+      await updateJournal({ content, id });
 
-      await prisma.journal.update({
-        where: { userId_id: { userId, id } },
-        data: { content, preview: contentPreview(content) },
+      return createJsonResponse(200, {
+        analysis: await updateAnalysis({ content, entryId: id }),
       });
-
-      let analysis: Pick<
-        Analysis,
-        "emoji" | "mood" | "subject" | "summery" | "sentiment"
-      >;
-
-      const where = { entryId: id };
-      const select = {
-        emoji: true,
-        mood: true,
-        subject: true,
-        summery: true,
-        sentiment: true,
-      };
-
-      if (!content.trim())
-        analysis = await prisma.analysis.update({
-          where,
-          data: {
-            emoji: "",
-            mood: "",
-            subject: "",
-            summery: "",
-            sentiment: 0,
-          },
-          select,
-        });
-      else
-        analysis = await prisma.analysis.update({
-          where,
-          data: await analyze(content),
-          select,
-        });
-
-      return createJsonResponse(200, { analysis });
     } catch (error) {
       return createErrorResponse(500, error);
     }
@@ -100,15 +63,50 @@ export async function PUT(
   }
 }
 
-export async function DELETE(_: never, { params }: { params: IdParams }) {
+async function updateJournal({ content, id }: { content: string; id: string }) {
+  return await prisma.journal.update({
+    where: { userId_id: { userId: await getCurrentUserId(), id } },
+    data: { content, preview: createPreview(content) },
+  });
+}
+
+async function updateAnalysis({
+  content,
+  entryId,
+}: {
+  entryId: string;
+  content: string;
+}) {
+  return await prisma.analysis.update({
+    where: { entryId },
+    data: !content.trim()
+      ? {
+          emoji: "",
+          mood: "",
+          subject: "",
+          summery: "",
+          sentiment: 0,
+        }
+      : await getAnalysis(content),
+    select: {
+      emoji: true,
+      mood: true,
+      subject: true,
+      summery: true,
+      sentiment: true,
+    },
+  });
+}
+
+export async function DELETE(_: never, context: RequestContext) {
   try {
-    const { id } = validateUrlIdParam(params);
+    const {
+      params: { id },
+    } = validateRequestContext(context);
 
     try {
-      const userId = await getUserIdByClerkId();
-
       await prisma.journal.delete({
-        where: { userId_id: { userId, id } },
+        where: { userId_id: { userId: await getCurrentUserId(), id } },
       });
 
       return createJsonResponse(200);

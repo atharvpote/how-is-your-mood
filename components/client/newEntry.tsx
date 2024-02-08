@@ -14,6 +14,7 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 import { z } from "zod";
 import { validatedData } from "@/utils/validator";
 import { ErrorAlert } from "./modal";
+import { handleModal } from "@/utils";
 
 export default function NewEntry() {
   const loading = useRef<HTMLDialogElement | null>(null);
@@ -26,7 +27,7 @@ export default function NewEntry() {
   } = useNewEntry(useQueryClient(), useRouter());
 
   useEffect(() => {
-    isPending ? loading.current?.showModal() : loading.current?.close();
+    handleModal(loading, isPending);
   }, [isPending]);
 
   return (
@@ -59,7 +60,9 @@ function useNewEntry(queryClient: QueryClient, router: AppRouterInstance) {
     mutationFn: async () => {
       const { data } = await axios.post<unknown>("/api/entry");
 
-      const { id } = validatedData(z.object({ id: z.string() }), data);
+      const newEntrySchema = z.object({ id: z.string() });
+
+      const { id } = validatedData(newEntrySchema, data);
 
       return { id };
     },

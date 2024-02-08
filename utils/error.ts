@@ -1,7 +1,9 @@
 import { isAxiosError } from "axios";
 import { z } from "zod";
 
-export function errorMessage(error: unknown) {
+export const ANALYSIS_NOT_FOUND = "NotFoundError: No Analysis found.";
+
+export function createErrorMessage(error: unknown) {
   if (process.env.NODE_ENV === "production")
     return isAxiosError(error) && error.request
       ? "You're offline"
@@ -22,5 +24,3 @@ export function errorMessage(error: unknown) {
     }
   else return `"Unknown error", ${String(error)}`;
 }
-
-export const ANALYSIS_NOT_FOUND = "NotFoundError: No Analysis found.";

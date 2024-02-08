@@ -7,7 +7,7 @@ import { formatRelative } from "date-fns";
 import { enIN } from "date-fns/locale";
 import { PREVIEW_LENGTH, deserializeDate } from "@/utils";
 import { ErrorComponent, GetStarted } from "../server/alerts";
-import { EntryPreview } from "@/utils/types";
+import { Preview } from "@/utils/types";
 import { z } from "zod";
 import { validatedData } from "@/utils/validator";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +16,7 @@ import { JournalFullHeight } from "../server/layouts";
 export default function Entries({
   initialEntries,
 }: Readonly<{
-  initialEntries: EntryPreview[];
+  initialEntries: Preview[];
 }>) {
   const [entries, setEntries] = useState(initialEntries);
 
@@ -60,7 +60,7 @@ export default function Entries({
               </h3>
             </div>
             <p className="overflow-hidden text-neutral-content/75">
-              {`${preview.trim()}${preview.length >= PREVIEW_LENGTH ? "..." : ""}`}
+              {`${preview.trim()}${ellipsis(preview)}`}
             </p>
           </article>
         </Link>
@@ -99,4 +99,8 @@ function useEntries() {
       return entries.map(deserializeDate);
     },
   });
+}
+
+function ellipsis(str: string) {
+  return str.length >= PREVIEW_LENGTH ? "..." : "";
 }

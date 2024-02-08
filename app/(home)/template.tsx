@@ -3,7 +3,11 @@ import { auth } from "@clerk/nextjs";
 import { ReadonlyPropsWithChildren } from "@/utils/types";
 
 export default function HomeTemplate({ children }: ReadonlyPropsWithChildren) {
-  if (auth().userId) redirect("/journal");
+  if (getClerkUserId()) redirect("/journal");
 
   return <>{children}</>;
+}
+
+function getClerkUserId() {
+  return auth().userId;
 }

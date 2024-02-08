@@ -1,18 +1,24 @@
 import { prisma } from "./db";
 
-export async function fetchMostRecentEntry(userId: string) {
-  return await prisma.journal.findFirst({
+export async function getMostRecentEntryDate(userId: string) {
+  const entry = await prisma.journal.findFirst({
     where: { userId },
     orderBy: { date: "desc" },
     select: { date: true },
   });
+
+  return entry?.date;
 }
 
-export async function fetchChatAnalysis(
-  userId: string,
-  start: Date,
-  end: Date,
-) {
+export async function getAnalysis({
+  userId,
+  end,
+  start,
+}: {
+  userId: string;
+  start: Date;
+  end: Date;
+}) {
   return await prisma.analysis.findMany({
     where: {
       userId,
@@ -23,13 +29,18 @@ export async function fetchChatAnalysis(
   });
 }
 
-export async function fetchEntryAndAnalysis(userId: string, id: string) {
+export async function getEntryAndAnalysis({
+  id,
+  userId,
+}: {
+  userId: string;
+  id: string;
+}) {
   return await prisma.journal.findUniqueOrThrow({
     where: { userId_id: { userId, id } },
     select: {
       content: true,
       date: true,
-
       analysis: {
         select: {
           emoji: true,
@@ -43,7 +54,7 @@ export async function fetchEntryAndAnalysis(userId: string, id: string) {
   });
 }
 
-export async function fetchEntries(userId: string) {
+export async function getEntryList(userId: string) {
   return await prisma.journal.findMany({
     where: { userId },
     orderBy: { date: "desc" },

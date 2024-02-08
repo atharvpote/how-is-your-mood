@@ -1,48 +1,48 @@
 import History from "@/components/client/history";
 import { GetStarted } from "@/components/server/alerts";
-import { HistoryHeightFull } from "@/components/server/layouts";
-import { getUserIdByClerkId } from "@/utils/auth";
-import { fetchChatAnalysis, fetchMostRecentEntry } from "@/utils/fetcher";
+import { HistoryFullHeight } from "@/components/server/layouts";
+import { getCurrentUserId } from "@/utils/auth";
+import { getAnalysis, getMostRecentEntryDate } from "@/utils/fetchers";
 import { endOfWeek, startOfWeek } from "date-fns";
 
 export default async function HistoryPage() {
-  const userId = await getUserIdByClerkId();
+  const userId = await getCurrentUserId();
 
   return (
     <>
       <div className="prose h-12 px-4 pt-4 md:prose-lg xl:pl-8">
         <h2>History</h2>
       </div>
-      <Content
+      <HistoryComponent
         userId={userId}
-        mostRecent={await fetchMostRecentEntry(userId)}
+        mostRecentEntryDate={await getMostRecentEntryDate(userId)}
       />
     </>
   );
 }
 
-async function Content({
-  mostRecent,
+async function HistoryComponent({
+  mostRecentEntryDate,
   userId,
 }: Readonly<{
-  mostRecent: { date: Date } | null;
+  mostRecentEntryDate?: Date;
   userId: string;
 }>) {
-  if (!mostRecent)
+  if (!mostRecentEntryDate)
     return (
-      <HistoryHeightFull>
+      <HistoryFullHeight>
         <GetStarted />
-      </HistoryHeightFull>
+      </HistoryFullHeight>
     );
 
   return (
     <History
-      initialAnalyses={await fetchChatAnalysis(
+      initialAnalyses={await getAnalysis({
         userId,
-        startOfWeek(mostRecent.date),
-        endOfWeek(mostRecent.date),
-      )}
-      initialMostRecent={mostRecent.date}
+        start: startOfWeek(mostRecentEntryDate),
+        end: endOfWeek(mostRecentEntryDate),
+      })}
+      initialMostRecent={mostRecentEntryDate}
     />
   );
 }

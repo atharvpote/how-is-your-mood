@@ -1,14 +1,12 @@
-import { getUserIdByClerkId } from "@/utils/auth";
-import { fetchMostRecentEntry } from "@/utils/fetcher";
+import { getCurrentUserId } from "@/utils/auth";
+import { getMostRecentEntryDate } from "@/utils/fetchers";
 import { createErrorResponse, createJsonResponse } from "@/utils/response";
 
 export async function GET() {
   try {
-    const userId = await getUserIdByClerkId();
-
-    const mostRecent = await fetchMostRecentEntry(userId);
-
-    return createJsonResponse(200, { mostRecent: mostRecent?.date ?? null });
+    return createJsonResponse(200, {
+      mostRecent: await getMostRecentEntryDate(await getCurrentUserId()),
+    });
   } catch (error) {
     return createErrorResponse(500, error);
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { MutableRefObject, useEffect, useRef, useState } from "react";
 import {
   QueryClient,
   useMutation,
@@ -10,8 +10,12 @@ import {
 import axios from "axios";
 import { useAutosave } from "react-autosave";
 import { z } from "zod";
-import { isTouchDevice, deserializeDate } from "@/utils";
-import { EntryAnalysis, EntryWithAnalysis } from "@/utils/types";
+import { deserializeDate, adjustUiForTouchDevice } from "@/utils";
+import {
+  Analysis as TAnalysis,
+  EntryAndAnalysis,
+  SetState,
+} from "@/utils/types";
 import { validatedData } from "@/utils/validator";
 import EntryDate from "./entryDate";
 import Analysis from "./analysis";
@@ -20,7 +24,7 @@ import { ErrorAlert } from "./modal";
 
 export default function Editor({
   initialEntry,
-}: Readonly<{ initialEntry: EntryWithAnalysis }>) {
+}: Readonly<{ initialEntry: EntryAndAnalysis }>) {
   const { data: updatedEntry } = useEntry(initialEntry.id);
 
   const [content, setContent] = useState(
@@ -36,23 +40,20 @@ export default function Editor({
 
   const [date, setDate] = useState(updatedEntry?.date ?? initialEntry.date);
 
-  const queryClient = useQueryClient();
+  const {
+    data: autosavedAnalysis,
+    mutate: mutateEntry,
+    isPending: mutating,
+    error: autosaveError,
+    isError: isAutosaveError,
+  } = useMutateEntry(useQueryClient(), cache.current);
 
-  const entryMutation = useMutateEntry(queryClient, cache.current);
-  const dateMutation = useMutateDate(queryClient);
-
-  const [touchDevice, setTouchDevice] = useState(false);
-  const [scroll, setScroll] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
 
   const textarea = useRef<HTMLTextAreaElement | null>(null);
-
   useEffect(() => {
-    isTouchDevice() ? setTouchDevice(true) : setTouchDevice(false);
-
-    if (textarea.current)
-      textarea.current.scrollHeight > textarea.current.clientHeight
-        ? setScroll(true)
-        : setScroll(false);
+    adjustUiForScroll({ textarea, setIsScrolling, setIsTouchDevice });
   }, []);
 
   useAutosave({
@@ -63,9 +64,9 @@ export default function Editor({
       if (previous.current !== trimmedContent) {
         previous.current = trimmedContent;
 
-        entryMutation.mutate({
+        mutateEntry({
           analysis:
-            entryMutation.data ??
+            autosavedAnalysis ??
             updatedEntry?.analysis ??
             initialEntry.analysis,
           content,
@@ -80,12 +81,7 @@ export default function Editor({
     <div className="px-4 md:flex md:h-[calc(100svh-var(--dashboard-navbar-height-sm-breakpoint))] lg:pl-8">
       <div className="h-[calc(100svh-11rem)] sm:h-[calc(100svh-7rem)] md:h-[calc(100%-1rem)] md:grow md:basis-full">
         <div className="flex items-center justify-between py-4">
-          <EntryDate
-            date={date}
-            setDate={setDate}
-            mutateDate={dateMutation.mutate}
-            id={initialEntry.id}
-          />
+          <EntryDate date={date} setDate={setDate} id={initialEntry.id} />
           <DeleteEntry id={initialEntry.id} />
         </div>
         <div className="h-[calc(100%-5rem)]">
@@ -95,9 +91,11 @@ export default function Editor({
             onChange={({ target: { value, clientHeight, scrollHeight } }) => {
               setContent(value);
 
-              scrollHeight > clientHeight ? setScroll(true) : setScroll(false);
+              scrollHeight > clientHeight
+                ? setIsScrolling(true)
+                : setIsScrolling(false);
             }}
-            className={`textarea size-full resize-none rounded-lg bg-neutral px-6 py-4 text-base leading-loose text-neutral-content ${!touchDevice && scroll ? "rounded-r-none" : ""}`}
+            className={`textarea size-full resize-none rounded-lg bg-neutral px-6 py-4 text-base leading-loose text-neutral-content ${!isTouchDevice && isScrolling ? "rounded-r-none" : ""}`}
             ref={textarea}
           />
         </div>
@@ -108,15 +106,15 @@ export default function Editor({
         <div className="pb-4 md:relative md:h-[calc(100%-5.3rem)]">
           <Analysis
             analysis={
-              entryMutation.data ??
+              autosavedAnalysis ??
               updatedEntry?.analysis ??
               initialEntry.analysis
             }
-            loading={entryMutation.isPending}
+            loading={mutating}
           />
         </div>
       </section>
-      <ErrorAlert isError={entryMutation.isError} error={entryMutation.error} />
+      <ErrorAlert isError={isAutosaveError} error={autosaveError} />
     </div>
   );
 }
@@ -135,20 +133,19 @@ function useEntry(id: string) {
 
       const { data } = await axios.get<unknown>(`/api/entry/${id}`);
 
-      const { date, content, analysis } = validatedData(
-        z.object({
-          date: z.string(),
-          content: z.string(),
-          analysis: z.object({
-            sentiment: z.number(),
-            mood: z.string(),
-            emoji: z.string(),
-            subject: z.string(),
-            summery: z.string(),
-          }),
+      const entrySchema = z.object({
+        date: z.string(),
+        content: z.string(),
+        analysis: z.object({
+          sentiment: z.number(),
+          mood: z.string(),
+          emoji: z.string(),
+          subject: z.string(),
+          summery: z.string(),
         }),
-        data,
-      );
+      });
+
+      const { date, content, analysis } = validatedData(entrySchema, data);
 
       return deserializeDate({ date, content, analysis });
     },
@@ -157,61 +154,64 @@ function useEntry(id: string) {
 
 function useMutateEntry(
   queryClient: QueryClient,
-  cache: Map<string, EntryAnalysis>,
+  cache: Map<string, TAnalysis>,
 ) {
   return useMutation({
-    mutationFn: async ({ id, content }: EntryWithAnalysis) => {
-      if (cache.has(content)) {
-        const analysis = cache.get(content);
+    mutationFn: async ({ id, content }: EntryAndAnalysis) => {
+      const cachedAnalysis = cache.get(content);
 
-        await axios.put(`/api/entry/${id}/update-with-analysis`, {
+      if (cachedAnalysis) {
+        await axios.put(`/api/entry/${id}/mutate`, {
           content,
-          analysis,
+          analysis: cachedAnalysis,
         });
 
-        return analysis;
+        return cachedAnalysis;
       } else {
         const { data } = await axios.put<{ data: unknown }>(
           `/api/entry/${id}`,
           { content },
         );
 
-        const { analysis } = validatedData(
-          z.object({
-            analysis: z.object({
-              sentiment: z.number(),
-              mood: z.string(),
-              emoji: z.string(),
-              subject: z.string(),
-              summery: z.string(),
-            }),
+        const analysisSchema = z.object({
+          analysis: z.object({
+            sentiment: z.number(),
+            mood: z.string(),
+            emoji: z.string(),
+            subject: z.string(),
+            summery: z.string(),
           }),
-          data,
-        );
+        });
+
+        const { analysis } = validatedData(analysisSchema, data);
 
         return analysis;
       }
     },
     onSuccess: (data, { id, content, date }) => {
-      queryClient.setQueryData(["entry", id], () => ({
+      queryClient.setQueryData(["entry", id], {
         id,
         content,
         date,
         analysis: data,
-      }));
+      });
     },
   });
 }
 
-function useMutateDate(queryClient: QueryClient) {
-  return useMutation({
-    mutationFn: async ({ id, date }: { id: string; date: Date }) => {
-      await axios.put(`/api/entry/${id}/update/date`, { date });
+function adjustUiForScroll({
+  setIsScrolling,
+  setIsTouchDevice: setTouchDevice,
+  textarea,
+}: {
+  textarea: MutableRefObject<HTMLTextAreaElement | null>;
+  setIsScrolling: SetState<boolean>;
+  setIsTouchDevice: SetState<boolean>;
+}) {
+  adjustUiForTouchDevice(setTouchDevice);
 
-      return date;
-    },
-    onSuccess: async (_, { id }) => {
-      await queryClient.invalidateQueries({ queryKey: ["entry", id] });
-    },
-  });
+  if (textarea.current)
+    textarea.current.scrollHeight > textarea.current.clientHeight
+      ? setIsScrolling(true)
+      : setIsScrolling(false);
 }

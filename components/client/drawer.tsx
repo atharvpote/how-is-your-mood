@@ -126,6 +126,13 @@ function Navbar() {
 function Sidebar({
   input,
 }: Readonly<{ input: MutableRefObject<HTMLInputElement | null> }>) {
+  const ROUTES = [
+    { href: "/journal", label: "journal" },
+    { href: "/chat", label: "chat" },
+    { href: "/history", label: "history" },
+    { href: "/profile", label: "profile" },
+  ] as const;
+
   const section = useSelectedLayoutSegment();
 
   return (
@@ -149,10 +156,3 @@ function Sidebar({
     </ul>
   );
 }
-
-const ROUTES = [
-  { href: "/journal", label: "journal" },
-  { href: "/chat", label: "chat" },
-  { href: "/history", label: "history" },
-  { href: "/profile", label: "profile" },
-] as const;

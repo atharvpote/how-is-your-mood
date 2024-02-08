@@ -1,6 +1,7 @@
 "use client";
 
-import { errorMessage } from "@/utils/error";
+import { handleModal } from "@/utils";
+import { createErrorMessage } from "@/utils/error";
 import { useEffect, useRef } from "react";
 
 export function ErrorAlert({
@@ -13,7 +14,7 @@ export function ErrorAlert({
   const modal = useRef<HTMLDialogElement | null>(null);
 
   useEffect(() => {
-    isError ? modal.current?.showModal() : modal.current?.close();
+    handleModal(modal, isError);
   }, [isError]);
 
   return (
@@ -37,7 +38,7 @@ export function ErrorAlert({
               d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <span>{errorMessage(error)}</span>
+          <span>{createErrorMessage(error)}</span>
         </div>
       </div>
       <form method="dialog" className="modal-backdrop">

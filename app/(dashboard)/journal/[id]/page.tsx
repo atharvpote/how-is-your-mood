@@ -1,18 +1,20 @@
 import Editor from "@/components/client/editor";
-import { getUserIdByClerkId } from "@/utils/auth";
+import { getCurrentUserId } from "@/utils/auth";
 import { ANALYSIS_NOT_FOUND } from "@/utils/error";
-import { fetchEntryAndAnalysis } from "@/utils/fetcher";
-import { IdParams, EntryWithAnalysis } from "@/utils/types";
-import { validateUrlIdParam, validateNotNull } from "@/utils/validator";
+import { getEntryAndAnalysis } from "@/utils/fetchers";
+import { RequestContext, Analysis } from "@/utils/types";
+import { validateRequestContext, validateNotNull } from "@/utils/validator";
 
-export default async function EntryPage({
-  params,
-}: Readonly<{ params: IdParams }>) {
-  const { id } = validateUrlIdParam(params);
+export default async function EntryPage(context: Readonly<RequestContext>) {
+  const {
+    params: { id },
+  } = validateRequestContext(context);
+  const { content, date, analysis } = await getEntryAndAnalysis({
+    userId: await getCurrentUserId(),
+    id,
+  });
 
-  const entry = await fetchEntryAndAnalysis(await getUserIdByClerkId(), id);
+  validateNotNull<Analysis>(analysis, ANALYSIS_NOT_FOUND);
 
-  validateNotNull<EntryWithAnalysis>(entry, ANALYSIS_NOT_FOUND);
-
-  return <Editor initialEntry={{ ...entry, id }} />;
+  return <Editor initialEntry={{ analysis, content, date, id }} />;
 }

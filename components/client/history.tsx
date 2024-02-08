@@ -22,7 +22,7 @@ export default function History({
   const [end, setEnd] = useState(endOfWeek(initialMostRecent));
   const [analyses, setAnalyses] = useState(initialAnalyses);
 
-  const { data: updatedMostRecent } = useMostRecent();
+  const { data: updatedMostRecent } = useMostRecentEntryDate();
   const { data: updatedAnalyses, error } = useAnalyses(start, end);
 
   useEffect(() => {
@@ -67,49 +67,48 @@ export default function History({
   );
 }
 
-let useInitialMostRecent = true;
+let FIRST_RENDER = true;
 
-function useMostRecent() {
+function useMostRecentEntryDate() {
   return useQuery({
     queryKey: ["most-recent"],
     queryFn: async () => {
-      if (useInitialMostRecent) {
-        useInitialMostRecent = false;
+      if (FIRST_RENDER) {
+        FIRST_RENDER = false;
 
         return null;
       }
 
       const { data } = await axios.get<unknown>("/api/analysis/most-recent");
 
-      const { mostRecent } = validatedData(
-        z.object({
-          mostRecent: z.union([z.null(), z.string()]),
-        }),
-        data,
-      );
+      const mostRecentEntrySchema = z.object({
+        mostRecent: z.string().optional(),
+      });
 
-      return mostRecent === null ? mostRecent : new Date(mostRecent);
+      const { mostRecent } = validatedData(mostRecentEntrySchema, data);
+
+      return mostRecent === undefined ? mostRecent : new Date(mostRecent);
     },
   });
 }
-
-let useInitialAnalyses = true;
 
 function useAnalyses(start: Date, end: Date) {
   return useQuery({
     queryKey: ["analyses-period", { start, end }],
     queryFn: async () => {
-      if (useInitialAnalyses) {
-        useInitialAnalyses = false;
+      if (FIRST_RENDER) {
+        FIRST_RENDER = false;
 
         return null;
       }
 
+      const searchParams = new URLSearchParams({
+        start: start.toISOString(),
+        end: end.toISOString(),
+      });
+
       const { data } = await axios.get<unknown>(
-        `/api/analysis?${new URLSearchParams({
-          start: start.toISOString(),
-          end: end.toISOString(),
-        }).toString()}`,
+        `/api/analysis?${searchParams.toString()}`,
       );
 
       const { analyses } = validatedData(

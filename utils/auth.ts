@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs";
 import { prisma } from "./db";
 
-export async function getUserIdByClerkId() {
+export async function getCurrentUserId() {
   const { userId: clerkId } = auth();
 
   if (!clerkId) throw new Error("Clerk ID not found.");

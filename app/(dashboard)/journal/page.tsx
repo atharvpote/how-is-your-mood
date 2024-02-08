@@ -1,7 +1,7 @@
 import Entries from "@/components/client/entries";
 import NewEntry from "@/components/client/newEntry";
-import { getUserIdByClerkId } from "@/utils/auth";
-import { fetchEntries } from "@/utils/fetcher";
+import { getCurrentUserId } from "@/utils/auth";
+import { getEntryList } from "@/utils/fetchers";
 
 export default async function EntriesPage() {
   return (
@@ -12,9 +12,7 @@ export default async function EntriesPage() {
         </div>
         <NewEntry />
       </header>
-      <Entries
-        initialEntries={await fetchEntries(await getUserIdByClerkId())}
-      />
+      <Entries initialEntries={await getEntryList(await getCurrentUserId())} />
     </div>
   );
 }

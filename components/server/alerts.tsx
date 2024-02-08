@@ -1,4 +1,4 @@
-import { errorMessage } from "@/utils/error";
+import { createErrorMessage } from "@/utils/error";
 
 export function GetStarted() {
   return (
@@ -26,7 +26,7 @@ export function GetStarted() {
 export function ErrorComponent({ error }: Readonly<{ error: Error }>) {
   return (
     <div className="p-4">
-      <AlertError message={errorMessage(error)} />
+      <AlertError message={createErrorMessage(error)} />
     </div>
   );
 }
