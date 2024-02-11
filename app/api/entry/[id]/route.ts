@@ -50,10 +50,8 @@ export async function PUT(request: NextRequest, context: RequestContext) {
     );
 
     try {
-      await updateJournal({ content, id });
-
       return createJsonResponse(200, {
-        analysis: await updateAnalysis({ content, entryId: id }),
+        analysis: await updateEntry({ content, id }),
       });
     } catch (error) {
       return createErrorResponse(500, error);
@@ -63,38 +61,32 @@ export async function PUT(request: NextRequest, context: RequestContext) {
   }
 }
 
-async function updateJournal({ content, id }: { content: string; id: string }) {
-  return await prisma.journal.update({
-    where: { userId_id: { userId: await getCurrentUserId(), id } },
-    data: { content, preview: createPreview(content) },
-  });
-}
+async function updateEntry({ content, id }: { content: string; id: string }) {
+  return await prisma.$transaction(async (tx) => {
+    const { id: entryId } = await tx.journal.update({
+      where: { userId_id: { userId: await getCurrentUserId(), id } },
+      data: { content, preview: createPreview(content) },
+    });
 
-async function updateAnalysis({
-  content,
-  entryId,
-}: {
-  entryId: string;
-  content: string;
-}) {
-  return await prisma.analysis.update({
-    where: { entryId },
-    data: !content.trim()
-      ? {
-          emoji: "",
-          mood: "",
-          subject: "",
-          summery: "",
-          sentiment: 0,
-        }
-      : await getAnalysis(content),
-    select: {
-      emoji: true,
-      mood: true,
-      subject: true,
-      summery: true,
-      sentiment: true,
-    },
+    return await prisma.analysis.update({
+      where: { entryId },
+      data: !content.trim()
+        ? {
+            emoji: "",
+            mood: "",
+            subject: "",
+            summery: "",
+            sentiment: 0,
+          }
+        : await getAnalysis(content),
+      select: {
+        emoji: true,
+        mood: true,
+        subject: true,
+        summery: true,
+        sentiment: true,
+      },
+    });
   });
 }
 

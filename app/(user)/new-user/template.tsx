@@ -21,16 +21,16 @@ async function findCurrentUserInDB(clerkId: string) {
   return await prisma.user.findUnique({ where: { clerkId } });
 }
 
+async function createNewUser(clerkId: string, emailAddresses: EmailAddress[]) {
+  return await prisma.user.create({
+    data: { clerkId, email: getEmail(emailAddresses) },
+  });
+}
+
 function getEmail(emailAddresses: EmailAddress[]) {
   if (!emailAddresses[0]?.emailAddress) throw new Error("Email is undefined");
 
   const [{ emailAddress: email }] = emailAddresses;
 
   return email;
-}
-
-async function createNewUser(clerkId: string, emailAddresses: EmailAddress[]) {
-  return await prisma.user.create({
-    data: { clerkId, email: getEmail(emailAddresses) },
-  });
 }

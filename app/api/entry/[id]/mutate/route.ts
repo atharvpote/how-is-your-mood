@@ -31,10 +31,12 @@ export async function PUT(request: NextRequest, context: RequestContext) {
     );
 
     try {
-      const userId = await getCurrentUserId();
-
-      await updateJournal(userId, id, content);
-      await updateAnalysis(userId, id, analysis);
+      await mutateEntry({
+        userId: await getCurrentUserId(),
+        id,
+        content,
+        analysis,
+      });
 
       return createJsonResponse(200);
     } catch (error) {
@@ -45,16 +47,26 @@ export async function PUT(request: NextRequest, context: RequestContext) {
   }
 }
 
-async function updateJournal(userId: string, id: string, content: string) {
-  await prisma.journal.update({
-    where: { userId_id: { userId, id } },
-    data: { content, preview: createPreview(content) },
-  });
-}
+async function mutateEntry({
+  analysis,
+  content,
+  userId,
+  id,
+}: {
+  userId: string;
+  id: string;
+  content: string;
+  analysis: Analysis;
+}) {
+  await prisma.$transaction(async (tx) => {
+    await tx.journal.update({
+      where: { userId_id: { userId, id } },
+      data: { content, preview: createPreview(content) },
+    });
 
-async function updateAnalysis(userId: string, id: string, analysis: Analysis) {
-  await prisma.analysis.update({
-    where: { entryId_userId: { entryId: id, userId } },
-    data: analysis,
+    await tx.analysis.update({
+      where: { entryId_userId: { entryId: id, userId } },
+      data: analysis,
+    });
   });
 }

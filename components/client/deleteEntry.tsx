@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { useEffect, useRef } from "react";
+import { MutableRefObject, useEffect, useRef } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { LoadingSpinner } from "../server/loading";
 import {
   QueryClient,
+  UseMutateFunction,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
@@ -45,42 +46,69 @@ export default function DeleteEntry({ id }: Readonly<{ id: string }>) {
           <span>Delete</span>
         </div>
       </button>
-      <dialog className="modal modal-bottom sm:modal-middle" ref={modal}>
-        <div className="prose modal-box">
-          <h3 className="font-bold">Are you sure?</h3>
-          <p>Once you delete the entry, it can not be recovered.</p>
-          <div className="modal-action">
-            <form method="dialog">
-              {/* if there is a button in form, it will close the modal */}
-              <button className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
-                ✕
-              </button>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => {
-                    deleteEntry({ id });
-                  }}
-                  className="btn btn-outline btn-error hover:btn-error"
-                >
-                  Yes
-                </button>
-                <dialog
-                  className="bg-transparent backdrop:backdrop-brightness-75"
-                  ref={loading}
-                >
-                  <LoadingSpinner />
-                </dialog>
-                <button className="btn btn-outline">No</button>
-              </div>
-            </form>
-          </div>
-        </div>
-        <form method="dialog" className="modal-backdrop">
-          <button>close</button>
-        </form>
-      </dialog>
+      <ConfirmationModal
+        deleteEntry={deleteEntry}
+        id={id}
+        loadingRef={loading}
+        modalRef={modal}
+      />
       <ErrorAlert isError={isError} error={error} />
     </>
+  );
+}
+
+function ConfirmationModal({
+  modalRef,
+  loadingRef,
+  deleteEntry,
+  id,
+}: Readonly<{
+  modalRef: MutableRefObject<HTMLDialogElement | null>;
+  loadingRef: MutableRefObject<HTMLDialogElement | null>;
+  deleteEntry: UseMutateFunction<
+    void,
+    Error,
+    {
+      id: string;
+    }
+  >;
+  id: string;
+}>) {
+  return (
+    <dialog className="modal modal-bottom sm:modal-middle" ref={modalRef}>
+      <div className="prose modal-box">
+        <h3 className="font-bold">Are you sure?</h3>
+        <p>Once you delete the entry, it can not be recovered.</p>
+        <div className="modal-action">
+          <form method="dialog">
+            {/* if there is a button in form, it will close the modal */}
+            <button className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+              ✕
+            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  deleteEntry({ id });
+                }}
+                className="btn btn-outline btn-error hover:btn-error"
+              >
+                Yes
+              </button>
+              <dialog
+                className="bg-transparent backdrop:backdrop-brightness-75"
+                ref={loadingRef}
+              >
+                <LoadingSpinner />
+              </dialog>
+              <button className="btn btn-outline">No</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <form method="dialog" className="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
   );
 }
 
