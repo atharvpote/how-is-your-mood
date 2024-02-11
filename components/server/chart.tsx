@@ -17,8 +17,9 @@ import {
   NameType,
 } from "recharts/types/component/DefaultTooltipContent";
 import { z } from "zod";
-import { ErrorComponent, AlertError } from "./alerts";
+import { AlertError } from "./alerts";
 import { HistoryFullHeight } from "./layouts";
+import { ErrorComponent } from "./erros";
 
 export default function HistoryChart({
   analyses,

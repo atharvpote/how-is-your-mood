@@ -1,5 +1,3 @@
-import { createErrorMessage } from "@/utils/error";
-
 export function GetStarted() {
   return (
     <div className="p-4">
@@ -19,14 +17,6 @@ export function GetStarted() {
         </svg>
         <span>Get started by creating your first entry</span>
       </div>
-    </div>
-  );
-}
-
-export function ErrorComponent({ error }: Readonly<{ error: Error }>) {
-  return (
-    <div className="p-4">
-      <AlertError message={createErrorMessage(error)} />
     </div>
   );
 }

@@ -6,12 +6,13 @@ import axios from "axios";
 import { formatRelative } from "date-fns";
 import { enIN } from "date-fns/locale";
 import { PREVIEW_LENGTH, deserializeDate } from "@/utils";
-import { ErrorComponent, GetStarted } from "../server/alerts";
+import { GetStarted } from "../server/alerts";
 import { Preview } from "@/utils/types";
 import { z } from "zod";
 import { validatedData } from "@/utils/validator";
 import { useQuery } from "@tanstack/react-query";
 import { JournalFullHeight } from "../server/layouts";
+import { ErrorComponent } from "../server/erros";
 
 export default function Entries({
   initialEntries,
