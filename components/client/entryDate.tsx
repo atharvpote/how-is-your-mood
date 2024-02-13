@@ -1,15 +1,14 @@
 "use client";
 
-import { adjustUiForTouchDevice } from "@/utils";
-import { useEffect, useState } from "react";
+import { isTouchDevice } from "@/utils";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { SetState } from "@/utils/types";
+import { Entry, SetState } from "@/utils/types";
 import {
   QueryClient,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import axios from "axios";
+import { mutateEntryDate } from "@/utils/actions";
 
 export default function EntryDate({
   date,
@@ -20,17 +19,11 @@ export default function EntryDate({
   setDate: SetState<Date>;
   id: string;
 }>) {
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
-
   const { mutate } = useMutateDate(useQueryClient());
-
-  useEffect(() => {
-    adjustUiForTouchDevice(setIsTouchDevice);
-  }, []);
 
   return (
     <div
-      className={!isTouchDevice ? "tooltip tooltip-right" : ""}
+      className={!isTouchDevice() ? "tooltip tooltip-right" : ""}
       data-tip="Date of Entry"
     >
       <span className="text-lg font-medium text-neutral-content">
@@ -53,12 +46,15 @@ export default function EntryDate({
 function useMutateDate(queryClient: QueryClient) {
   return useMutation({
     mutationFn: async ({ id, date }: { id: string; date: Date }) => {
-      await axios.put(`/api/entry/${id}/mutate/date`, { date });
+      await mutateEntryDate(id, date);
 
       return date;
     },
-    onSuccess: async (_, { id }) => {
-      await queryClient.invalidateQueries({ queryKey: ["entry", id] });
+    onSuccess: (date, { id }) => {
+      queryClient.setQueryData(["entry", id], (oldDate: Entry) => ({
+        ...oldDate,
+        date,
+      }));
     },
   });
 }

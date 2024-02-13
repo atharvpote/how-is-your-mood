@@ -1,41 +1,43 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import axios from "axios";
+import { useRef, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { LoadingSpinner } from "../server/loading";
-import {
-  QueryClient,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { z } from "zod";
-import { validatedData } from "@/utils/validator";
+import { useQueryClient } from "@tanstack/react-query";
 import { ErrorAlert } from "./modal";
-import { handleModal } from "@/utils";
+import { createEntry } from "@/utils/actions";
+import { createErrorMessage } from "@/utils/error";
+import { useRouter } from "next/navigation";
 
 export default function NewEntry() {
   const loading = useRef<HTMLDialogElement | null>(null);
 
-  const {
-    mutate: create,
-    isPending,
-    isError,
-    error,
-  } = useNewEntry(useQueryClient(), useRouter());
+  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    handleModal(loading, isPending);
-  }, [isPending]);
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
   return (
     <>
       <button
         aria-label="new entry"
         onClick={() => {
-          create();
+          loading.current?.showModal();
+
+          createEntry()
+            .then(async (id) => {
+              await queryClient.invalidateQueries({ queryKey: ["entries"] });
+
+              router.push(`/journal/${id}`);
+            })
+            .catch((error) => {
+              setIsError(true);
+              setError(new Error(createErrorMessage(error)));
+            })
+            .finally(() => {
+              loading.current?.close();
+            });
         }}
         className="btn bg-neutral text-neutral-content hover:scale-105 hover:bg-neutral-800"
       >
@@ -53,23 +55,4 @@ export default function NewEntry() {
       <ErrorAlert isError={isError} error={error} />
     </>
   );
-}
-
-function useNewEntry(queryClient: QueryClient, router: AppRouterInstance) {
-  return useMutation({
-    mutationFn: async () => {
-      const { data } = await axios.post<unknown>("/api/entry");
-
-      const newEntrySchema = z.object({ id: z.string() });
-
-      const { id } = validatedData(newEntrySchema, data);
-
-      return { id };
-    },
-    onSuccess: async ({ id }) => {
-      router.push(`/journal/${id}`);
-
-      await queryClient.invalidateQueries({ queryKey: ["entries"] });
-    },
-  });
 }

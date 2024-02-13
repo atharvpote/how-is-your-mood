@@ -1,40 +1,52 @@
 "use client";
 
 import { startOfWeek, endOfWeek } from "date-fns";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DatePicker } from "@mui/x-date-pickers";
 import { ChartAnalysis } from "@/utils/types";
-import { deserializeDate } from "@/utils";
-import { validatedData } from "@/utils/validator";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { z } from "zod";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import HistoryChart from "../server/chart";
+import { getChartAnalyses, getMostRecentEntryDate } from "@/utils/actions";
 
 export default function History({
-  initialMostRecent,
-  initialAnalyses,
+  mostRecentEntryDate,
+  analyses,
 }: Readonly<{
-  initialMostRecent: Date;
-  initialAnalyses: ChartAnalysis[];
+  mostRecentEntryDate: Date;
+  analyses: ChartAnalysis[];
 }>) {
-  const [start, setStart] = useState(startOfWeek(initialMostRecent));
-  const [end, setEnd] = useState(endOfWeek(initialMostRecent));
-  const [analyses, setAnalyses] = useState(initialAnalyses);
+  const [startDate, setStartDate] = useState(startOfWeek(mostRecentEntryDate));
+  const [endDate, setEndDate] = useState(endOfWeek(mostRecentEntryDate));
+  const [analysesState, setAnalysesState] = useState(analyses);
+  const [error, setError] = useState<Error | null>(null);
 
-  const { data: updatedMostRecent } = useMostRecentEntryDate();
-  const { data: updatedAnalyses, error } = useAnalyses(start, end);
+  const mostRecentEntryDateUpdate = useMostRecentEntryDate();
+  const analysesUpdate = useAnalyses(startDate, endDate);
 
+  const queryClient = useQueryClient();
+
+  if (!mostRecentEntryDateUpdate.data)
+    queryClient.setQueryData(["most-recent"], mostRecentEntryDate);
+  if (!analysesUpdate.data)
+    queryClient.setQueryData(["analyses-period"], analyses);
+
+  const firstRender = useRef(true);
   useEffect(() => {
-    if (updatedMostRecent) {
-      setStart(startOfWeek(updatedMostRecent));
-      setEnd(endOfWeek(updatedMostRecent));
+    if (firstRender.current && mostRecentEntryDateUpdate.data) {
+      firstRender.current = false;
+
+      setStartDate(startOfWeek(mostRecentEntryDateUpdate.data));
+      setEndDate(endOfWeek(mostRecentEntryDateUpdate.data));
     }
-  }, [setEnd, setStart, updatedMostRecent]);
+  }, [mostRecentEntryDateUpdate.data]);
 
   useEffect(() => {
-    if (updatedAnalyses) setAnalyses(updatedAnalyses);
-  }, [updatedAnalyses]);
+    if (analysesUpdate.data) setAnalysesState(analysesUpdate.data);
+  }, [analysesUpdate.data]);
+
+  useEffect(() => {
+    if (analysesUpdate.error) setError(analysesUpdate.error);
+  }, [analysesUpdate.error]);
 
   return (
     <>
@@ -44,17 +56,17 @@ export default function History({
             <div className="flex flex-col items-center gap-2 sm:flex-row">
               <span>From</span>
               <DatePicker
-                value={start}
+                value={startDate}
                 onChange={(start) => {
-                  if (start) setStart(start);
+                  if (start) setStartDate(start);
                 }}
                 format="dd/MM/yyyy"
               />
               <span>To</span>
               <DatePicker
-                value={end}
+                value={endDate}
                 onChange={(end) => {
-                  if (end) setEnd(end);
+                  if (end) setEndDate(end);
                 }}
                 format="dd/MM/yyyy"
               />
@@ -62,70 +74,26 @@ export default function History({
           </div>
         </div>
       </div>
-      <HistoryChart analyses={analyses} error={error} start={start} end={end} />
+      <HistoryChart
+        analyses={analysesState}
+        error={error}
+        start={startDate}
+        end={endDate}
+      />
     </>
   );
 }
 
-let FIRST_RENDER = true;
-
 function useMostRecentEntryDate() {
   return useQuery({
     queryKey: ["most-recent"],
-    queryFn: async () => {
-      if (FIRST_RENDER) {
-        FIRST_RENDER = false;
-
-        return null;
-      }
-
-      const { data } = await axios.get<unknown>("/api/analysis/most-recent");
-
-      const mostRecentEntrySchema = z.object({
-        mostRecent: z.string().optional(),
-      });
-
-      const { mostRecent } = validatedData(mostRecentEntrySchema, data);
-
-      return mostRecent === undefined ? mostRecent : new Date(mostRecent);
-    },
+    queryFn: async () => await getMostRecentEntryDate(),
   });
 }
 
 function useAnalyses(start: Date, end: Date) {
   return useQuery({
     queryKey: ["analyses-period", { start, end }],
-    queryFn: async () => {
-      if (FIRST_RENDER) {
-        FIRST_RENDER = false;
-
-        return null;
-      }
-
-      const searchParams = new URLSearchParams({
-        start: start.toISOString(),
-        end: end.toISOString(),
-      });
-
-      const { data } = await axios.get<unknown>(
-        `/api/analysis?${searchParams.toString()}`,
-      );
-
-      const { analyses } = validatedData(
-        z.object({
-          analyses: z
-            .object({
-              date: z.string(),
-              emoji: z.string(),
-              mood: z.string(),
-              sentiment: z.number(),
-            })
-            .array(),
-        }),
-        data,
-      );
-
-      return analyses.map(deserializeDate);
-    },
+    queryFn: async () => await getChartAnalyses(start, end),
   });
 }

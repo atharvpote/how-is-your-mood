@@ -67,7 +67,7 @@ function Navbar() {
       </div>
       <div className="grow basis-full">
         <Link
-          href="/"
+          href="/journal"
           prefetch
           className="prose-sm btn btn-ghost h-full max-w-fit hover:scale-105"
         >

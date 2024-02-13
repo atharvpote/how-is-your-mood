@@ -1,34 +1,21 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import { MutableRefObject, useEffect, useRef } from "react";
+import { MutableRefObject, useRef, useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { LoadingSpinner } from "../server/loading";
-import {
-  QueryClient,
-  UseMutateFunction,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { useQueryClient } from "@tanstack/react-query";
 import { ErrorAlert } from "./modal";
-import { handleModal } from "@/utils";
+import { createErrorMessage } from "@/utils/error";
+import { SetState } from "@/utils/types";
+import { deleteEntry } from "@/utils/actions";
+import { useRouter } from "next/navigation";
 
 export default function DeleteEntry({ id }: Readonly<{ id: string }>) {
   const modal = useRef<HTMLDialogElement | null>(null);
   const loading = useRef<HTMLDialogElement | null>(null);
 
-  const {
-    mutate: deleteEntry,
-    isPending,
-    isError,
-    error,
-  } = useDeleteEntry(useQueryClient(), useRouter());
-
-  useEffect(() => {
-    handleModal(loading, isPending);
-  }, [isPending]);
+  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   return (
     <>
@@ -47,10 +34,11 @@ export default function DeleteEntry({ id }: Readonly<{ id: string }>) {
         </div>
       </button>
       <ConfirmationModal
-        deleteEntry={deleteEntry}
         id={id}
-        loadingRef={loading}
-        modalRef={modal}
+        loading={loading}
+        modal={modal}
+        setError={setError}
+        setIsError={setIsError}
       />
       <ErrorAlert isError={isError} error={error} />
     </>
@@ -58,24 +46,23 @@ export default function DeleteEntry({ id }: Readonly<{ id: string }>) {
 }
 
 function ConfirmationModal({
-  modalRef,
-  loadingRef,
-  deleteEntry,
+  modal,
+  loading,
+  setError,
+  setIsError,
   id,
 }: Readonly<{
-  modalRef: MutableRefObject<HTMLDialogElement | null>;
-  loadingRef: MutableRefObject<HTMLDialogElement | null>;
-  deleteEntry: UseMutateFunction<
-    void,
-    Error,
-    {
-      id: string;
-    }
-  >;
+  modal: MutableRefObject<HTMLDialogElement | null>;
+  loading: MutableRefObject<HTMLDialogElement | null>;
+  setError: SetState<Error | null>;
+  setIsError: SetState<boolean>;
   id: string;
 }>) {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
   return (
-    <dialog className="modal modal-bottom sm:modal-middle" ref={modalRef}>
+    <dialog className="modal modal-bottom sm:modal-middle" ref={modal}>
       <div className="prose modal-box">
         <h3 className="font-bold">Are you sure?</h3>
         <p>Once you delete the entry, it can not be recovered.</p>
@@ -88,7 +75,23 @@ function ConfirmationModal({
             <div className="flex gap-4">
               <button
                 onClick={() => {
-                  deleteEntry({ id });
+                  loading.current?.showModal();
+
+                  deleteEntry(id)
+                    .then(async () => {
+                      await queryClient.invalidateQueries({
+                        queryKey: ["entries"],
+                      });
+
+                      router.replace(`/journal`);
+                    })
+                    .catch((error) => {
+                      setIsError(true);
+                      setError(new Error(createErrorMessage(error)));
+                    })
+                    .finally(() => {
+                      loading.current?.close();
+                    });
                 }}
                 className="btn btn-outline btn-error hover:btn-error"
               >
@@ -96,7 +99,7 @@ function ConfirmationModal({
               </button>
               <dialog
                 className="bg-transparent backdrop:backdrop-brightness-75"
-                ref={loadingRef}
+                ref={loading}
               >
                 <LoadingSpinner />
               </dialog>
@@ -110,18 +113,4 @@ function ConfirmationModal({
       </form>
     </dialog>
   );
-}
-
-function useDeleteEntry(queryClient: QueryClient, router: AppRouterInstance) {
-  return useMutation({
-    mutationFn: async ({ id }: { id: string }) => {
-      await axios.delete(`/api/entry/${id}`);
-    },
-    onSuccess: async (_, { id }) => {
-      router.replace("/journal/");
-
-      await queryClient.invalidateQueries({ queryKey: [`/api/entry/${id}`] });
-      await queryClient.invalidateQueries({ queryKey: ["entries"] });
-    },
-  });
 }

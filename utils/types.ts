@@ -22,11 +22,11 @@ export type Analysis = Pick<
   "sentiment" | "mood" | "emoji" | "subject" | "summery"
 >;
 
-export type Entry = Pick<PrismaJournal, "content" | "date" | "id">;
+export type Journal = Pick<PrismaJournal, "content" | "date" | "id">;
 
-export type EntryAndAnalysis = Entry & { analysis: Analysis };
+export type Entry = Journal & { analysis: Analysis };
 
-export type Preview = Omit<Entry, "content"> & Pick<PrismaJournal, "preview">;
+export type Preview = Omit<Journal, "content"> & Pick<PrismaJournal, "preview">;
 
 export type SetState<T> = Dispatch<SetStateAction<T>>;
 

@@ -6,7 +6,6 @@ import { getCurrentUserId } from "@/utils/auth";
 import { prisma } from "@/utils/db";
 import { validatedData } from "@/utils/validator";
 import { getChatResponse } from "@/utils/ai";
-import { getRequestData } from "@/utils";
 
 export async function POST(request: NextRequest) {
   const requestSchema = z.object({
@@ -26,10 +25,7 @@ export async function POST(request: NextRequest) {
   });
 
   try {
-    const { messages } = validatedData(
-      requestSchema,
-      await getRequestData(request),
-    );
+    const { messages } = validatedData(requestSchema, await request.json());
 
     try {
       return new StreamingTextResponse(

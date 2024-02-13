@@ -1,4 +1,3 @@
-import { isValidDateRange } from "@/utils";
 import { ChartAnalysis } from "@/utils/types";
 import { validatedData } from "@/utils/validator";
 import {
@@ -41,7 +40,7 @@ export default function HistoryChart({
       </HistoryFullHeight>
     );
 
-  if (!isValidDateRange(start, end))
+  if (start.getTime() >= end.getTime())
     return (
       <div className="flex h-[var(--history-page-remaining-space)] items-center justify-center sm:h-[calc(100svh-12.5rem)]">
         <div>

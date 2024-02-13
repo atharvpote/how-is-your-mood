@@ -1,6 +1,5 @@
 "use client";
 
-import { handleModal } from "@/utils";
 import { createErrorMessage } from "@/utils/error";
 import { useEffect, useRef } from "react";
 
@@ -14,7 +13,9 @@ export function ErrorAlert({
   const modal = useRef<HTMLDialogElement | null>(null);
 
   useEffect(() => {
-    handleModal(modal, isError);
+    if (!modal.current) throw new Error("Modal in null");
+
+    isError ? modal.current.showModal() : modal.current.close();
   }, [isError]);
 
   return (

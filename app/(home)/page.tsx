@@ -4,10 +4,10 @@ export default function Home() {
   return (
     <div className="min-h-[100svh] bg-base-200">
       <nav className="flex justify-end gap-4 p-2">
-        <Link href={"/sign-up"} prefetch className="btn btn-primary">
+        <Link href="/sign-up" prefetch className="btn btn-primary">
           Sign Up
         </Link>
-        <Link href={"/sign-in"} prefetch className="btn btn-neutral">
+        <Link href="/sign-in" prefetch className="btn btn-neutral">
           Sign In
         </Link>
       </nav>

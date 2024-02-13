@@ -2,41 +2,40 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import axios from "axios";
 import { formatRelative } from "date-fns";
 import { enIN } from "date-fns/locale";
-import { PREVIEW_LENGTH, deserializeDate } from "@/utils";
+import { PREVIEW_LENGTH } from "@/utils";
 import { GetStarted } from "../server/alerts";
 import { Preview } from "@/utils/types";
-import { z } from "zod";
-import { validatedData } from "@/utils/validator";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { JournalFullHeight } from "../server/layouts";
 import { ErrorComponent } from "../server/erros";
+import { getEntries } from "@/utils/actions";
 
 export default function Entries({
-  initialEntries,
+  entries,
 }: Readonly<{
-  initialEntries: Preview[];
+  entries: Preview[];
 }>) {
-  const [entries, setEntries] = useState(initialEntries);
+  const [entryList, setEntryList] = useState(entries);
 
-  const { data: updatedEntries, error: updatedEntriesError } = useEntries();
-
+  const update = useEntries();
+  const queryClient = useQueryClient();
+  if (!update.data) queryClient.setQueryData(["entries"], entries);
   useEffect(() => {
-    if (updatedEntries) setEntries(updatedEntries);
-  }, [updatedEntries]);
+    if (update.data) setEntryList(update.data);
+  }, [update.data]);
 
-  if (updatedEntriesError)
+  if (update.error)
     return (
       <JournalFullHeight>
         <div>
-          <ErrorComponent error={updatedEntriesError} />
+          <ErrorComponent error={update.error} />
         </div>
       </JournalFullHeight>
     );
 
-  if (!entries.length)
+  if (!entryList.length)
     return (
       <JournalFullHeight>
         <GetStarted />
@@ -45,7 +44,7 @@ export default function Entries({
 
   return (
     <div className="grid grid-cols-1 gap-8 py-8 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-      {entries.map(({ id, date, preview }, index) => (
+      {entryList.map(({ id, date, preview }, index) => (
         <Link
           key={id}
           href={`/journal/${id}`}
@@ -70,35 +69,10 @@ export default function Entries({
   );
 }
 
-let FIRST_RENDER = true;
-
 function useEntries() {
   return useQuery({
     queryKey: ["entries"],
-    queryFn: async () => {
-      if (FIRST_RENDER) {
-        FIRST_RENDER = false;
-
-        return null;
-      }
-
-      const { data } = await axios.get<unknown>("/api/entries");
-
-      const { entries } = validatedData(
-        z.object({
-          entries: z
-            .object({
-              id: z.string(),
-              preview: z.string(),
-              date: z.string(),
-            })
-            .array(),
-        }),
-        data,
-      );
-
-      return entries.map(deserializeDate);
-    },
+    queryFn: async () => await getEntries(),
   });
 }
 

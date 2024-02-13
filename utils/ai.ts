@@ -8,7 +8,7 @@ import { Message } from "ai/react";
 import { z } from "zod";
 import { Journal as PrismaJournal } from "@prisma/client";
 
-export async function getAnalysis(content: string) {
+export async function getAiAnalysis(content: string) {
   const parser = StructuredOutputParser.fromZodSchema(
     z.object({
       mood: z.string().describe("Mood of person who wrote journal"),

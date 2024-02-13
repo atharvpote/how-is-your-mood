@@ -14,24 +14,24 @@
     "@clerk/themes": "^1.7.9",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
-    "@langchain/core": "^0.1.26",
+    "@langchain/core": "^0.1.27",
     "@langchain/openai": "^0.0.14",
-    "@mui/material": "^5.15.9",
+    "@mui/material": "^5.15.10",
     "@mui/x-date-pickers": "^6.19.4",
     "@prisma/client": "^5.9.1",
     "@tailwindcss/typography": "^0.5.10",
     "@tanstack/eslint-plugin-query": "^5.20.1",
-    "@tanstack/react-query": "^5.20.1",
+    "@tanstack/react-query": "^5.20.2",
     "@types/node": "^20.11.17",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
     "@types/uuid": "^9.0.8",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
-    "ai": "^2.2.34",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.0.1",
+    "ai": "^2.2.35",
     "autoprefixer": "^10.4.17",
     "axios": "^1.6.7",
-    "daisyui": "^4.6.2",
+    "daisyui": "^4.7.0",
     "date-fns": "^2.30.0",
     "encoding": "^0.1.13",
     "eslint": "^8.56.0",
@@ -41,7 +41,7 @@
     "eslint-plugin-tailwindcss": "^3.14.2",
     "langchain": "^0.1.17",
     "next": "^14.1.0",
-    "openai": "^4.27.0",
+    "openai": "^4.28.0",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
     "prisma": "^5.9.1",
@@ -56,6 +56,6 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@tanstack/react-query-devtools": "^5.20.1"
+    "@tanstack/react-query-devtools": "^5.20.2"
   }
 }
