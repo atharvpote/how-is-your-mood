@@ -9,10 +9,6 @@ export function validatedData<T>(schema: ZodSchema<T>, data: unknown) {
   return result.data;
 }
 
-function formatZodErrors(zodError: ZodError) {
-  return zodError.format()._errors.join(", ");
-}
-
 export function validateRequestContext(context: RequestContext) {
   return validatedData(
     z.object({ params: z.object({ id: z.string().uuid() }) }),
@@ -25,4 +21,8 @@ export function validateNotNull<T>(
   errorMessage: string,
 ): asserts input is T {
   if (!input) throw new Error(errorMessage);
+}
+
+function formatZodErrors(zodError: ZodError) {
+  return zodError.format()._errors.join(", ");
 }

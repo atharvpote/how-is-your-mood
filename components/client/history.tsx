@@ -2,11 +2,11 @@
 
 import { startOfWeek, endOfWeek } from "date-fns";
 import { useEffect, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DatePicker } from "@mui/x-date-pickers";
 import { ChartAnalysis } from "@/utils/types";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import HistoryChart from "../server/chart";
 import { getChartAnalyses, getMostRecentEntryDate } from "@/utils/actions";
+import HistoryChart from "../server/chart";
 
 export default function History({
   mostRecentEntryDate,

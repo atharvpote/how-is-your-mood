@@ -2,13 +2,13 @@
 
 import { MutableRefObject, useRef, useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
-import { LoadingSpinner } from "../server/loading";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { ErrorAlert } from "./modal";
+import { LoadingSpinner } from "../server/loading";
 import { createErrorMessage } from "@/utils/error";
 import { SetState } from "@/utils/types";
 import { deleteEntry } from "@/utils/actions";
-import { useRouter } from "next/navigation";
+import { ErrorAlert } from "./modal";
 
 export default function DeleteEntry({ id }: Readonly<{ id: string }>) {
   const modal = useRef<HTMLDialogElement | null>(null);

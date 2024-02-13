@@ -1,10 +1,10 @@
 "use client";
 
-import { ReadonlyPropsWithChildren } from "@/utils/types";
 import { ThemeProvider } from "@emotion/react";
 import { createTheme, useMediaQuery } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { ReadonlyPropsWithChildren } from "@/utils/types";
 
 export default function MUIContext({ children }: ReadonlyPropsWithChildren) {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");

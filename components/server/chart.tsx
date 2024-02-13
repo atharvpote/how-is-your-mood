@@ -1,5 +1,3 @@
-import { ChartAnalysis } from "@/utils/types";
-import { validatedData } from "@/utils/validator";
 import {
   ResponsiveContainer,
   LineChart,
@@ -16,6 +14,8 @@ import {
   NameType,
 } from "recharts/types/component/DefaultTooltipContent";
 import { z } from "zod";
+import { ChartAnalysis } from "@/utils/types";
+import { validatedData } from "@/utils/validator";
 import { AlertError } from "./alerts";
 import { HistoryFullHeight } from "./layouts";
 import { ErrorComponent } from "./erros";

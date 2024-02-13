@@ -1,7 +1,7 @@
 "use client";
 
-import { createErrorMessage } from "@/utils/error";
 import { useEffect, useRef } from "react";
+import { createErrorMessage } from "@/utils/error";
 
 export function ErrorAlert({
   isError,

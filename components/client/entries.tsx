@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatRelative } from "date-fns";
 import { enIN } from "date-fns/locale";
-import { PREVIEW_LENGTH } from "@/utils";
-import { GetStarted } from "../server/alerts";
-import { Preview } from "@/utils/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { PREVIEW_LENGTH } from "@/utils";
+import { Preview } from "@/utils/types";
+import { getEntries } from "@/utils/actions";
+import { GetStarted } from "../server/alerts";
 import { JournalFullHeight } from "../server/layouts";
 import { ErrorComponent } from "../server/erros";
-import { getEntries } from "@/utils/actions";
 
 export default function Entries({
   entries,

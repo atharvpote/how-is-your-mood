@@ -10,11 +10,11 @@ import {
 import { useAutosave } from "react-autosave";
 import { isTouchDevice } from "@/utils";
 import { Analysis as TypeAnalysis, Entry, SetState } from "@/utils/types";
+import { getEntry, mutateEntry, updateEntry } from "@/utils/actions";
 import EntryDate from "./entryDate";
 import Analysis from "./analysis";
 import DeleteEntry from "./deleteEntry";
 import { ErrorAlert } from "./modal";
-import { getEntry, mutateEntry, updateEntry } from "@/utils/actions";
 
 export default function Editor({ entry }: Readonly<{ entry: Entry }>) {
   const [content, setContent] = useState(entry.content);

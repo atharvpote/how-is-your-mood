@@ -2,12 +2,12 @@
 
 import { useRef, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
-import { LoadingSpinner } from "../server/loading";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { ErrorAlert } from "./modal";
 import { createEntry } from "@/utils/actions";
 import { createErrorMessage } from "@/utils/error";
-import { useRouter } from "next/navigation";
+import { LoadingSpinner } from "../server/loading";
+import { ErrorAlert } from "./modal";
 
 export default function NewEntry() {
   const loading = useRef<HTMLDialogElement | null>(null);

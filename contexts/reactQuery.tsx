@@ -1,7 +1,7 @@
 "use client";
 
-import { ReadonlyPropsWithChildren } from "@/utils/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReadonlyPropsWithChildren } from "@/utils/types";
 
 export function ReactQueryContext({ children }: ReadonlyPropsWithChildren) {
   const queryClient = new QueryClient();

@@ -1,7 +1,7 @@
 "use client";
 
-import { LoadingSpinner } from "../server/loading";
 import { Analysis } from "@/utils/types";
+import { LoadingSpinner } from "../server/loading";
 
 export default function Analysis({
   analysis: { emoji, mood, sentiment, subject, summery },

@@ -1,8 +1,8 @@
+import { endOfWeek, startOfWeek } from "date-fns";
 import { getChartAnalyses, getMostRecentEntryDate } from "@/utils/actions";
 import History from "@/components/client/history";
 import { GetStarted } from "@/components/server/alerts";
 import { HistoryFullHeight } from "@/components/server/layouts";
-import { endOfWeek, startOfWeek } from "date-fns";
 
 export default async function HistoryPage() {
   return (

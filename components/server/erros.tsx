@@ -1,6 +1,6 @@
 import { createErrorMessage } from "@/utils/error";
-import { AlertError } from "./alerts";
 import { ErrorBoundaryProps } from "@/utils/types";
+import { AlertError } from "./alerts";
 
 export function DashboardError({ error }: ErrorBoundaryProps) {
   return (

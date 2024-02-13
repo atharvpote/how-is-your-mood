@@ -3,8 +3,8 @@
 import { MutableRefObject, useRef } from "react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
-import { SignOutButton } from "@clerk/nextjs";
 import { MdLogout } from "react-icons/md";
+import { SignOutButton } from "@clerk/nextjs";
 import { isTouchDevice } from "@/utils";
 import { ReadonlyPropsWithChildren } from "@/utils/types";
 
