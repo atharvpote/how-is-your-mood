@@ -8,7 +8,7 @@ export function ErrorAlert({
   error,
 }: Readonly<{
   isError: boolean;
-  error: Error | null;
+  error?: Error | null;
 }>) {
   const modal = useRef<HTMLDialogElement | null>(null);
 
