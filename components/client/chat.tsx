@@ -3,16 +3,36 @@
 import { FaArrowUp } from "react-icons/fa";
 import { useChat } from "ai/react";
 import { ErrorAlert } from "./modal";
+import { useEffect, useRef } from "react";
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, error } = useChat({
     api: "/api/chat",
   });
 
+  const chat = useRef<HTMLUListElement | null>(null);
+
+  useEffect(() => {
+    if (chat.current)
+      chat.current.children[chat.current.children.length - 1]?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "nearest",
+      });
+  }, [messages]);
+
   return (
     <>
-      <div className="flex h-[calc(var(--chat-page-remaining-space)-1rem)] flex-col rounded-lg bg-neutral p-4 sm:h-[calc(var(--chat-page-remaining-space-sm)-1rem)]">
-        <ul className="h-full overflow-y-auto py-2">
+      <div className="flex h-[calc(var(--chat-page-remaining-space)-1rem)] flex-col gap-4 rounded-lg bg-neutral p-4 sm:h-[calc(var(--chat-page-remaining-space-sm)-1rem)]">
+        <ul
+          className="h-full overflow-y-auto py-2"
+          style={{
+            scrollbarColor: "black transparent",
+            scrollBehavior: "smooth",
+            scrollbarWidth: "thin",
+          }}
+          ref={chat}
+        >
           {messages.map(({ content, id, role }) => (
             <div
               key={id}
