@@ -3,7 +3,7 @@
 import { ThemeProvider } from "@emotion/react";
 import { createTheme, useMediaQuery } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { ReadonlyPropsWithChildren } from "@/utils/types";
 
 export default function MUIContext({ children }: ReadonlyPropsWithChildren) {

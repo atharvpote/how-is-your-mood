@@ -2,7 +2,9 @@ import { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import { Webhook } from "svix";
 import { WebhookEvent } from "@clerk/nextjs/server";
-import { prisma } from "@/utils/db";
+import { db } from "@/drizzle/db";
+import { user } from "@/drizzle/schema";
+import { eq } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
@@ -52,8 +54,10 @@ export async function POST(request: NextRequest) {
   const { id } = evt.data;
   const eventType = evt.type;
 
+  if (!id) return new Response("No ID provided", { status: 400 });
+
   if (eventType === "user.deleted")
-    await prisma.user.delete({ where: { clerkId: id } });
+    await db.delete(user).where(eq(user.clerkId, id));
 
   return new Response("", { status: 201 });
 }

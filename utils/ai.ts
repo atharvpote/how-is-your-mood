@@ -4,10 +4,10 @@ import { StructuredOutputParser } from "langchain/output_parsers";
 import { BytesOutputParser } from "@langchain/core/output_parsers";
 import { Message } from "ai/react";
 import { z } from "zod";
-import { Journal as PrismaJournal } from "@prisma/client";
 import { MyScaleStore } from "@langchain/community/vectorstores/myscale";
 import { createClient } from "@clickhouse/client";
 import { validateNotNull } from "./validator";
+import { JournalSelect } from "@/drizzle/schema";
 
 export async function getAiAnalysis(content: string) {
   const parser = StructuredOutputParser.fromZodSchema(
@@ -44,7 +44,7 @@ export async function getAiAnalysis(content: string) {
 
 export async function getChatResponse(
   messages: Omit<Message, "id">[],
-  entries: PrismaJournal[],
+  entries: JournalSelect[],
 ) {
   const currentMessage = messages[messages.length - 1];
 

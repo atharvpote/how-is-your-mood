@@ -18,7 +18,7 @@ export default async function HistoryPage() {
 async function HistoryComponent({
   mostRecentEntryDate,
 }: Readonly<{
-  mostRecentEntryDate?: Date;
+  mostRecentEntryDate?: string;
 }>) {
   if (!mostRecentEntryDate)
     return (
@@ -27,13 +27,10 @@ async function HistoryComponent({
       </HistoryFullHeight>
     );
 
-  return (
-    <History
-      analyses={await getChartAnalyses(
-        startOfWeek(mostRecentEntryDate),
-        endOfWeek(mostRecentEntryDate),
-      )}
-      mostRecentEntryDate={mostRecentEntryDate}
-    />
+  const analyses = await getChartAnalyses(
+    startOfWeek(mostRecentEntryDate),
+    endOfWeek(mostRecentEntryDate),
   );
+
+  return <History analyses={analyses} recentEntryDate={mostRecentEntryDate} />;
 }

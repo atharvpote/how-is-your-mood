@@ -1,15 +1,20 @@
+import { db } from "@/drizzle/db";
+import { user } from "@/drizzle/schema";
 import { auth } from "@clerk/nextjs";
-import { prisma } from "./db";
+import { eq } from "drizzle-orm";
 
 export async function getCurrentUserId() {
   const { userId: clerkId } = auth();
 
   if (!clerkId) throw new Error("Clerk ID not found.");
 
-  const { id } = await prisma.user.findUniqueOrThrow({
-    where: { clerkId },
-    select: { id: true },
-  });
+  const [userSelect] = await db
+    .select({ id: user.id })
+    .from(user)
+    .where(eq(user.clerkId, clerkId))
+    .limit(1);
 
-  return id;
+  if (!userSelect) throw new Error("User ID not found.");
+
+  return userSelect.id;
 }

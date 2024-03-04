@@ -3,153 +3,198 @@
 // TODO: Use revalidatePath() in actions when revalidation of client-side Router Cache for specific path is supported
 
 import { getCurrentUserId } from "./auth";
-import { prisma } from "./db";
-import { setHours, setMinutes } from "date-fns";
 import { Analysis } from "./types";
 import { PREVIEW_LENGTH } from ".";
 import { getAiAnalysis } from "./ai";
+import { db } from "@/drizzle/db";
+import { asc, desc, eq, sql } from "drizzle-orm";
+import { analysis, journal, selectJournalDateSchema } from "@/drizzle/schema";
 
 export async function createEntry() {
-  const userId = await getCurrentUserId();
+  const id = await db.transaction(async (tx) => {
+    const userId = await getCurrentUserId();
 
-  return await prisma.$transaction(async (tx) => {
-    const { id, date } = await tx.journal.create({
-      data: {
-        userId,
-        content: "",
-        date: normalizeTime(new Date()),
-      },
-      select: { id: true, date: true },
+    const [entry] = await tx
+      .insert(journal)
+      .values({ userId })
+      .returning({ id: journal.id });
+
+    if (!entry) {
+      tx.rollback();
+
+      return;
+    }
+
+    await tx.insert(analysis).values({ userId, entryId: entry.id }).returning({
+      id: analysis.id,
     });
 
-    await tx.analysis.create({
-      data: {
-        emoji: "",
-        mood: "",
-        subject: "",
-        summery: "",
-        entryId: id,
-        date,
-        userId,
-      },
-    });
-
-    return id;
+    return entry.id;
   });
+
+  if (!id) throw new Error("Failed to create entry");
+
+  return id;
 }
 
 export async function deleteEntry(id: string) {
-  await prisma.journal.delete({
-    where: { userId_id: { userId: await getCurrentUserId(), id } },
-  });
+  await db
+    .delete(journal)
+    .where(
+      sql`${journal.id} = ${id} and ${journal.userId} = ${await getCurrentUserId()}`,
+    );
 }
 
 export async function mutateEntry(
   id: string,
   content: string,
-  analysis: Analysis,
+  updatedAnalysis: Analysis,
 ) {
   const userId = await getCurrentUserId();
 
-  await prisma.$transaction(async (tx) => {
-    await tx.journal.update({
-      where: { userId_id: { userId, id } },
-      data: { content, preview: createPreview(content) },
-    });
+  await db.transaction(async (tx) => {
+    await tx
+      .update(journal)
+      .set({ content, preview: createPreview(content) })
+      .where(sql`${journal.id} = ${id} and ${journal.userId} = ${userId}`);
 
-    await tx.analysis.update({
-      where: { entryId_userId: { entryId: id, userId } },
-      data: analysis,
-    });
+    await tx
+      .update(analysis)
+      .set(updatedAnalysis)
+      .where(
+        sql`${analysis.entryId} = ${id} and ${analysis.userId} = ${userId}`,
+      );
   });
 }
 
 export async function updateEntry(id: string, content: string) {
-  return await prisma.$transaction(async (tx) => {
-    const { id: entryId } = await tx.journal.update({
-      where: { userId_id: { userId: await getCurrentUserId(), id } },
-      data: { content, preview: createPreview(content) },
-    });
+  const updatedData = await db.transaction(async (tx) => {
+    const [entry] = await tx
+      .update(journal)
+      .set({ content, preview: createPreview(content) })
+      .where(
+        sql`${journal.id} = ${id} and ${journal.userId} = ${await getCurrentUserId()}`,
+      )
+      .returning({ id: journal.id });
 
-    return await prisma.analysis.update({
-      where: { entryId },
-      data: !content.trim()
-        ? {
-            emoji: "",
-            mood: "",
-            subject: "",
-            summery: "",
-            sentiment: 0,
-          }
-        : await getAiAnalysis(content),
-      select: {
-        emoji: true,
-        mood: true,
-        subject: true,
-        summery: true,
-        sentiment: true,
-      },
-    });
+    if (!entry) {
+      tx.rollback();
+
+      return;
+    }
+
+    const [data] = await db
+      .update(analysis)
+      .set(
+        !content.trim()
+          ? {
+              emoji: "",
+              mood: "",
+              sentiment: null,
+              subject: "",
+              summery: "",
+            }
+          : await getAiAnalysis(content),
+      )
+      .where(
+        sql`${analysis.entryId} = ${entry.id} and ${analysis.userId} = ${await getCurrentUserId()}`,
+      )
+      .returning({
+        analysis: {
+          emoji: analysis.emoji,
+          mood: analysis.mood,
+          sentiment: analysis.sentiment,
+          subject: analysis.subject,
+          summery: analysis.summery,
+        },
+      });
+
+    if (!data) {
+      tx.rollback();
+
+      return;
+    }
+
+    return data.analysis;
   });
+
+  if (!updatedData) throw new Error("Failed to update entry");
+
+  return updatedData;
 }
 
 export async function getEntry(id: string) {
-  return await prisma.journal.findUniqueOrThrow({
-    where: { userId_id: { userId: await getCurrentUserId(), id } },
-    select: {
-      content: true,
-      date: true,
+  const [entry] = await db
+    .select({
+      content: journal.content,
+      date: journal.date,
       analysis: {
-        select: {
-          emoji: true,
-          mood: true,
-          sentiment: true,
-          subject: true,
-          summery: true,
-        },
+        emoji: analysis.emoji,
+        mood: analysis.mood,
+        sentiment: analysis.sentiment,
+        subject: analysis.subject,
+        summery: analysis.summery,
       },
-    },
-  });
+    })
+    .from(journal)
+    .innerJoin(analysis, eq(analysis.entryId, journal.id))
+    .where(eq(journal.id, id))
+    .limit(1);
+
+  if (!entry) throw new Error("Entry not found");
+
+  return entry;
 }
 
 export async function mutateEntryDate(id: string, date: Date) {
-  await prisma.journal.update({
-    where: { userId_id: { userId: await getCurrentUserId(), id } },
-    data: { date: new Date(date) },
-  });
+  await db
+    .update(journal)
+    .set({ date: new Date(date).toDateString() })
+    .where(
+      sql`${journal.id} = ${id} and ${journal.userId} = ${await getCurrentUserId()}`,
+    );
 }
 
 export async function getEntries() {
-  return await prisma.journal.findMany({
-    where: { userId: await getCurrentUserId() },
-    orderBy: { date: "desc" },
-    select: { id: true, date: true, preview: true },
-  });
+  const entries = await db
+    .select({
+      date: journal.date,
+      id: journal.id,
+      preview: journal.preview,
+    })
+    .from(journal)
+    .where(eq(journal.userId, await getCurrentUserId()))
+    .orderBy(desc(journal.date));
+
+  return entries;
 }
 
 export async function getMostRecentEntryDate() {
-  const entry = await prisma.journal.findFirst({
-    where: { userId: await getCurrentUserId() },
-    orderBy: { date: "desc" },
-    select: { date: true },
-  });
+  const [entry] = await db
+    .select({ date: journal.date })
+    .from(journal)
+    .where(eq(journal.userId, await getCurrentUserId()))
+    .orderBy(desc(journal.date))
+    .limit(1);
 
   return entry?.date;
 }
 
 export async function getChartAnalyses(start: Date, end: Date) {
-  return await prisma.analysis.findMany({
-    where: {
-      userId: await getCurrentUserId(),
-      AND: [{ date: { gte: start } }, { date: { lte: end } }],
-    },
-    orderBy: { date: "asc" },
-    select: { sentiment: true, date: true, mood: true, emoji: true },
-  });
-}
+  const chartAnalyses = await db
+    .select({
+      emoji: analysis.emoji,
+      mood: analysis.mood,
+      sentiment: analysis.sentiment,
+      journal: { date: journal.date },
+    })
+    .from(analysis)
+    .innerJoin(journal, eq(analysis.entryId, journal.id))
+    .where(
+      sql`((${analysis.userId}=${await getCurrentUserId()}) and (${journal.date} between ${start} and ${end}))`,
+    );
 
-function normalizeTime(date: Date) {
-  return new Date(setMinutes(setHours(date, 5), 30));
+  return chartAnalyses;
 }
 
 function createPreview(content: string) {

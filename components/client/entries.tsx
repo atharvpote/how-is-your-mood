@@ -60,7 +60,7 @@ export default function Entries({
               </h3>
             </div>
             <p className="overflow-hidden text-neutral-content/75">
-              {`${preview.trim()}${ellipsis(preview)}`}
+              {preview ? `${preview.trim()}${ellipsis(preview)}` : ""}
             </p>
           </article>
         </Link>

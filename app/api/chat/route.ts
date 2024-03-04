@@ -3,9 +3,11 @@ import { StreamingTextResponse } from "ai";
 import { z } from "zod";
 import { createErrorResponse } from "@/utils/response";
 import { getCurrentUserId } from "@/utils/auth";
-import { prisma } from "@/utils/db";
 import { validatedData } from "@/utils/validator";
 import { getChatResponse } from "@/utils/ai";
+import { db } from "@/drizzle/db";
+import { eq } from "drizzle-orm";
+import { journal } from "@/drizzle/schema";
 
 export async function POST(request: NextRequest) {
   const requestSchema = z.object({
@@ -40,7 +42,10 @@ export async function POST(request: NextRequest) {
 }
 
 async function getEntries() {
-  return await prisma.journal.findMany({
-    where: { userId: await getCurrentUserId() },
-  });
+  const entries = await db
+    .select()
+    .from(journal)
+    .where(eq(journal.userId, await getCurrentUserId()));
+
+  return entries;
 }

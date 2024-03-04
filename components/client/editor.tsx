@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-query";
 import { useAutosave } from "react-autosave";
 import { isTouchDevice } from "@/utils";
-import { Analysis as TypeAnalysis, Entry, SetState } from "@/utils/types";
+import { Analysis as UpdatedAnalysis, Entry, SetState } from "@/utils/types";
 import { getEntry, mutateEntry, updateEntry } from "@/utils/actions";
 import EntryDate from "./entryDate";
 import Analysis from "./analysis";
@@ -18,7 +18,7 @@ import { ErrorAlert } from "./modal";
 
 export default function Editor({ entry }: Readonly<{ entry: Entry }>) {
   const [content, setContent] = useState(entry.content);
-  const [date, setDate] = useState(entry.date);
+  const [date, setDate] = useState(new Date(entry.date));
   const [analysis, setAnalysis] = useState(entry.analysis);
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -33,7 +33,7 @@ export default function Editor({ entry }: Readonly<{ entry: Entry }>) {
   useEffect(() => {
     if (update.data) {
       setContent(update.data.content);
-      setDate(update.data.date);
+      setDate(new Date(update.data.date));
     }
 
     if (update.isError) {
@@ -44,7 +44,7 @@ export default function Editor({ entry }: Readonly<{ entry: Entry }>) {
 
   const mutation = useMutateEntry(queryClient, cache.current);
   useEffect(() => {
-    if (mutation.data) setAnalysis(mutation.data.analysis);
+    if (mutation.data?.analysis) setAnalysis(mutation.data.analysis);
 
     if (mutation.isError) {
       setIsError(true);
@@ -64,7 +64,7 @@ export default function Editor({ entry }: Readonly<{ entry: Entry }>) {
           analysis,
           content,
           id: entry.id,
-          date,
+          date: date.toDateString(),
         });
       }
     },
@@ -113,17 +113,13 @@ export default function Editor({ entry }: Readonly<{ entry: Entry }>) {
 function useEntry(id: string) {
   return useQuery({
     queryKey: ["entry", id],
-    queryFn: async () => {
-      const { date, content, analysis } = await getEntry(id);
-
-      return { date, content, analysis };
-    },
+    queryFn: async () => await getEntry(id),
   });
 }
 
 function useMutateEntry(
   queryClient: QueryClient,
-  cache: Map<string, TypeAnalysis>,
+  cache: Map<string, UpdatedAnalysis>,
 ) {
   return useMutation({
     mutationFn: async ({ id, content }: Entry) => {

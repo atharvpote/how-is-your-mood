@@ -1,8 +1,5 @@
+import { AnalysisSelect, JournalSelect } from "@/drizzle/schema";
 import { Dispatch, PropsWithChildren, SetStateAction } from "react";
-import {
-  Analysis as PrismaAnalysis,
-  Journal as PrismaJournal,
-} from "@prisma/client";
 
 export interface RequestContext {
   params: { id?: string };
@@ -13,20 +10,20 @@ export type ErrorBoundaryProps = Readonly<{
 }>;
 
 export type ChartAnalysis = Pick<
-  PrismaAnalysis,
-  "sentiment" | "date" | "mood" | "emoji"
->;
+  AnalysisSelect,
+  "sentiment" | "mood" | "emoji"
+> & { journal: Pick<JournalSelect, "date"> };
 
 export type Analysis = Pick<
-  PrismaAnalysis,
+  AnalysisSelect,
   "sentiment" | "mood" | "emoji" | "subject" | "summery"
 >;
 
-export type Journal = Pick<PrismaJournal, "content" | "date" | "id">;
+export type Journal = Pick<JournalSelect, "content" | "date" | "id">;
 
 export type Entry = Journal & { analysis: Analysis };
 
-export type Preview = Omit<Journal, "content"> & Pick<PrismaJournal, "preview">;
+export type Preview = Omit<Journal, "content"> & Pick<JournalSelect, "preview">;
 
 export type SetState<T> = Dispatch<SetStateAction<T>>;
 
