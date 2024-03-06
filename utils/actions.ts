@@ -7,13 +7,13 @@ import { Analysis } from "./types";
 import { PREVIEW_LENGTH } from ".";
 import { getAiAnalysis } from "./ai";
 import { db } from "@/drizzle/db";
-import { asc, desc, eq, sql } from "drizzle-orm";
-import { analysis, journal, selectJournalDateSchema } from "@/drizzle/schema";
+import { desc, eq, sql } from "drizzle-orm";
+import { analysis, journal } from "@/drizzle/schema";
 
 export async function createEntry() {
-  const id = await db.transaction(async (tx) => {
-    const userId = await getCurrentUserId();
+  const userId = await getCurrentUserId();
 
+  const id = await db.transaction(async (tx) => {
     const [entry] = await tx
       .insert(journal)
       .values({ userId })
@@ -25,9 +25,10 @@ export async function createEntry() {
       return;
     }
 
-    await tx.insert(analysis).values({ userId, entryId: entry.id }).returning({
-      id: analysis.id,
-    });
+    await tx
+      .insert(analysis)
+      .values({ userId, entryId: entry.id })
+      .returning({ id: analysis.id });
 
     return entry.id;
   });
@@ -55,12 +56,12 @@ export async function mutateEntry(
   await db.transaction(async (tx) => {
     await tx
       .update(journal)
-      .set({ content, preview: createPreview(content) })
+      .set(setUpdatedAt({ content, preview: createPreview(content) }))
       .where(sql`${journal.id} = ${id} and ${journal.userId} = ${userId}`);
 
     await tx
       .update(analysis)
-      .set(updatedAnalysis)
+      .set(setUpdatedAt(updatedAnalysis))
       .where(
         sql`${analysis.entryId} = ${id} and ${analysis.userId} = ${userId}`,
       );
@@ -68,13 +69,13 @@ export async function mutateEntry(
 }
 
 export async function updateEntry(id: string, content: string) {
-  const updatedData = await db.transaction(async (tx) => {
+  const userId = await getCurrentUserId();
+
+  const updatedAnalysis = await db.transaction(async (tx) => {
     const [entry] = await tx
       .update(journal)
-      .set({ content, preview: createPreview(content) })
-      .where(
-        sql`${journal.id} = ${id} and ${journal.userId} = ${await getCurrentUserId()}`,
-      )
+      .set(setUpdatedAt({ content, preview: createPreview(content) }))
+      .where(sql`${journal.id} = ${id} and ${journal.userId} = ${userId}`)
       .returning({ id: journal.id });
 
     if (!entry) {
@@ -85,19 +86,9 @@ export async function updateEntry(id: string, content: string) {
 
     const [data] = await db
       .update(analysis)
-      .set(
-        !content.trim()
-          ? {
-              emoji: "",
-              mood: "",
-              sentiment: null,
-              subject: "",
-              summery: "",
-            }
-          : await getAiAnalysis(content),
-      )
+      .set(setUpdatedAt(await getAnalysis(content)))
       .where(
-        sql`${analysis.entryId} = ${entry.id} and ${analysis.userId} = ${await getCurrentUserId()}`,
+        sql`${analysis.entryId} = ${entry.id} and ${analysis.userId} = ${userId}`,
       )
       .returning({
         analysis: {
@@ -118,9 +109,9 @@ export async function updateEntry(id: string, content: string) {
     return data.analysis;
   });
 
-  if (!updatedData) throw new Error("Failed to update entry");
+  if (!updatedAnalysis) throw new Error("Failed to update entry");
 
-  return updatedData;
+  return updatedAnalysis;
 }
 
 export async function getEntry(id: string) {
@@ -138,7 +129,9 @@ export async function getEntry(id: string) {
     })
     .from(journal)
     .innerJoin(analysis, eq(analysis.entryId, journal.id))
-    .where(eq(journal.id, id))
+    .where(
+      sql`${journal.id} = ${id} and ${journal.userId} = ${await getCurrentUserId()}`,
+    )
     .limit(1);
 
   if (!entry) throw new Error("Entry not found");
@@ -149,7 +142,7 @@ export async function getEntry(id: string) {
 export async function mutateEntryDate(id: string, date: Date) {
   await db
     .update(journal)
-    .set({ date: new Date(date).toDateString() })
+    .set(setUpdatedAt({ date: new Date(date).toDateString() }))
     .where(
       sql`${journal.id} = ${id} and ${journal.userId} = ${await getCurrentUserId()}`,
     );
@@ -169,7 +162,7 @@ export async function getEntries() {
   return entries;
 }
 
-export async function getMostRecentEntryDate() {
+export async function getMostRecentEntry() {
   const [entry] = await db
     .select({ date: journal.date })
     .from(journal)
@@ -177,7 +170,7 @@ export async function getMostRecentEntryDate() {
     .orderBy(desc(journal.date))
     .limit(1);
 
-  return entry?.date;
+  return entry;
 }
 
 export async function getChartAnalyses(start: Date, end: Date) {
@@ -199,4 +192,20 @@ export async function getChartAnalyses(start: Date, end: Date) {
 
 function createPreview(content: string) {
   return content.substring(0, PREVIEW_LENGTH);
+}
+
+async function getAnalysis(content: string) {
+  return !content.trim()
+    ? {
+        emoji: "",
+        mood: "",
+        sentiment: null,
+        subject: "",
+        summery: "",
+      }
+    : await getAiAnalysis(content);
+}
+
+function setUpdatedAt<T extends object>(data: T) {
+  return { ...data, updatedAt: sql`CURRENT_TIMESTAMP(3)` };
 }
