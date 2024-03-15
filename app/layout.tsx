@@ -3,9 +3,8 @@ import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { shadesOfPurple } from "@clerk/themes";
 import { ReadonlyPropsWithChildren } from "@/utils/types";
-
-import "./globals.css";
 import { ReactQueryContext } from "@/contexts/reactQuery";
+import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,6 +13,8 @@ export const metadata: Metadata = {
   description: "The AI powered journal app.",
   icons: "/icon.png",
 };
+
+export const runtime = "edge";
 
 export default function RootLayout({ children }: ReadonlyPropsWithChildren) {
   return (

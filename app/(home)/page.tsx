@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-[100svh] bg-base-200">
+    <div className="min-h-svh bg-base-200">
       <nav className="flex justify-end gap-4 p-2">
         <Link href="/sign-up" prefetch className="btn btn-primary">
           Sign Up

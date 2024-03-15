@@ -30,8 +30,13 @@ export async function POST(request: NextRequest) {
     const { messages } = validatedData(requestSchema, await request.json());
 
     try {
+      const entries = await db
+        .select()
+        .from(journal)
+        .where(eq(journal.userId, await getCurrentUserId()));
+
       return new StreamingTextResponse(
-        await getChatResponse(messages, await getEntries()),
+        await getChatResponse(messages, entries),
       );
     } catch (error) {
       return createErrorResponse(500, error);
@@ -39,13 +44,4 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return createErrorResponse(400, error);
   }
-}
-
-async function getEntries() {
-  const entries = await db
-    .select()
-    .from(journal)
-    .where(eq(journal.userId, await getCurrentUserId()));
-
-  return entries;
 }

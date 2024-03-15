@@ -1,54 +1,50 @@
-import { ChatOpenAI, OpenAIEmbeddings, OpenAI } from "@langchain/openai";
-import { PromptTemplate } from "@langchain/core/prompts";
-import { StructuredOutputParser } from "langchain/output_parsers";
+import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { JsonOutputFunctionsParser } from "langchain/output_parsers";
 import { BytesOutputParser } from "@langchain/core/output_parsers";
 import { Message } from "ai/react";
-import { z } from "zod";
-import { MyScaleStore } from "@langchain/community/vectorstores/myscale";
-import { createClient } from "@clickhouse/client";
-import { validateNotNull } from "./validator";
+import { Document } from "@langchain/core/documents";
 import { JournalSelect } from "@/drizzle/schema";
+import { UpstashVectorStore } from "@langchain/community/vectorstores/upstash";
+import { Index } from "@upstash/vector";
+import { ChatMessage, HumanMessage } from "@langchain/core/messages";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { formatDocumentsAsString } from "langchain/util/document";
+import { RunnableSequence } from "@langchain/core/runnables";
 
 export async function getAiAnalysis(content: string) {
-  const parser = StructuredOutputParser.fromZodSchema(
-    z.object({
-      mood: z.string().describe("Mood of person who wrote journal"),
-      subject: z.string().describe("Subject of journal"),
-      summery: z
-        .string()
-        .describe("Summarize journal in least amount of words."),
-      emoji: z.string().describe("Emoji that represents mood of journal"),
-      sentiment: z
-        .number()
-        .describe("Sentiment of journal on scale of -10 to 10."),
-    }),
-  );
+  const parser = new JsonOutputFunctionsParser();
 
-  const getAnalysisChain = PromptTemplate.fromTemplate(
-    "Analyze journal entry and format response to match format instructions.\n\nInstructions: {format_instructions}\n\nEntry: {entry}",
-  )
-    .pipe(
-      new OpenAI({
-        temperature: 0,
-        modelName: "gpt-3.5-turbo-0125",
-        cache: true,
-      }),
-    )
-    .pipe(parser);
-
-  return getAnalysisChain.invoke({
-    entry: content,
-    format_instructions: parser.getFormatInstructions(),
-  });
-}
-
-export async function getChatResponse(
-  messages: Omit<Message, "id">[],
-  entries: JournalSelect[],
-) {
-  const currentMessage = messages[messages.length - 1];
-
-  if (!currentMessage) throw new Error("Chat is empty");
+  const analysisFunctionSchema = {
+    name: "analyze",
+    description: "Analyze journal entry",
+    parameters: {
+      type: "object",
+      properties: {
+        mood: {
+          type: "string",
+          description: "Mood of person who wrote journal",
+        },
+        subject: {
+          type: "string",
+          description: "Subject of journal",
+        },
+        summery: {
+          type: "string",
+          description: "Summarize journal in least amount of words possible.",
+        },
+        emoji: {
+          type: "string",
+          description: "Emoji that represents mood of journal",
+        },
+        sentiment: {
+          type: "number",
+          description: "Sentiment of journal on scale of -10 to 10.",
+        },
+      },
+    },
+    require: ["mood", "subject", "summery", "emoji", "sentiment"],
+  };
 
   const model = new ChatOpenAI({
     temperature: 0,
@@ -56,95 +52,73 @@ export async function getChatResponse(
     cache: true,
   });
 
-  const getSearchTermChain = PromptTemplate.fromTemplate(
-    `Summarize current conversation as search term for semantic search.Current conversation:{chat_history}
-    Current conversation:{chat_history}`,
-  ).pipe(model);
-
-  const previousChatHistory = messages
-    .slice(0, -1)
-    .map(({ content, role }) => `${role}:${content}`)
-    .join("\n");
-
-  const { content: searchTerm } = await getSearchTermChain.invoke({
-    chat_history:
-      previousChatHistory +
-      `\n${currentMessage.role}:${currentMessage.content}`,
-  });
-
-  const { host, password, port, username } = getEnv();
-
-  const vectorStore = await MyScaleStore.fromTexts(
-    entries.map(({ content }) => content),
-    entries.map(({ id, createdAt, date, updatedAt }) => ({
-      id,
-      createdAt,
-      "entry date": date,
-      updatedAt,
-    })),
-    new OpenAIEmbeddings(),
-    { host, port, username, password },
-  );
-
-  const documents = await vectorStore.similaritySearch(
-    searchTerm.toString(),
-    1,
-  );
-
-  const clickHouseClient = createClient({
-    host: `https://${host}:${port}`,
-    username,
-    password,
-  });
-
-  await clickHouseClient.exec({ query: `DROP TABLE vector_table` });
-
-  const context = documents
-    .map(({ pageContent, metadata }) => {
-      const date = z.string().parse(metadata["entry date"]);
-
-      return `Date: ${date}\nContent: ${pageContent}`;
+  const getAnalysisChain = model
+    .bind({
+      functions: [analysisFunctionSchema],
+      function_call: { name: "analyze" },
     })
-    .join("\n");
+    .pipe(parser);
 
-  const getResponseChain = PromptTemplate.fromTemplate(
-    `You're a helpful assistant. Use chat history and context to respond to current message.
-    Chat history: {chat_history}
-    Current message : {current_message}
-    Context: {context}`,
-  )
-    .pipe(model)
-    .pipe(new BytesOutputParser());
-
-  return await getResponseChain.stream({
-    chat_history: previousChatHistory,
-    current_message: currentMessage.content,
-    context,
-  });
+  return getAnalysisChain.invoke([new HumanMessage(content)]);
 }
 
-function getEnv() {
-  const host = process.env.MYSCALE_CLUSTER_URL;
-  const port = process.env.MYSCALE_CLUSTER_PORT;
-  const username = process.env.MYSCALE_USERNAME;
-  const password = process.env.MYSCALE_CLUSTER_PASSWORD;
+type Messages = Omit<Message, "id">[];
 
-  validateNotNull<string>(
-    host,
-    "Please add MYSCALE_CLUSTER_URL to .env or .env.local",
-  );
-  validateNotNull<string>(
-    port,
-    "Please add MYSCALE_CLUSTER_PORT to .env or .env.local",
-  );
-  validateNotNull<string>(
-    username,
-    "Please add MYSCALE_USERNAME to .env or .env.local",
-  );
-  validateNotNull<string>(
-    password,
-    "Please add MYSCALE_CLUSTER_PASSWORD to .env or .env.local",
+export async function getChatResponse(
+  messages: Messages,
+  entries: JournalSelect[],
+) {
+  if (!messages.length) throw new Error("Chat is empty");
+
+  const index = new Index();
+
+  const store = new UpstashVectorStore(
+    new OpenAIEmbeddings({ modelName: "text-embedding-3-small" }),
+    { index },
   );
 
-  return { host, port, username, password };
+  const documents = entries.map(
+    ({ content, id, createdAt, date, updatedAt }) =>
+      new Document({
+        pageContent: content,
+        metadata: { id, createdAt, "entry date": date, updatedAt },
+      }),
+  );
+
+  const splitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 100,
+    chunkOverlap: 20,
+  });
+
+  const ids = await store.addDocuments(
+    await splitter.splitDocuments(documents),
+  );
+
+  // eslint-disable-next-line drizzle/enforce-delete-with-where
+  await store.delete({ ids });
+
+  const model = new ChatOpenAI({
+    temperature: 0,
+    modelName: "gpt-3.5-turbo-0125",
+    cache: true,
+  });
+
+  const prompt = ChatPromptTemplate.fromMessages([
+    [
+      "system",
+      "You're a personal assistant for journal entries. Chunk is a small part of single journal, take relevant chunks into consideration.\nRelevant chunks: {relevantChunks}",
+    ],
+    ...messages.map((message) => new ChatMessage(message)),
+  ]);
+
+  const retriever = store.asRetriever(5, { verbose: true });
+
+  const chatResponseChain = RunnableSequence.from([
+    { relevantChunks: retriever.pipe(formatDocumentsAsString) },
+    prompt,
+    model,
+    new BytesOutputParser(),
+  ]);
+
+  return chatResponseChain.stream("");
 }

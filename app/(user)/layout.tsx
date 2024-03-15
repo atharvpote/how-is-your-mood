@@ -4,7 +4,7 @@ import { ReadonlyPropsWithChildren } from "@/utils/types";
 
 export default function SignLayout({ children }: ReadonlyPropsWithChildren) {
   return (
-    <div className="min-h-[100svh]">
+    <div className="min-h-svh">
       <nav className="flex justify-start p-2">
         <Link href={"/"} prefetch className="btn btn-ghost">
           <AiOutlineArrowLeft /> Back

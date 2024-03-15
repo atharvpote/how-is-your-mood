@@ -4,29 +4,29 @@ import { startOfWeek, endOfWeek } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DatePicker } from "@mui/x-date-pickers";
-import { ChartAnalysis } from "@/utils/types";
-import { getChartAnalyses, getMostRecentEntryDate } from "@/utils/actions";
+import { AnalysisChart } from "@/utils/types";
+import { getChartAnalyses, getMostRecentEntry } from "@/utils/actions";
 import HistoryChart from "../server/chart";
 
 export default function History({
-  recentEntryDate,
+  mostRecentEntryDate,
   analyses,
 }: Readonly<{
-  recentEntryDate: string;
-  analyses: ChartAnalysis[];
+  mostRecentEntryDate: string;
+  analyses: AnalysisChart[];
 }>) {
-  const [startDate, setStartDate] = useState(startOfWeek(recentEntryDate));
-  const [endDate, setEndDate] = useState(endOfWeek(recentEntryDate));
+  const [startDate, setStartDate] = useState(startOfWeek(mostRecentEntryDate));
+  const [endDate, setEndDate] = useState(endOfWeek(mostRecentEntryDate));
   const [analysesState, setAnalysesState] = useState(analyses);
   const [error, setError] = useState<Error | null>(null);
 
-  const recentEntryDateUpdate = useRecentEntryDate();
+  const mostRecentEntryUpdate = useMostRecentEntry();
   const analysesUpdate = useAnalyses(startDate, endDate);
 
   const queryClient = useQueryClient();
   useEffect(() => {
-    if (!recentEntryDateUpdate.data)
-      queryClient.setQueryData(["most-recent"], recentEntryDate);
+    if (!mostRecentEntryUpdate.data)
+      queryClient.setQueryData(["most-recent"], mostRecentEntryDate);
 
     if (!analysesUpdate.data)
       queryClient.setQueryData(
@@ -36,8 +36,8 @@ export default function History({
   }, [
     analyses,
     analysesUpdate.data,
-    recentEntryDate,
-    recentEntryDateUpdate.data,
+    mostRecentEntryDate,
+    mostRecentEntryUpdate.data,
     queryClient,
     startDate,
     endDate,
@@ -45,13 +45,13 @@ export default function History({
 
   const firstRender = useRef(true);
   useEffect(() => {
-    if (firstRender.current && recentEntryDateUpdate.data) {
+    if (firstRender.current && mostRecentEntryUpdate.data?.date) {
       firstRender.current = false;
 
-      setStartDate(startOfWeek(recentEntryDateUpdate.data));
-      setEndDate(endOfWeek(recentEntryDateUpdate.data));
+      setStartDate(startOfWeek(mostRecentEntryUpdate.data.date));
+      setEndDate(endOfWeek(mostRecentEntryUpdate.data.date));
     }
-  }, [recentEntryDateUpdate.data]);
+  }, [mostRecentEntryUpdate.data]);
 
   useEffect(() => {
     if (analysesUpdate.data) setAnalysesState(analysesUpdate.data);
@@ -97,10 +97,10 @@ export default function History({
   );
 }
 
-function useRecentEntryDate() {
+function useMostRecentEntry() {
   return useQuery({
     queryKey: ["most-recent"],
-    queryFn: async () => await getMostRecentEntryDate(),
+    queryFn: async () => await getMostRecentEntry(),
   });
 }
 

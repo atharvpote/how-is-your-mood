@@ -12,7 +12,7 @@ export default function ErrorBoundary({ error }: ErrorBoundaryProps) {
   }, 3000);
 
   return (
-    <div className="flex h-[100svh] items-center justify-center">
+    <div className="flex h-svh items-center justify-center">
       <div>
         <ErrorComponent error={error} />
       </div>

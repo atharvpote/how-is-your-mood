@@ -9,7 +9,7 @@ export type ErrorBoundaryProps = Readonly<{
   error: Error & { digest?: string };
 }>;
 
-export type ChartAnalysis = Pick<
+export type AnalysisChart = Pick<
   AnalysisSelect,
   "sentiment" | "mood" | "emoji"
 > & { journal: Pick<JournalSelect, "date"> };
@@ -19,7 +19,7 @@ export type Analysis = Pick<
   "sentiment" | "mood" | "emoji" | "subject" | "summery"
 >;
 
-export type Journal = Pick<JournalSelect, "content" | "date" | "id">;
+type Journal = Pick<JournalSelect, "content" | "date" | "id">;
 
 export type Entry = Journal & { analysis: Analysis };
 

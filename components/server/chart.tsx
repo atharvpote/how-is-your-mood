@@ -13,9 +13,7 @@ import {
   ValueType,
   NameType,
 } from "recharts/types/component/DefaultTooltipContent";
-import { z } from "zod";
-import { ChartAnalysis } from "@/utils/types";
-import { validatedData } from "@/utils/validator";
+import { AnalysisChart } from "@/utils/types";
 import { AlertError } from "./alerts";
 import { HistoryFullHeight } from "./layouts";
 import { ErrorComponent } from "./erros";
@@ -26,7 +24,7 @@ export default function HistoryChart({
   start,
   end,
 }: Readonly<{
-  analyses: ChartAnalysis[];
+  analyses: AnalysisChart[];
   error: Error | null;
   start: Date;
   end: Date;
@@ -99,17 +97,11 @@ export default function HistoryChart({
 
 function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (active && payload?.[0]?.payload) {
-    const chartAnalysisSchema = z.object({
-      sentiment: z.number(),
-      date: z.date(),
-      mood: z.string(),
-      emoji: z.string(),
-    });
-
-    const { mood, date, emoji } = validatedData(
-      chartAnalysisSchema,
-      payload[0].payload,
-    );
+    const {
+      mood,
+      journal: { date },
+      emoji,
+    } = payload[0].payload as AnalysisChart;
 
     return (
       <article className="prose rounded-lg bg-neutral px-4 py-2 text-neutral-content ">
@@ -117,7 +109,7 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
           {mood} {emoji}
         </h3>
         <p className="pb-2 capitalize">
-          {date.toLocaleDateString("en-us", {
+          {new Date(date).toLocaleDateString("en-us", {
             year: "numeric",
             month: "short",
             day: "numeric",
