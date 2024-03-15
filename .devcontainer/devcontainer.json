@@ -1,0 +1,33 @@
+{
+  "name": "how-is-your-mood",
+  "build": {
+    "context": ".",
+    "dockerfile": "Dockerfile"
+  },
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
+  ],
+  "forwardPorts": [3000],
+  "postCreateCommand": "pnpm install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bradlc.vscode-tailwindcss",
+        "christian-kohler.npm-intellisense",
+        "christian-kohler.path-intellisense",
+        "codeium.codeium",
+        "dbaeumer.vscode-eslint",
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode",
+        "exodiusstudios.comment-anchors",
+        "foxundermoon.shell-format",
+        "ms-azuretools.vscode-docker",
+        "sonarsource.sonarlint-vscode",
+        "streetsidesoftware.code-spell-checker",
+        "visualstudioexptteam.intellicode-api-usage-examples",
+        "visualstudioexptteam.vscodeintellicode",
+        "yoavbls.pretty-ts-errors"
+      ]
+    }
+  }
+}
