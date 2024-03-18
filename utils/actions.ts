@@ -3,153 +3,121 @@
 // TODO: Use revalidatePath() in actions when revalidation of client-side Router Cache for specific path is supported
 
 import { getCurrentUserId } from "./auth";
-import { Analysis } from "./types";
-import { PREVIEW_LENGTH } from ".";
+import { JournalAnalysis } from "./types";
+import { PREVIEW_LENGTH, getCurrentTimestamp } from ".";
 import { getAiAnalysis } from "./ai";
 import { db } from "@/drizzle/db";
 import { desc, eq, sql } from "drizzle-orm";
-import { analysis, journal } from "@/drizzle/schema";
+import { journal } from "@/drizzle/schema";
 
-export async function createEntry() {
+export async function createJournalEntry() {
   const userId = await getCurrentUserId();
 
-  const id = await db.transaction(async (tx) => {
-    const [entry] = await tx
-      .insert(journal)
-      .values({ userId })
-      .returning({ id: journal.id });
+  const [entry] = await db
+    .insert(journal)
+    .values({ userId })
+    .returning({ id: journal.id });
 
-    if (!entry) {
-      tx.rollback();
+  if (!entry) throw new Error("Failed to create Journal entry");
 
-      return;
-    }
-
-    await tx
-      .insert(analysis)
-      .values({ userId, entryId: entry.id })
-      .returning({ id: analysis.id });
-
-    return entry.id;
-  });
-
-  if (!id) throw new Error("Failed to create entry");
-
-  return id;
+  return entry.id;
 }
 
-export async function deleteEntry(id: string) {
-  await db
+export async function deleteJournalEntry(id: string) {
+  const [journalId] = await db
     .delete(journal)
     .where(
       sql`${journal.id} = ${id} and ${journal.userId} = ${await getCurrentUserId()}`,
-    );
+    )
+    .returning({ id: journal.id });
+
+  if (!journalId) throw new Error("Failed to delete Journal entry");
 }
 
-export async function mutateEntry(
+export async function mutateJournalEntry(
   id: string,
   content: string,
-  updatedAnalysis: Analysis,
+  journalAnalysis: JournalAnalysis,
 ) {
   const userId = await getCurrentUserId();
 
-  await db.transaction(async (tx) => {
-    await tx
-      .update(journal)
-      .set(setUpdatedAt({ content, preview: createPreview(content) }))
-      .where(sql`${journal.id} = ${id} and ${journal.userId} = ${userId}`);
+  const [journalId] = await db
+    .update(journal)
+    .set(
+      setUpdatedAt({
+        content,
+        preview: createJournalPreview(content),
+        ...journalAnalysis,
+      }),
+    )
+    .where(sql`${journal.id} = ${id} and ${journal.userId} = ${userId}`)
+    .returning({ id: journal.id });
 
-    await tx
-      .update(analysis)
-      .set(setUpdatedAt(updatedAnalysis))
-      .where(
-        sql`${analysis.entryId} = ${id} and ${analysis.userId} = ${userId}`,
-      );
-  });
+  if (!journalId) throw new Error("Failed to mutate Journal entry");
 }
 
-export async function updateEntry(id: string, content: string) {
+export async function updateJournalEntry(id: string, content: string) {
   const userId = await getCurrentUserId();
 
-  const updatedAnalysis = await db.transaction(async (tx) => {
-    const [entry] = await tx
-      .update(journal)
-      .set(setUpdatedAt({ content, preview: createPreview(content) }))
-      .where(sql`${journal.id} = ${id} and ${journal.userId} = ${userId}`)
-      .returning({ id: journal.id });
+  const [updatedAnalysis] = await db
+    .update(journal)
+    .set(
+      setUpdatedAt({
+        content,
+        preview: createJournalPreview(content),
+        ...(await getJournalAnalysis(content)),
+      }),
+    )
+    .where(sql`${journal.id} = ${id} and ${journal.userId} = ${userId}`)
+    .returning({
+      emoji: journal.emoji,
+      mood: journal.mood,
+      sentiment: journal.sentiment,
+      subject: journal.subject,
+      summery: journal.summery,
+    });
 
-    if (!entry) {
-      tx.rollback();
-
-      return;
-    }
-
-    const [data] = await db
-      .update(analysis)
-      .set(setUpdatedAt(await getAnalysis(content)))
-      .where(
-        sql`${analysis.entryId} = ${entry.id} and ${analysis.userId} = ${userId}`,
-      )
-      .returning({
-        analysis: {
-          emoji: analysis.emoji,
-          mood: analysis.mood,
-          sentiment: analysis.sentiment,
-          subject: analysis.subject,
-          summery: analysis.summery,
-        },
-      });
-
-    if (!data) {
-      tx.rollback();
-
-      return;
-    }
-
-    return data.analysis;
-  });
-
-  if (!updatedAnalysis) throw new Error("Failed to update entry");
+  if (!updatedAnalysis) throw new Error("Failed to update Journal entry");
 
   return updatedAnalysis;
 }
 
-export async function getEntry(id: string) {
-  const [entry] = await db
+export async function getJournalEntry(id: string) {
+  const [journalEntry] = await db
     .select({
       content: journal.content,
       date: journal.date,
-      analysis: {
-        emoji: analysis.emoji,
-        mood: analysis.mood,
-        sentiment: analysis.sentiment,
-        subject: analysis.subject,
-        summery: analysis.summery,
-      },
+      emoji: journal.emoji,
+      mood: journal.mood,
+      sentiment: journal.sentiment,
+      subject: journal.subject,
+      summery: journal.summery,
     })
     .from(journal)
-    .innerJoin(analysis, eq(analysis.entryId, journal.id))
     .where(
       sql`${journal.id} = ${id} and ${journal.userId} = ${await getCurrentUserId()}`,
     )
     .limit(1);
 
-  if (!entry) throw new Error("Entry not found");
+  if (!journalEntry) throw new Error("Journal entry not found");
 
-  return entry;
+  return journalEntry;
 }
 
-export async function mutateEntryDate(id: string, date: Date) {
-  await db
+export async function mutateJournalEntryDate(id: string, date: Date) {
+  const [journalId] = await db
     .update(journal)
-    .set(setUpdatedAt({ date: new Date(date).toDateString() }))
+    .set(setUpdatedAt({ date: date.getTime() }))
     .where(
       sql`${journal.id} = ${id} and ${journal.userId} = ${await getCurrentUserId()}`,
-    );
+    )
+    .returning({ id: journal.id });
+
+  if (!journalId) throw new Error("Failed to mutate Journal entry date");
 }
 
-export async function getEntries() {
-  const entries = await db
+export async function getJournalEntries() {
+  const journalEntries = await db
     .select({
       date: journal.date,
       id: journal.id,
@@ -159,42 +127,41 @@ export async function getEntries() {
     .where(eq(journal.userId, await getCurrentUserId()))
     .orderBy(desc(journal.date));
 
-  return entries;
+  return journalEntries;
 }
 
-export async function getMostRecentEntry() {
-  const [entry] = await db
+export async function getMostRecentJournalEntry() {
+  const [journalEntry] = await db
     .select({ date: journal.date })
     .from(journal)
     .where(eq(journal.userId, await getCurrentUserId()))
     .orderBy(desc(journal.date))
     .limit(1);
 
-  return entry;
+  return journalEntry;
 }
 
 export async function getChartAnalyses(start: Date, end: Date) {
   const chartAnalyses = await db
     .select({
-      emoji: analysis.emoji,
-      mood: analysis.mood,
-      sentiment: analysis.sentiment,
-      journal: { date: journal.date },
+      date: journal.date,
+      emoji: journal.emoji,
+      mood: journal.mood,
+      sentiment: journal.sentiment,
     })
-    .from(analysis)
-    .innerJoin(journal, eq(analysis.entryId, journal.id))
+    .from(journal)
     .where(
-      sql`((${analysis.userId}=${await getCurrentUserId()}) and (${journal.date} between ${start} and ${end}))`,
+      sql`((${journal.userId}=${await getCurrentUserId()}) and (${journal.date} between ${start} and ${end}))`,
     );
 
   return chartAnalyses;
 }
 
-function createPreview(content: string) {
+function createJournalPreview(content: string) {
   return content.substring(0, PREVIEW_LENGTH);
 }
 
-async function getAnalysis(content: string) {
+async function getJournalAnalysis(content: string) {
   return !content.trim()
     ? {
         emoji: "",
@@ -207,5 +174,5 @@ async function getAnalysis(content: string) {
 }
 
 function setUpdatedAt<T extends object>(data: T) {
-  return { ...data, updatedAt: sql`CURRENT_TIMESTAMP(3)` };
+  return { ...data, updatedAt: getCurrentTimestamp() };
 }

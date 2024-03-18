@@ -1,13 +1,13 @@
 "use client";
 
-import type { Analysis } from "@/utils/types";
+import { JournalAnalysis } from "@/utils/types";
 import { LoadingSpinner } from "../server/loading";
 
 export default function Analysis({
   analysis: { emoji, mood, sentiment, subject, summery },
   loading,
 }: Readonly<{
-  analysis: Analysis;
+  analysis: JournalAnalysis;
   loading: boolean;
 }>) {
   const table = [

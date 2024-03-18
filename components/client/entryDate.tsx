@@ -7,8 +7,8 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { isTouchDevice } from "@/utils";
-import { Entry, SetState } from "@/utils/types";
-import { mutateEntryDate } from "@/utils/actions";
+import { JournalEntry, SetState } from "@/utils/types";
+import { mutateJournalEntryDate } from "@/utils/actions";
 
 export default function EntryDate({
   date,
@@ -46,12 +46,12 @@ export default function EntryDate({
 function useMutateDate(queryClient: QueryClient) {
   return useMutation({
     mutationFn: async ({ id, date }: { id: string; date: Date }) => {
-      await mutateEntryDate(id, date);
+      await mutateJournalEntryDate(id, date);
 
       return date;
     },
     onSuccess: (date, { id }) => {
-      queryClient.setQueryData(["entry", id], (oldDate: Entry) => ({
+      queryClient.setQueryData(["entry", id], (oldDate: JournalEntry) => ({
         ...oldDate,
         date,
       }));

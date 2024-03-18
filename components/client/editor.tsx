@@ -9,23 +9,33 @@ import {
 } from "@tanstack/react-query";
 import { useAutosave } from "react-autosave";
 import { isTouchDevice } from "@/utils";
-import { Analysis as UpdatedAnalysis, Entry, SetState } from "@/utils/types";
-import { getEntry, mutateEntry, updateEntry } from "@/utils/actions";
+import { JournalAnalysis, JournalEntry, SetState } from "@/utils/types";
+import {
+  getJournalEntry,
+  mutateJournalEntry,
+  updateJournalEntry,
+} from "@/utils/actions";
 import EntryDate from "./entryDate";
 import Analysis from "./analysis";
 import DeleteEntry from "./deleteEntry";
 import { ErrorAlert } from "./modal";
 
-export default function Editor({ entry }: Readonly<{ entry: Entry }>) {
+export default function Editor({ entry }: Readonly<{ entry: JournalEntry }>) {
   const [content, setContent] = useState(entry.content);
   const [date, setDate] = useState(new Date(entry.date));
-  const [analysis, setAnalysis] = useState(entry.analysis);
+  const [analysis, setAnalysis] = useState<JournalAnalysis>({
+    emoji: entry.emoji,
+    mood: entry.mood,
+    sentiment: entry.sentiment,
+    subject: entry.subject,
+    summery: entry.summery,
+  });
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [isScrolling, setIsScrolling] = useState(false);
 
   const previousContent = useRef(content.trim());
-  const cache = useRef(new Map([[content.trim(), entry.analysis]]));
+  const cache = useRef(new Map([[content.trim(), analysis]]));
 
   const update = useEntry(entry.id);
   const queryClient = useQueryClient();
@@ -61,10 +71,9 @@ export default function Editor({ entry }: Readonly<{ entry: Entry }>) {
         previousContent.current = trimmedContent;
 
         mutation.mutate({
-          analysis,
           content,
           id: entry.id,
-          date: date.toDateString(),
+          date: date.getDate(),
         });
       }
     },
@@ -113,25 +122,28 @@ export default function Editor({ entry }: Readonly<{ entry: Entry }>) {
 function useEntry(id: string) {
   return useQuery({
     queryKey: ["entry", id],
-    queryFn: async () => await getEntry(id),
+    queryFn: async () => await getJournalEntry(id),
   });
 }
 
 function useMutateEntry(
   queryClient: QueryClient,
-  cache: Map<string, UpdatedAnalysis>,
+  cache: Map<string, JournalAnalysis>,
 ) {
   return useMutation({
-    mutationFn: async ({ id, content }: Entry) => {
+    mutationFn: async ({
+      id,
+      content,
+    }: Pick<JournalEntry, "id" | "content" | "date">) => {
       const cachedAnalysis = cache.get(content);
 
       if (cachedAnalysis) {
-        await mutateEntry(id, content, cachedAnalysis);
+        await mutateJournalEntry(id, content, cachedAnalysis);
 
         return { analysis: cachedAnalysis };
       }
 
-      const analysis = await updateEntry(id, content);
+      const analysis = await updateJournalEntry(id, content);
 
       return { analysis };
     },

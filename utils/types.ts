@@ -1,4 +1,4 @@
-import { AnalysisSelect, JournalSelect } from "@/drizzle/schema";
+import { JournalSelect } from "@/drizzle/schema";
 import { Dispatch, PropsWithChildren, SetStateAction } from "react";
 
 export interface RequestContext {
@@ -9,21 +9,22 @@ export type ErrorBoundaryProps = Readonly<{
   error: Error & { digest?: string };
 }>;
 
-export type AnalysisChart = Pick<
-  AnalysisSelect,
-  "sentiment" | "mood" | "emoji"
-> & { journal: Pick<JournalSelect, "date"> };
+export type JournalEntry = Omit<
+  JournalSelect,
+  "userId" | "createdAt" | "updatedAt" | "preview"
+>;
 
-export type Analysis = Pick<
-  AnalysisSelect,
+export type JournalAnalysis = Pick<
+  JournalSelect,
   "sentiment" | "mood" | "emoji" | "subject" | "summery"
 >;
 
-type Journal = Pick<JournalSelect, "content" | "date" | "id">;
+export type JournalAnalysisChart = Pick<
+  JournalSelect,
+  "sentiment" | "mood" | "emoji" | "date"
+>;
 
-export type Entry = Journal & { analysis: Analysis };
-
-export type Preview = Omit<Journal, "content"> & Pick<JournalSelect, "preview">;
+export type JournalPreview = Pick<JournalSelect, "id" | "date" | "preview">;
 
 export type SetState<T> = Dispatch<SetStateAction<T>>;
 
