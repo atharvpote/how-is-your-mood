@@ -1,15 +1,11 @@
 import { defineConfig } from "drizzle-kit";
-import { env } from "process";
+import { getDatabaseCredentials } from "./utils/db";
 
 export default defineConfig({
   driver: "turso",
   schema: "./drizzle/schema.ts",
-  dbCredentials: {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    url: env.TURSO_CONNECTION_URL!,
-    authToken: env.TURSO_AUTH_TOKEN,
-  },
-  tablesFilter: ["howIsYourMood_*"],
+  out: "./drizzle/migrations",
+  dbCredentials: getDatabaseCredentials(),
   verbose: true,
   strict: true,
 });
