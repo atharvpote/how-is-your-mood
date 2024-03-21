@@ -1,16 +1,18 @@
-import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
+import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { JsonOutputFunctionsParser } from "langchain/output_parsers";
-import { BytesOutputParser } from "@langchain/core/output_parsers";
+import {
+  BytesOutputParser,
+  StringOutputParser,
+} from "@langchain/core/output_parsers";
 import { Message } from "ai/react";
-import { Document } from "@langchain/core/documents";
-import { JournalSelect } from "@/drizzle/schema";
-import { UpstashVectorStore } from "@langchain/community/vectorstores/upstash";
-import { Index } from "@upstash/vector";
-import { ChatMessage, HumanMessage } from "@langchain/core/messages";
+import { ChatMessage } from "@langchain/core/messages";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { formatDocumentsAsString } from "langchain/util/document";
-import { RunnableSequence } from "@langchain/core/runnables";
+import {
+  RunnablePassthrough,
+  RunnableSequence,
+} from "@langchain/core/runnables";
+import { langchainVectorStore, openAIEmbeddings } from "@/vectorDb";
 
 export async function getAiAnalysis(content: string) {
   const parser = new JsonOutputFunctionsParser();
@@ -39,7 +41,7 @@ export async function getAiAnalysis(content: string) {
         },
         sentiment: {
           type: "number",
-          description: "Sentiment of journal on scale of -10 to 10.",
+          description: "Sentiment of journal on scale of 0 to 10.",
         },
       },
     },
@@ -59,49 +61,21 @@ export async function getAiAnalysis(content: string) {
     })
     .pipe(parser);
 
-  return getAnalysisChain.invoke([new HumanMessage(content)]);
+  return getAnalysisChain.invoke([["human", content]]);
 }
 
 type Messages = Omit<Message, "id">[];
 
-export async function getChatResponse(
-  messages: Messages,
-  entries: JournalSelect[],
-) {
+export async function getChatResponse(messages: Messages, userId: string) {
   if (!messages.length) throw new Error("Chat is empty");
-
-  const index = new Index();
-
-  const store = new UpstashVectorStore(
-    new OpenAIEmbeddings({ modelName: "text-embedding-3-small" }),
-    { index },
-  );
-
-  const documents = entries.map(
-    ({ content, id, createdAt, date, updatedAt }) =>
-      new Document({
-        pageContent: content,
-        metadata: { id, createdAt, "entry date": date, updatedAt },
-      }),
-  );
-
-  const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 100,
-    chunkOverlap: 20,
-  });
-
-  const ids = await store.addDocuments(
-    await splitter.splitDocuments(documents),
-  );
-
-  // eslint-disable-next-line drizzle/enforce-delete-with-where
-  await store.delete({ ids });
 
   const model = new ChatOpenAI({
     temperature: 0,
     modelName: "gpt-3.5-turbo-0125",
     cache: true,
   });
+
+  const relevantChunks = await getRelevantDocuments(messages, model, userId);
 
   const prompt = ChatPromptTemplate.fromMessages([
     [
@@ -111,14 +85,67 @@ export async function getChatResponse(
     ...messages.map((message) => new ChatMessage(message)),
   ]);
 
-  const retriever = store.asRetriever(5, { verbose: true });
-
   const chatResponseChain = RunnableSequence.from([
-    { relevantChunks: retriever.pipe(formatDocumentsAsString) },
+    {
+      relevantChunks: new RunnablePassthrough(),
+    },
     prompt,
     model,
     new BytesOutputParser(),
   ]);
 
-  return chatResponseChain.stream("");
+  return chatResponseChain.stream({ relevantChunks });
+}
+
+async function getRelevantDocuments(
+  messages: Messages,
+  model: ChatOpenAI,
+  userId: string,
+) {
+  const current = messages[messages.length - 1];
+
+  if (!current) throw new Error("Chat is empty");
+
+  const chatHistory = messages
+    .slice(0, -1)
+    .map(({ role, content }) => `${role}: ${content}`)
+    .join("\n");
+
+  const queryChain = ChatPromptTemplate.fromMessages([
+    [
+      "human",
+      `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
+
+Chat History:
+{chat_history}
+Follow Up Input: {question}
+Standalone question:`,
+    ],
+  ])
+    .pipe(model)
+    .pipe(new StringOutputParser());
+
+  const query = await queryChain.invoke({
+    chat_history: chatHistory,
+    question: current.content,
+  });
+
+  console.log(query);
+
+  return await langchainVectorStore.similaritySearch(query, 5, {
+    user_id: userId,
+  });
+}
+
+export async function getEmbeddings(content: string) {
+  const splitter = new RecursiveCharacterTextSplitter();
+
+  const splitContent = await splitter.splitText(content);
+
+  const embeddings = await openAIEmbeddings.embedDocuments(splitContent);
+
+  return splitContent.map((chunk, index) => ({
+    chunk,
+    embedding: embeddings[index],
+  })) as { chunk: string; embedding: number[] }[];
 }

@@ -31,3 +31,8 @@ export type SetState<T> = Dispatch<SetStateAction<T>>;
 export type ReadonlyPropsWithChildren<P = unknown> = Readonly<
   PropsWithChildren<P>
 >;
+
+export type JournalMetadata = Omit<
+  JournalSelect,
+  "content" | "embedded" | "emoji" | "preview"
+> & { userId: string };

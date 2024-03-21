@@ -85,7 +85,7 @@ function ConfirmationModal({
 
                       router.replace(`/journal`);
                     })
-                    .catch((error) => {
+                    .catch((error: unknown) => {
                       setIsError(true);
                       setError(new Error(createErrorMessage(error)));
                     })

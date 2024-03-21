@@ -37,30 +37,40 @@ export default function Editor({ entry }: Readonly<{ entry: JournalEntry }>) {
   const previousContent = useRef(content.trim());
   const cache = useRef(new Map([[content.trim(), analysis]]));
 
-  const update = useEntry(entry.id);
   const queryClient = useQueryClient();
-  if (!update.data) queryClient.setQueryData(["entry", entry.id], entry);
-  useEffect(() => {
-    if (update.data) {
-      setContent(update.data.content);
-      setDate(new Date(update.data.date));
-    }
 
-    if (update.isError) {
-      setIsError(true);
-      setError(update.error);
-    }
-  }, [update.data, update.error, update.isError]);
+  const update = useEntry(entry.id);
+
+  if (!update.data) updateReactQueryCache(queryClient, entry);
+
+  useEffect(
+    function updateStateOnLoad() {
+      if (update.data) {
+        setContent(update.data.content);
+        setDate(new Date(update.data.date));
+      }
+
+      if (update.isError) {
+        setIsError(true);
+        setError(update.error);
+      }
+    },
+    [update.data, update.error, update.isError],
+  );
 
   const mutation = useMutateEntry(queryClient, cache.current);
-  useEffect(() => {
-    if (mutation.data?.analysis) setAnalysis(mutation.data.analysis);
 
-    if (mutation.isError) {
-      setIsError(true);
-      setError(mutation.error);
-    }
-  }, [mutation.data, mutation.error, mutation.isError]);
+  useEffect(
+    function updateStateOnMutation() {
+      if (mutation.data?.analysis) setAnalysis(mutation.data.analysis);
+
+      if (mutation.isError) {
+        setIsError(true);
+        setError(mutation.error);
+      }
+    },
+    [mutation.data, mutation.error, mutation.isError],
+  );
 
   useAutosave({
     data: content,
@@ -156,6 +166,10 @@ function useMutateEntry(
       });
     },
   });
+}
+
+function updateReactQueryCache(queryClient: QueryClient, entry: JournalEntry) {
+  queryClient.setQueryData(["entry", entry.id], entry);
 }
 
 function adjustUi(

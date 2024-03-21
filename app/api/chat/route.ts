@@ -2,12 +2,9 @@ import { NextRequest } from "next/server";
 import { StreamingTextResponse } from "ai";
 import { z } from "zod";
 import { createErrorResponse } from "@/utils/response";
-import { getCurrentUserId } from "@/utils/auth";
 import { validatedData } from "@/utils/validator";
 import { getChatResponse } from "@/utils/ai";
-import { db } from "@/drizzle/db";
-import { eq } from "drizzle-orm";
-import { journal } from "@/drizzle/schema";
+import { getCurrentUserId } from "@/utils/auth";
 
 export async function POST(request: NextRequest) {
   const requestSchema = z.object({
@@ -27,17 +24,12 @@ export async function POST(request: NextRequest) {
   });
 
   try {
+    const userId = await getCurrentUserId();
+
     const { messages } = validatedData(requestSchema, await request.json());
 
     try {
-      const entries = await db
-        .select()
-        .from(journal)
-        .where(eq(journal.userId, await getCurrentUserId()));
-
-      return new StreamingTextResponse(
-        await getChatResponse(messages, entries),
-      );
+      return new StreamingTextResponse(await getChatResponse(messages, userId));
     } catch (error) {
       return createErrorResponse(500, error);
     }

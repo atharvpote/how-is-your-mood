@@ -14,8 +14,6 @@ export const metadata: Metadata = {
   icons: "/icon.png",
 };
 
-export const runtime = "edge";
-
 export default function RootLayout({ children }: ReadonlyPropsWithChildren) {
   return (
     <ClerkProvider appearance={{ baseTheme: shadesOfPurple }}>

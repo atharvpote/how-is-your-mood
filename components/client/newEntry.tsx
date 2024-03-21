@@ -31,7 +31,7 @@ export default function NewEntry() {
 
               router.push(`/journal/${id}`);
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
               setIsError(true);
               setError(new Error(createErrorMessage(error)));
             })

@@ -25,7 +25,7 @@ dependencies:
     version: 11.11.0(@emotion/react@11.11.4)(@types/react@18.2.67)(react@18.2.0)
   '@langchain/community':
     specifier: ^0.0.41
-    version: 0.0.41(@datastax/astra-db-ts@0.1.4)(@upstash/vector@1.0.4)(encoding@0.1.13)
+    version: 0.0.41(@datastax/astra-db-ts@0.1.4)(encoding@0.1.13)
   '@langchain/core':
     specifier: ^0.1.48
     version: 0.1.48
@@ -68,9 +68,6 @@ dependencies:
   '@typescript-eslint/parser':
     specifier: ^7.3.1
     version: 7.3.1(eslint@8.57.0)(typescript@5.4.2)
-  '@upstash/vector':
-    specifier: ^1.0.4
-    version: 1.0.4
   ai:
     specifier: ^3.0.13
     version: 3.0.13(react@18.2.0)(solid-js@1.8.16)(svelte@4.2.12)(vue@3.4.21)(zod@3.22.4)
@@ -118,7 +115,7 @@ dependencies:
     version: 3.15.1(tailwindcss@3.4.1)
   langchain:
     specifier: ^0.1.28
-    version: 0.1.28(@datastax/astra-db-ts@0.1.4)(@upstash/vector@1.0.4)(encoding@0.1.13)
+    version: 0.1.28(@datastax/astra-db-ts@0.1.4)(encoding@0.1.13)
   next:
     specifier: ^14.1.4
     version: 14.1.4(react-dom@18.2.0)(react@18.2.0)
@@ -1054,7 +1051,7 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: false
 
-  /@langchain/community@0.0.41(@datastax/astra-db-ts@0.1.4)(@upstash/vector@1.0.4)(encoding@0.1.13):
+  /@langchain/community@0.0.41(@datastax/astra-db-ts@0.1.4)(encoding@0.1.13):
     resolution: {integrity: sha512-8QvA/Gx95ijUxmH3amj1La6Rl9NmMCnif802q/Y2zze+SW2bgeF7brC6n2BIui2GYUQlCDBoga/QZ2lPqPM6vg==}
     engines: {node: '>=18'}
     peerDependencies:
@@ -1330,7 +1327,6 @@ packages:
       '@datastax/astra-db-ts': 0.1.4
       '@langchain/core': 0.1.48
       '@langchain/openai': 0.0.22(encoding@0.1.13)
-      '@upstash/vector': 1.0.4
       expr-eval: 2.0.2
       flat: 5.0.2
       langsmith: 0.1.13
@@ -2348,10 +2344,6 @@ packages:
 
   /@ungap/structured-clone@1.2.0:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
-    dev: false
-
-  /@upstash/vector@1.0.4:
-    resolution: {integrity: sha512-Pq4KDq/IguAKK/BOTMQeA1HvzwO3WU+4CWJeUf97f+xEgJ/RrUJJClCmdv96O+NUi1ssoFDNAuES72v9ZJkSfA==}
     dev: false
 
   /@vue/compiler-core@3.4.21:
@@ -4947,7 +4939,7 @@ packages:
     resolution: {integrity: sha512-Xq9nH7KlWZmXAtodXDDRE7vs6DU1gTU8zYDHDiWLSip45Egwq3plLHzPn27NgvzL2r1LMPC1vdqh98sQxtqj4A==}
     dev: false
 
-  /langchain@0.1.28(@datastax/astra-db-ts@0.1.4)(@upstash/vector@1.0.4)(encoding@0.1.13):
+  /langchain@0.1.28(@datastax/astra-db-ts@0.1.4)(encoding@0.1.13):
     resolution: {integrity: sha512-LNuILtOSFptfOqDwUwQAl7B0dYrBtxzVZ6lDhc5DA8rk+pyTCy12HQO7t8bGqC8oQlEPYPKaom8VRlvfupUBTw==}
     engines: {node: '>=18'}
     peerDependencies:
@@ -5107,7 +5099,7 @@ packages:
         optional: true
     dependencies:
       '@anthropic-ai/sdk': 0.9.1(encoding@0.1.13)
-      '@langchain/community': 0.0.41(@datastax/astra-db-ts@0.1.4)(@upstash/vector@1.0.4)(encoding@0.1.13)
+      '@langchain/community': 0.0.41(@datastax/astra-db-ts@0.1.4)(encoding@0.1.13)
       '@langchain/core': 0.1.48
       '@langchain/openai': 0.0.22(encoding@0.1.13)
       binary-extensions: 2.3.0
