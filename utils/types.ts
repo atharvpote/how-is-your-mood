@@ -9,22 +9,22 @@ export type ErrorBoundaryProps = Readonly<{
   error: Error & { digest?: string };
 }>;
 
-export type JournalEntry = Omit<
+export type Entry = Omit<
   JournalSelect,
   "userId" | "createdAt" | "updatedAt" | "preview"
 >;
 
-export type JournalAnalysis = Pick<
+export type Analysis = Pick<
   JournalSelect,
   "sentiment" | "mood" | "emoji" | "subject" | "summery"
 >;
 
-export type JournalAnalysisChart = Pick<
+export type ChartAnalysis = Pick<
   JournalSelect,
   "sentiment" | "mood" | "emoji" | "date"
 >;
 
-export type JournalPreview = Pick<JournalSelect, "id" | "date" | "preview">;
+export type Preview = Pick<JournalSelect, "id" | "date" | "preview">;
 
 export type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -32,7 +32,6 @@ export type ReadonlyPropsWithChildren<P = unknown> = Readonly<
   PropsWithChildren<P>
 >;
 
-export type JournalMetadata = Omit<
-  JournalSelect,
-  "content" | "embedded" | "emoji" | "preview"
-> & { userId: string };
+export type Metadata = Omit<JournalSelect, "embedded" | "emoji" | "preview"> & {
+  userId: string;
+};

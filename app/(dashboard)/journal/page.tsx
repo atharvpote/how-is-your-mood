@@ -1,4 +1,4 @@
-import { getJournalEntries } from "@/utils/actions";
+import { getEntries } from "@/utils/actions";
 import Entries from "@/components/client/entries";
 import NewEntry from "@/components/client/newEntry";
 
@@ -11,7 +11,7 @@ export default async function EntriesPage() {
         </div>
         <NewEntry />
       </header>
-      <Entries entries={await getJournalEntries()} />
+      <Entries entries={await getEntries()} />
     </div>
   );
 }

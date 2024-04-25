@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { createJournalEntry } from "@/utils/actions";
+import { createEntry } from "@/utils/actions";
 import { createErrorMessage } from "@/utils/error";
 import { LoadingSpinner } from "../server/loading";
 import { ErrorAlert } from "./modal";
@@ -25,7 +25,7 @@ export default function NewEntry() {
         onClick={() => {
           loading.current?.showModal();
 
-          createJournalEntry()
+          createEntry()
             .then(async (id) => {
               await queryClient.invalidateQueries({ queryKey: ["entries"] });
 

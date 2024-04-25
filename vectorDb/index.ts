@@ -1,33 +1,36 @@
-import { AstraDB } from "@datastax/astra-db-ts";
+import { DataAPIClient, VectorDoc } from "@datastax/astra-db-ts";
 import { AstraDBVectorStore } from "@langchain/community/vectorstores/astradb";
 import { OpenAIEmbeddings } from "@langchain/openai";
 
-const vectorDb = new AstraDB(
-  process.env.ASTRA_DB_APPLICATION_TOKEN,
-  process.env.ASTRA_DB_ENDPOINT,
-);
+const { ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ENDPOINT, ASTRA_DB_COLLECTION } =
+  process.env;
 
-export const collection = await vectorDb.collection(
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  process.env.ASTRA_DB_COLLECTION!,
-);
+if (!ASTRA_DB_APPLICATION_TOKEN || !ASTRA_DB_ENDPOINT || !ASTRA_DB_COLLECTION)
+  throw new Error(
+    "Please add ASTRA_DB_APPLICATION_TOKEN and ASTRA_DB_ENDPOINT to .env or .env.local",
+  );
 
-export const openAIEmbeddings = new OpenAIEmbeddings();
+const client = new DataAPIClient(ASTRA_DB_APPLICATION_TOKEN);
+const db = client.db(ASTRA_DB_ENDPOINT);
 
-export const langchainVectorStore = await AstraDBVectorStore.fromExistingIndex(
-  openAIEmbeddings,
+export const collection = db.collection<JournalVectorDoc>(ASTRA_DB_COLLECTION);
+
+export const vectorStore = await AstraDBVectorStore.fromExistingIndex(
+  new OpenAIEmbeddings(),
   {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    endpoint: process.env.ASTRA_DB_ENDPOINT!,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    token: process.env.ASTRA_DB_APPLICATION_TOKEN!,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    collection: process.env.ASTRA_DB_COLLECTION!,
+    endpoint: ASTRA_DB_ENDPOINT,
+    collection: ASTRA_DB_COLLECTION,
+    token: ASTRA_DB_APPLICATION_TOKEN,
     collectionOptions: {
-      vector: {
-        dimension: 1536,
-        metric: "cosine",
-      },
+      checkExists: false,
+      vector: { dimension: 1536, metric: "cosine" },
     },
   },
 );
+
+interface JournalVectorDoc extends VectorDoc {
+  _id: string;
+  text: string;
+  entry_id: string;
+  user_id: string;
+}

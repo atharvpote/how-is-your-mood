@@ -3,24 +3,21 @@
 // TODO: Use revalidatePath() in actions when revalidation of client-side Router Cache for specific path is supported
 
 import { getCurrentUserId } from "./auth";
-import { JournalAnalysis, JournalMetadata } from "./types";
+import { Analysis, Metadata } from "./types";
 import { PREVIEW_LENGTH, getCurrentTimestamp } from ".";
-import { getAiAnalysis, getEmbeddings } from "./ai";
+import { getAiAnalysis } from "./ai";
 import { db } from "@/drizzle/db";
 import { desc, eq, sql } from "drizzle-orm";
 import { journal } from "@/drizzle/schema";
-import {
-  deleteEmbeddings,
-  insertEmbeddings,
-  mutateEmbeddingsMetadataDate,
-} from "@/vectorDb/utils";
+import { deleteVectorDocs, insertVectorDocs } from "@/vectorDb/utils";
 
 // ANCHOR: Get Actions
-export async function getJournalEntry(id: string) {
-  const [journalEntry] = await db
+export async function getEntry(id: string) {
+  const [entry] = await db
     .select({
       content: journal.content,
       date: journal.date,
+      embedded: journal.embedded,
       emoji: journal.emoji,
       mood: journal.mood,
       sentiment: journal.sentiment,
@@ -33,12 +30,12 @@ export async function getJournalEntry(id: string) {
     )
     .limit(1);
 
-  if (!journalEntry) throw new Error("Journal entry not found");
+  if (!entry) throw new Error("Journal entry not found");
 
-  return journalEntry;
+  return entry;
 }
 
-export async function getJournalEntries() {
+export async function getEntries() {
   return await db
     .select({
       date: journal.date,
@@ -50,15 +47,15 @@ export async function getJournalEntries() {
     .orderBy(desc(journal.date));
 }
 
-export async function getMostRecentJournalEntry() {
-  const [journalEntry] = await db
+export async function getMostRecentEntry() {
+  const [entry] = await db
     .select({ date: journal.date })
     .from(journal)
     .where(eq(journal.userId, await getCurrentUserId()))
     .orderBy(desc(journal.date))
     .limit(1);
 
-  return journalEntry;
+  return entry;
 }
 
 export async function getChartAnalyses(start: Date, end: Date) {
@@ -76,7 +73,7 @@ export async function getChartAnalyses(start: Date, end: Date) {
 }
 
 // ANCHOR: Create Actions
-export async function createJournalEntry() {
+export async function createEntry() {
   const userId = await getCurrentUserId();
 
   const [entry] = await db
@@ -90,17 +87,21 @@ export async function createJournalEntry() {
 }
 
 // ANCHOR: Update Actions
-export async function updateJournalEntry(id: string, content: string) {
+export async function updateEntry(
+  id: string,
+  content: string,
+  analysis?: Analysis,
+) {
   const userId = await getCurrentUserId();
 
-  const journalEntry = await db.transaction(async (tx) => {
-    const [journalEntry] = await tx
+  const entry = await db.transaction(async (tx) => {
+    const [entry] = await tx
       .update(journal)
       .set(
         setUpdatedAt({
           content,
-          preview: createJournalPreview(content),
-          ...(await getJournalAnalysis(content)),
+          preview: createEntryPreview(content),
+          ...(analysis ?? (await getAnalysis(content))),
         }),
       )
       .where(sql`${journal.id} = ${id} and ${journal.userId} = ${userId}`)
@@ -116,166 +117,121 @@ export async function updateJournalEntry(id: string, content: string) {
         updatedAt: journal.updatedAt,
       });
 
-    if (!journalEntry) {
+    if (!entry) {
       tx.rollback();
 
       throw new Error("Failed to update Journal entry");
     }
 
     try {
-      await updateEmbeddings(content, { ...journalEntry, userId });
+      await updateEmbeddings({ ...entry, content, userId });
     } catch (error: unknown) {
       tx.rollback();
 
-      if (error instanceof Error) throw new Error(error.message);
-
-      throw new Error(`Unknown error: ${String(error)}`);
+      handleTransactionError(error);
     }
 
-    return journalEntry;
+    try {
+      await tx
+        .update(journal)
+        .set({ embedded: 1 })
+        .where(sql`${journal.id} = ${id} and ${journal.userId} = ${userId}`);
+    } catch (error) {
+      tx.rollback();
+
+      throw new Error("Failed to update Journal entry embedded status");
+    }
+
+    return entry;
   });
 
-  const updatedAnalysis: JournalAnalysis = {
-    emoji: journalEntry.emoji,
-    mood: journalEntry.mood,
-    sentiment: journalEntry.sentiment,
-    subject: journalEntry.subject,
-    summery: journalEntry.summery,
+  const updatedAnalysis: Analysis = {
+    emoji: entry.emoji,
+    mood: entry.mood,
+    sentiment: entry.sentiment,
+    subject: entry.subject,
+    summery: entry.summery,
   };
 
   return updatedAnalysis;
 }
 
-// ANCHOR: Mutate Actions
-export async function mutateJournalEntry(
-  id: string,
-  content: string,
-  journalAnalysis: JournalAnalysis,
-) {
+export async function updateEntryDate(id: string, date: Date) {
   const userId = await getCurrentUserId();
 
   await db.transaction(async (tx) => {
-    const [journalEntry] = await tx
-      .update(journal)
-      .set(
-        setUpdatedAt({
-          content,
-          preview: createJournalPreview(content),
-          ...journalAnalysis,
-        }),
-      )
-      .where(sql`${journal.id} = ${id} and ${journal.userId} = ${userId}`)
-      .returning({
-        createdAt: journal.createdAt,
-        date: journal.date,
-        id: journal.id,
-        mood: journal.mood,
-        sentiment: journal.sentiment,
-        subject: journal.subject,
-        summery: journal.summery,
-        updatedAt: journal.updatedAt,
-      });
-
-    if (!journalEntry) {
-      tx.rollback();
-
-      throw new Error("Failed to mutate Journal entry");
-    }
-
-    try {
-      await updateEmbeddings(content, { ...journalEntry, userId });
-    } catch (error: unknown) {
-      tx.rollback();
-
-      if (error instanceof Error) throw new Error(error.message);
-
-      throw new Error(`Unknown error: ${String(error)}`);
-    }
-  });
-}
-
-export async function mutateJournalEntryDate(id: string, date: Date) {
-  const userId = await getCurrentUserId();
-
-  await db.transaction(async (tx) => {
-    const [journalEntry] = await tx
+    const [entry] = await tx
       .update(journal)
       .set(setUpdatedAt({ date: date.getTime() }))
       .where(
         sql`${journal.id} = ${id} and ${journal.userId} = ${await getCurrentUserId()}`,
       )
-      .returning({ id: journal.id });
+      .returning({
+        date: journal.date,
+        id: journal.id,
+        createdAt: journal.createdAt,
+        updatedAt: journal.updatedAt,
+        content: journal.content,
+        summery: journal.summery,
+        mood: journal.mood,
+        sentiment: journal.sentiment,
+        subject: journal.subject,
+        userId: journal.userId,
+      });
 
-    if (!journalEntry) {
+    if (!entry) {
       tx.rollback();
 
       throw new Error("Failed to mutate Journal entry date");
     }
 
-    const embeddingsMutateResult = await mutateEmbeddingsMetadataDate(
-      date,
-      userId,
-      journalEntry.id,
-    );
-
-    if (!embeddingsMutateResult.acknowledged) {
+    try {
+      await updateEmbeddings({ ...entry, userId });
+    } catch (error) {
       tx.rollback();
 
-      throw new Error("Failed to mutate embeddings metadata date");
+      handleTransactionError(error);
     }
   });
 }
 
 // ANCHOR: Delete Actions
-export async function deleteJournalEntry(id: string) {
+export async function deleteEntry(id: string) {
   const userId = await getCurrentUserId();
 
   await db.transaction(async (tx) => {
-    const [journalId] = await tx
+    const [entryId] = await tx
       .delete(journal)
       .where(sql`${journal.id} = ${id} and ${journal.userId} = ${userId}`)
       .returning({ id: journal.id });
 
-    if (!journalId) {
+    if (!entryId) {
       tx.rollback();
 
       throw new Error("Failed to delete Journal entry");
     }
-
-    const deleteEmbeddingsResult = await deleteEmbeddings(userId, id);
-
-    if (!deleteEmbeddingsResult.acknowledged) {
+    try {
+      await deleteVectorDocs(userId, id);
+    } catch (error) {
       tx.rollback();
 
-      throw new Error("Failed to delete journal embeddings");
+      handleTransactionError(error);
     }
   });
 }
 
 // ANCHOR: Action Utils
-async function updateEmbeddings(content: string, journal: JournalMetadata) {
-  const deleteEmbeddingsResult = await deleteEmbeddings(
-    journal.userId,
-    journal.id,
-  );
+async function updateEmbeddings(journal: Metadata) {
+  await deleteVectorDocs(journal.userId, journal.id);
 
-  if (!deleteEmbeddingsResult.acknowledged)
-    throw new Error("Failed to delete embeddings");
-
-  const insertEmbeddingsResult = await insertEmbeddings(
-    journal,
-    await getEmbeddings(content),
-  );
-
-  if (!insertEmbeddingsResult.acknowledged)
-    throw new Error("Failed to insert embeddings");
+  await insertVectorDocs(journal);
 }
 
-function createJournalPreview(content: string) {
+function createEntryPreview(content: string) {
   return content.substring(0, PREVIEW_LENGTH);
 }
 
-async function getJournalAnalysis(content: string) {
+async function getAnalysis(content: string) {
   return !content.trim()
     ? {
         emoji: "",
@@ -289,4 +245,10 @@ async function getJournalAnalysis(content: string) {
 
 function setUpdatedAt<T extends object>(data: T) {
   return { ...data, updatedAt: getCurrentTimestamp() };
+}
+
+function handleTransactionError(error: unknown) {
+  if (error instanceof Error) throw new Error(error.message);
+
+  throw new Error(`Unknown error: ${String(error)}`);
 }

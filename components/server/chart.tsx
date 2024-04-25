@@ -13,7 +13,7 @@ import {
   ValueType,
   NameType,
 } from "recharts/types/component/DefaultTooltipContent";
-import { JournalAnalysisChart } from "@/utils/types";
+import { ChartAnalysis } from "@/utils/types";
 import { AlertError } from "./alerts";
 import { HistoryFullHeight } from "./layouts";
 import { ErrorComponent } from "./erros";
@@ -24,7 +24,7 @@ export default function HistoryChart({
   start,
   end,
 }: Readonly<{
-  analyses: JournalAnalysisChart[];
+  analyses: ChartAnalysis[];
   error: Error | null;
   start: Date;
   end: Date;
@@ -97,7 +97,7 @@ export default function HistoryChart({
 
 function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (active && payload?.[0]?.payload) {
-    const { mood, date, emoji } = payload[0].payload as JournalAnalysisChart;
+    const { mood, date, emoji } = payload[0].payload as ChartAnalysis;
 
     return (
       <article className="prose rounded-lg bg-neutral px-4 py-2 text-neutral-content ">

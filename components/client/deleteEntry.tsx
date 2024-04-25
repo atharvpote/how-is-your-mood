@@ -7,7 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { LoadingSpinner } from "../server/loading";
 import { createErrorMessage } from "@/utils/error";
 import { SetState } from "@/utils/types";
-import { deleteJournalEntry } from "@/utils/actions";
+import { deleteEntry } from "@/utils/actions";
 import { ErrorAlert } from "./modal";
 
 export default function DeleteEntry({ id }: Readonly<{ id: string }>) {
@@ -77,7 +77,7 @@ function ConfirmationModal({
                 onClick={() => {
                   loading.current?.showModal();
 
-                  deleteJournalEntry(id)
+                  deleteEntry(id)
                     .then(async () => {
                       await queryClient.invalidateQueries({
                         queryKey: ["entries"],

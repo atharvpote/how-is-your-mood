@@ -1,22 +1,21 @@
 import { ChatOpenAI } from "@langchain/openai";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
+import {
+  ChatPromptTemplate,
+  MessagesPlaceholder,
+} from "@langchain/core/prompts";
 import { JsonOutputFunctionsParser } from "langchain/output_parsers";
 import {
   BytesOutputParser,
   StringOutputParser,
 } from "@langchain/core/output_parsers";
 import { Message } from "ai/react";
+import { RunnableSequence } from "@langchain/core/runnables";
+import { vectorStore } from "@/vectorDb";
+import { DocumentInterface } from "@langchain/core/documents";
 import { ChatMessage } from "@langchain/core/messages";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import {
-  RunnablePassthrough,
-  RunnableSequence,
-} from "@langchain/core/runnables";
-import { langchainVectorStore, openAIEmbeddings } from "@/vectorDb";
+import { MultiQueryRetriever } from "langchain/retrievers/multi_query";
 
 export async function getAiAnalysis(content: string) {
-  const parser = new JsonOutputFunctionsParser();
-
   const analysisFunctionSchema = {
     name: "analyze",
     description: "Analyze journal entry",
@@ -54,12 +53,13 @@ export async function getAiAnalysis(content: string) {
     cache: true,
   });
 
-  const getAnalysisChain = model
-    .bind({
+  const getAnalysisChain = RunnableSequence.from([
+    model.bind({
       functions: [analysisFunctionSchema],
       function_call: { name: "analyze" },
-    })
-    .pipe(parser);
+    }),
+    new JsonOutputFunctionsParser(),
+  ]);
 
   return getAnalysisChain.invoke([["human", content]]);
 }
@@ -67,7 +67,12 @@ export async function getAiAnalysis(content: string) {
 type Messages = Omit<Message, "id">[];
 
 export async function getChatResponse(messages: Messages, userId: string) {
-  if (!messages.length) throw new Error("Chat is empty");
+  const history = messages.slice(0, -1);
+  const current = messages[messages.length - 1];
+
+  if (!current) {
+    throw new Error("Chat is empty");
+  }
 
   const model = new ChatOpenAI({
     temperature: 0,
@@ -75,77 +80,61 @@ export async function getChatResponse(messages: Messages, userId: string) {
     cache: true,
   });
 
-  const relevantChunks = await getRelevantDocuments(messages, model, userId);
+  const getRelevantChunks = RunnableSequence.from([
+    ChatPromptTemplate.fromMessages([
+      "user",
+      `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
+      
+Chat History:
+{chat_history}
 
-  const prompt = ChatPromptTemplate.fromMessages([
-    [
-      "system",
-      "You're a personal assistant for journal entries. Chunk is a small part of single journal, take relevant chunks into consideration.\nRelevant chunks: {relevantChunks}",
-    ],
-    ...messages.map((message) => new ChatMessage(message)),
+Follow Up Input: {question}
+Standalone question:`,
+    ]),
+    model,
+    new StringOutputParser(),
+    MultiQueryRetriever.fromLLM({
+      llm: model,
+      retriever: vectorStore.asRetriever({
+        k: 5,
+        filter: { user_id: userId },
+      }),
+      verbose: process.env.NODE_ENV === "development",
+    }),
+    (documents: DocumentInterface[]) =>
+      documents.map(({ pageContent }) => pageContent).join("\n\n"),
   ]);
 
-  const chatResponseChain = RunnableSequence.from([
-    {
-      relevantChunks: new RunnablePassthrough(),
+  const getResponseChainArgs = { history, current: current.content.toString() };
+  type GetResponseChainArgs = typeof getResponseChainArgs;
+
+  const getResponseChain = RunnableSequence.from([
+    async function formatArguments({ current, history }: GetResponseChainArgs) {
+      return {
+        chat_history: history.map((message) => new ChatMessage(message)),
+        context: await getRelevantChunks.invoke({
+          chat_history: history
+            .map(({ content, role }) => `${role}: ${content}`)
+            .join("\n"),
+          question: current,
+        }),
+        current,
+      };
     },
-    prompt,
+    ChatPromptTemplate.fromMessages([
+      [
+        "system",
+        `You are an assistant who's helps user regarding there daily journal. When responding to user, take relevant journal entry chunks from user's entries into consideration given below. If you cannot find relevant journal chunks, reply with "I don't have enough context to provide an answer. Please ask another question."
+      
+      Relevant Chunks: {context}
+      `,
+      ],
+      new MessagesPlaceholder("chat_history"),
+      ["user", "{current}"],
+    ]),
     model,
     new BytesOutputParser(),
   ]);
 
-  return chatResponseChain.stream({ relevantChunks });
-}
-
-async function getRelevantDocuments(
-  messages: Messages,
-  model: ChatOpenAI,
-  userId: string,
-) {
-  const current = messages[messages.length - 1];
-
-  if (!current) throw new Error("Chat is empty");
-
-  const chatHistory = messages
-    .slice(0, -1)
-    .map(({ role, content }) => `${role}: ${content}`)
-    .join("\n");
-
-  const queryChain = ChatPromptTemplate.fromMessages([
-    [
-      "human",
-      `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
-
-Chat History:
-{chat_history}
-Follow Up Input: {question}
-Standalone question:`,
-    ],
-  ])
-    .pipe(model)
-    .pipe(new StringOutputParser());
-
-  const query = await queryChain.invoke({
-    chat_history: chatHistory,
-    question: current.content,
-  });
-
-  console.log(query);
-
-  return await langchainVectorStore.similaritySearch(query, 5, {
-    user_id: userId,
-  });
-}
-
-export async function getEmbeddings(content: string) {
-  const splitter = new RecursiveCharacterTextSplitter();
-
-  const splitContent = await splitter.splitText(content);
-
-  const embeddings = await openAIEmbeddings.embedDocuments(splitContent);
-
-  return splitContent.map((chunk, index) => ({
-    chunk,
-    embedding: embeddings[index],
-  })) as { chunk: string; embedding: number[] }[];
+  return await getResponseChain.stream(getResponseChainArgs);
 }

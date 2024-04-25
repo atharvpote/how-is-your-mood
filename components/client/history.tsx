@@ -4,8 +4,8 @@ import { startOfWeek, endOfWeek } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DatePicker } from "@mui/x-date-pickers";
-import { JournalAnalysisChart } from "@/utils/types";
-import { getChartAnalyses, getMostRecentJournalEntry } from "@/utils/actions";
+import { ChartAnalysis } from "@/utils/types";
+import { getChartAnalyses, getMostRecentEntry } from "@/utils/actions";
 import HistoryChart from "../server/chart";
 
 export default function History({
@@ -13,7 +13,7 @@ export default function History({
   analyses,
 }: Readonly<{
   mostRecentEntryDate: Date;
-  analyses: JournalAnalysisChart[];
+  analyses: ChartAnalysis[];
 }>) {
   const [startDate, setStartDate] = useState(startOfWeek(mostRecentEntryDate));
   const [endDate, setEndDate] = useState(endOfWeek(mostRecentEntryDate));
@@ -100,7 +100,7 @@ export default function History({
 function useMostRecentEntry() {
   return useQuery({
     queryKey: ["most-recent"],
-    queryFn: async () => await getMostRecentJournalEntry(),
+    queryFn: async () => await getMostRecentEntry(),
   });
 }
 

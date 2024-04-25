@@ -1,5 +1,5 @@
 import { endOfWeek, startOfWeek } from "date-fns";
-import { getChartAnalyses, getMostRecentJournalEntry } from "@/utils/actions";
+import { getChartAnalyses, getMostRecentEntry } from "@/utils/actions";
 import History from "@/components/client/history";
 import { GetStarted } from "@/components/server/alerts";
 import { HistoryFullHeight } from "@/components/server/layouts";
@@ -11,7 +11,7 @@ export default async function HistoryPage() {
       <div className="prose h-12 px-4 pt-4 md:prose-lg xl:pl-8">
         <h2>History</h2>
       </div>
-      <HistoryComponent mostRecentEntry={await getMostRecentJournalEntry()} />
+      <HistoryComponent mostRecentEntry={await getMostRecentEntry()} />
     </>
   );
 }

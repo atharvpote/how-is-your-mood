@@ -6,8 +6,8 @@ import { formatRelative } from "date-fns";
 import { enIN } from "date-fns/locale";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PREVIEW_LENGTH } from "@/utils";
-import { JournalPreview } from "@/utils/types";
-import { getJournalEntries } from "@/utils/actions";
+import { Preview } from "@/utils/types";
+import { getEntries } from "@/utils/actions";
 import { GetStarted } from "../server/alerts";
 import { JournalFullHeight } from "../server/layouts";
 import { ErrorComponent } from "../server/erros";
@@ -15,13 +15,15 @@ import { ErrorComponent } from "../server/erros";
 export default function Entries({
   entries,
 }: Readonly<{
-  entries: JournalPreview[];
+  entries: Preview[];
 }>) {
   const [entryList, setEntryList] = useState(entries);
 
   const update = useEntries();
   const queryClient = useQueryClient();
+
   if (!update.data) queryClient.setQueryData(["entries"], entries);
+
   useEffect(() => {
     if (update.data) setEntryList(update.data);
   }, [update.data]);
@@ -72,7 +74,7 @@ export default function Entries({
 function useEntries() {
   return useQuery({
     queryKey: ["entries"],
-    queryFn: async () => await getJournalEntries(),
+    queryFn: async () => await getEntries(),
   });
 }
 

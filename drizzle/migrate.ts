@@ -11,19 +11,7 @@ dotenv.config({
 async function migration() {
   console.log("initializing client");
 
-  const client = createClient(
-    process.argv[2] === "dev"
-      ? {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          url: process.env.TURSO_CONNECTION_URL_DEV!,
-          authToken: process.env.TURSO_AUTH_TOKEN_DEV,
-        }
-      : {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          url: process.env.TURSO_CONNECTION_URL!,
-          authToken: process.env.TURSO_AUTH_TOKEN,
-        },
-  );
+  const client = createClient(getClientConfig());
 
   const db = drizzle(client);
 
@@ -41,3 +29,31 @@ migration().catch((error: unknown) => {
 
   process.exit(1);
 });
+
+function getClientConfig() {
+  if (process.argv[2] === "dev") {
+    const { TURSO_CONNECTION_URL_DEV, TURSO_AUTH_TOKEN_DEV } = process.env;
+
+    if (!TURSO_CONNECTION_URL_DEV || !TURSO_AUTH_TOKEN_DEV)
+      throw new Error(
+        "Please add TURSO_CONNECTION_URL_DEV and TURSO_AUTH_TOKEN_DEV to .env or .env.local",
+      );
+
+    return {
+      url: TURSO_CONNECTION_URL_DEV,
+      authToken: TURSO_AUTH_TOKEN_DEV,
+    };
+  } else {
+    const { TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN } = process.env;
+
+    if (!TURSO_CONNECTION_URL || !TURSO_AUTH_TOKEN)
+      throw new Error(
+        "Please add TURSO_CONNECTION_URL and TURSO_AUTH_TOKEN to .env or .env.local",
+      );
+
+    return {
+      url: TURSO_CONNECTION_URL,
+      authToken: TURSO_AUTH_TOKEN,
+    };
+  }
+}

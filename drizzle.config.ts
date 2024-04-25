@@ -1,5 +1,5 @@
 import { defineConfig } from "drizzle-kit";
-import { getDatabaseCredentials } from "./utils/db";
+import { getDatabaseCredentials } from "./drizzle/db";
 
 export default defineConfig({
   driver: "turso",

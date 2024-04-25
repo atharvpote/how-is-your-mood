@@ -1,6 +1,6 @@
 "use client";
 
-import { MutableRefObject, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   QueryClient,
   useMutation,
@@ -9,21 +9,17 @@ import {
 } from "@tanstack/react-query";
 import { useAutosave } from "react-autosave";
 import { isTouchDevice } from "@/utils";
-import { JournalAnalysis, JournalEntry, SetState } from "@/utils/types";
-import {
-  getJournalEntry,
-  mutateJournalEntry,
-  updateJournalEntry,
-} from "@/utils/actions";
+import { Analysis as AnalysisType, Entry } from "@/utils/types";
+import { getEntry, updateEntry } from "@/utils/actions";
 import EntryDate from "./entryDate";
 import Analysis from "./analysis";
 import DeleteEntry from "./deleteEntry";
 import { ErrorAlert } from "./modal";
 
-export default function Editor({ entry }: Readonly<{ entry: JournalEntry }>) {
+export default function Editor({ entry }: Readonly<{ entry: Entry }>) {
   const [content, setContent] = useState(entry.content);
   const [date, setDate] = useState(new Date(entry.date));
-  const [analysis, setAnalysis] = useState<JournalAnalysis>({
+  const [analysis, setAnalysis] = useState<AnalysisType>({
     emoji: entry.emoji,
     mood: entry.mood,
     sentiment: entry.sentiment,
@@ -34,42 +30,42 @@ export default function Editor({ entry }: Readonly<{ entry: JournalEntry }>) {
   const [error, setError] = useState<Error | null>(null);
   const [isScrolling, setIsScrolling] = useState(false);
 
-  const previousContent = useRef(content.trim());
-  const cache = useRef(new Map([[content.trim(), analysis]]));
+  const previousContentRef = useRef(content.trim());
+  const cacheRef = useRef(new Map([[content.trim(), analysis]]));
+
+  const queryResult = useEntry(entry.id);
 
   const queryClient = useQueryClient();
-
-  const update = useEntry(entry.id);
-
-  if (!update.data) updateReactQueryCache(queryClient, entry);
+  if (!queryResult.data) queryClient.setQueryData(["entry", entry.id], entry);
 
   useEffect(
     function updateStateOnLoad() {
-      if (update.data) {
-        setContent(update.data.content);
-        setDate(new Date(update.data.date));
+      if (queryResult.data) {
+        setContent(queryResult.data.content);
+        setDate(new Date(queryResult.data.date));
       }
 
-      if (update.isError) {
+      if (queryResult.isError) {
         setIsError(true);
-        setError(update.error);
+        setError(queryResult.error);
       }
     },
-    [update.data, update.error, update.isError],
+    [queryResult.data, queryResult.error, queryResult.isError],
   );
 
-  const mutation = useMutateEntry(queryClient, cache.current);
+  const mutationResult = useMutateEntry(queryClient, cacheRef.current);
 
   useEffect(
     function updateStateOnMutation() {
-      if (mutation.data?.analysis) setAnalysis(mutation.data.analysis);
+      if (mutationResult.data?.analysis)
+        setAnalysis(mutationResult.data.analysis);
 
-      if (mutation.isError) {
+      if (mutationResult.isError) {
         setIsError(true);
-        setError(mutation.error);
+        setError(mutationResult.error);
       }
     },
-    [mutation.data, mutation.error, mutation.isError],
+    [mutationResult.data, mutationResult.error, mutationResult.isError],
   );
 
   useAutosave({
@@ -77,21 +73,25 @@ export default function Editor({ entry }: Readonly<{ entry: JournalEntry }>) {
     onSave: (content) => {
       const trimmedContent = content.trim();
 
-      if (previousContent.current !== trimmedContent) {
-        previousContent.current = trimmedContent;
-
-        mutation.mutate({
+      if (previousContentRef.current !== trimmedContent) {
+        mutationResult.mutate({
           content,
           id: entry.id,
-          date: date.getDate(),
+          date: date.getTime(),
         });
+
+        previousContentRef.current = trimmedContent;
       }
     },
   });
 
   const textarea = useRef<HTMLTextAreaElement | null>(null);
-  useEffect(() => {
-    adjustUi(textarea, setIsScrolling);
+
+  useEffect(function adjustUi() {
+    if (textarea.current)
+      textarea.current.scrollHeight > textarea.current.clientHeight
+        ? setIsScrolling(true)
+        : setIsScrolling(false);
   }, []);
 
   return (
@@ -121,7 +121,7 @@ export default function Editor({ entry }: Readonly<{ entry: JournalEntry }>) {
       <section className="prose sm:mx-auto sm:max-w-2xl md:h-full md:grow-0 md:basis-96 md:self-start">
         <h2 className="font-bold md:mt-6">Analysis</h2>
         <div className="pb-4 md:relative md:h-[calc(100%-5.3rem)]">
-          <Analysis analysis={analysis} loading={mutation.isPending} />
+          <Analysis analysis={analysis} loading={mutationResult.isPending} />
         </div>
       </section>
       <ErrorAlert isError={isError} error={error} />
@@ -132,28 +132,28 @@ export default function Editor({ entry }: Readonly<{ entry: JournalEntry }>) {
 function useEntry(id: string) {
   return useQuery({
     queryKey: ["entry", id],
-    queryFn: async () => await getJournalEntry(id),
+    queryFn: async () => await getEntry(id),
   });
 }
 
 function useMutateEntry(
   queryClient: QueryClient,
-  cache: Map<string, JournalAnalysis>,
+  cache: Map<string, AnalysisType>,
 ) {
   return useMutation({
     mutationFn: async ({
       id,
       content,
-    }: Pick<JournalEntry, "id" | "content" | "date">) => {
+    }: Pick<Entry, "id" | "content" | "date">) => {
       const cachedAnalysis = cache.get(content);
 
       if (cachedAnalysis) {
-        await mutateJournalEntry(id, content, cachedAnalysis);
+        await updateEntry(id, content, cachedAnalysis);
 
         return { analysis: cachedAnalysis };
       }
 
-      const analysis = await updateJournalEntry(id, content);
+      const analysis = await updateEntry(id, content);
 
       return { analysis };
     },
@@ -166,18 +166,4 @@ function useMutateEntry(
       });
     },
   });
-}
-
-function updateReactQueryCache(queryClient: QueryClient, entry: JournalEntry) {
-  queryClient.setQueryData(["entry", entry.id], entry);
-}
-
-function adjustUi(
-  textarea: MutableRefObject<HTMLTextAreaElement | null>,
-  setIsScrolling: SetState<boolean>,
-) {
-  if (textarea.current)
-    textarea.current.scrollHeight > textarea.current.clientHeight
-      ? setIsScrolling(true)
-      : setIsScrolling(false);
 }

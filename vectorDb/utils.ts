@@ -1,59 +1,55 @@
-import { collection } from ".";
-import { JSONAPIUpdateResult } from "@datastax/astra-db-ts/dist/collections/collection";
-import { JournalMetadata } from "@/utils/types";
+import { vectorStore, collection } from ".";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { Metadata } from "@/utils/types";
+import { Document } from "@langchain/core/documents";
 
-export async function insertEmbeddings(
-  {
-    createdAt,
-    date,
-    id,
-    mood,
-    sentiment,
-    subject,
-    summery,
-    updatedAt,
-    userId,
-  }: JournalMetadata,
-  embeddings: { chunk: string; embedding: number[] }[],
-) {
-  return (await collection.insertMany(
-    embeddings.map(({ chunk, embedding }) => ({
-      $vector: embedding,
-      chunk_of_journal: chunk,
-      journal_date: new Date(date).toDateString(),
-      created_at: new Date(createdAt).toISOString(),
-      updated_at: new Date(updatedAt).toISOString(),
-      journal_subject: subject,
-      journal_summery: summery,
-      journal_sentiment_score: sentiment,
-      journal_mood: mood,
-      journal_entry_id: id,
-      user_id: userId,
-    })),
-  )) as {
-    acknowledged: boolean;
-    insertedCount: number;
-    insertedIds: string[];
-  };
+export async function insertVectorDocs(journal: Metadata) {
+  const splitter = new RecursiveCharacterTextSplitter();
+
+  const documents = await splitter.splitDocuments(
+    [
+      new Document({
+        pageContent: journal.content,
+        metadata: {
+          entry_id: journal.id,
+          user_id: journal.userId,
+        },
+      }),
+    ],
+    {
+      chunkHeader: `DATE: ${new Date(journal.date).toDateString()}
+SUBJECT: ${journal.subject}
+SUMMERY: ${journal.summery}
+MOOD: ${journal.mood}
+SENTIMENT: ${journal.sentiment?.toString() ?? ""}
+      
+---
+      
+`,
+      appendChunkOverlapHeader: true,
+    },
+  );
+
+  await vectorStore.addDocuments(documents);
 }
 
-export async function deleteEmbeddings(userId: string, journalEntryId: string) {
+export async function deleteVectorDocs(userId: string, entryId: string) {
   return await collection.deleteMany({
-    journal_entry_id: journalEntryId,
+    entry_id: entryId,
     user_id: userId,
   });
 }
 
-export async function mutateEmbeddingsMetadataDate(
+export async function mutateVectorDocDate(
   date: Date,
   userId: string,
-  journalEntryId: string,
+  entryId: string,
 ) {
-  return (await collection.updateMany(
+  return await collection.updateMany(
     {
-      journal_entry_id: journalEntryId,
+      entry_id: entryId,
       user_id: userId,
     },
     { $set: { journal_date: date.toDateString() } },
-  )) as JSONAPIUpdateResult;
+  );
 }
