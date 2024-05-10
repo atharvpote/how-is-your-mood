@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { ReadonlyPropsWithChildren } from "@/utils/types";
 
 export default function HomeTemplate({ children }: ReadonlyPropsWithChildren) {

@@ -120,6 +120,8 @@ export async function updateEntry(
     if (!entry) {
       tx.rollback();
 
+      console.log("failed to update journal entry");
+
       throw new Error("Failed to update Journal entry");
     }
 
@@ -127,6 +129,8 @@ export async function updateEntry(
       await updateEmbeddings({ ...entry, content, userId });
     } catch (error: unknown) {
       tx.rollback();
+
+      console.log("failed to update embeddings");
 
       handleTransactionError(error);
     }

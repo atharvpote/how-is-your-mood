@@ -1,4 +1,4 @@
-import { vectorStore, collection } from ".";
+import { vectorStore, vectorCollection } from ".";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { Metadata } from "@/utils/types";
 import { Document } from "@langchain/core/documents";
@@ -34,7 +34,7 @@ SENTIMENT: ${journal.sentiment?.toString() ?? ""}
 }
 
 export async function deleteVectorDocs(userId: string, entryId: string) {
-  return await collection.deleteMany({
+  return await vectorCollection.deleteMany({
     entry_id: entryId,
     user_id: userId,
   });
@@ -45,7 +45,7 @@ export async function mutateVectorDocDate(
   userId: string,
   entryId: string,
 ) {
-  return await collection.updateMany(
+  return await vectorCollection.updateMany(
     {
       entry_id: entryId,
       user_id: userId,

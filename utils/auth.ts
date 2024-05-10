@@ -1,6 +1,6 @@
 import { db } from "@/drizzle/db";
 import { user } from "@/drizzle/schema";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 
 export async function getCurrentUserId() {

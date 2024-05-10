@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { currentUser } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import { EmailAddress } from "@clerk/nextjs/server";
 import { db } from "@/drizzle/db";
 import { user } from "@/drizzle/schema";
