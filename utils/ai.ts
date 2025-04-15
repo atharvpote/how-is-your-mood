@@ -49,7 +49,7 @@ export async function getAiAnalysis(content: string) {
 
   const model = new ChatOpenAI({
     temperature: 0,
-    modelName: "gpt-3.5-turbo-0125",
+    modelName: "gpt-4.1-nano",
     cache: true,
   });
 
